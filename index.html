@@ -308,6 +308,11 @@
                     </section>
                 </div>
 
+                <section class="glass-panel rounded-xl p-4">
+                    <h3 class="text-brand-cyan font-bold mb-4 flex items-center gap-2"><i data-lucide="coins" class="w-5 h-5"></i> 股利 / 除權息 <span class="text-xs font-normal text-slate-400">(近5年發放紀錄)</span></h3>
+                    <div id="dividend-info" class="space-y-2"></div>
+                </section>
+
                 <div id="winrate-compare" class="glass-panel rounded-xl p-5 shadow-lg"></div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -439,7 +444,7 @@
                             <span class="chevron text-slate-400 text-xs">▾</span>
                         </button>
                         <div id="about-section-3" class="hidden px-4 pb-4 text-[13px]">
-                            <p class="text-slate-400">沒有固定排程，每次切換股票才即時連線抓取，依序嘗試 FinMind(已用token提高額度)→證交所(上市)→櫃買中心(上櫃)→Yahoo Finance(+CORS代理備援)，全部失敗才顯示模擬資料(圖表上會有⚠️警告，不能參考)。股價K線資料上市股、上櫃股都支援；但三大法人買賣超目前只有上市股的T86有資料，上櫃股查不到是正常的(這是資料源本身的限制)；個股估值(本益比/殖利率/股價淨值比)則是上市查證交所、上櫃查櫃買中心。各資料源CORS穩定性都還在持續觀察調整中。</p>
+                            <p class="text-slate-400">沒有固定排程，每次切換股票才即時連線抓取，依序嘗試 FinMind(已用token提高額度)→證交所(上市)→櫃買中心(上櫃)→Yahoo Finance(+CORS代理備援)，全部失敗才顯示模擬資料(圖表上會有⚠️警告，不能參考)。股價K線資料上市股、上櫃股都支援；三大法人買賣超優先查證交所T86(上市)，查不到(通常是上櫃股)會自動改用FinMind的資料補上，所以上市櫃都看得到；個股估值(本益比/殖利率/股價淨值比)則是上市查證交所、上櫃查櫃買中心。各資料源CORS穩定性都還在持續觀察調整中。</p>
                         </div>
                     </div>
 
@@ -505,6 +510,17 @@
                 
                 <div class="text-center">
                     <span id="scan-progress" class="text-brand-cyan text-sm font-medium bg-brand-card px-4 py-1.5 rounded-full border border-brand-border hidden shadow-[0_0_10px_rgba(0,242,254,0.3)]"></span>
+                </div>
+
+                <div class="glass-panel rounded-xl overflow-hidden">
+                    <button class="collapse-toggle w-full flex justify-between items-center p-4 text-left" data-target="sector-rotation-body">
+                        <h3 class="text-white font-bold flex items-center gap-2 text-sm"><i data-lucide="shuffle" class="w-4 h-4 text-brand-teal"></i> 🔄 產業輪動排行</h3>
+                        <span class="chevron text-slate-400 text-xs">▾</span>
+                    </button>
+                    <div id="sector-rotation-body" class="hidden px-4 pb-4">
+                        <p class="text-slate-500 text-[11px] mb-3">用「鯨魚雷達(母清單)」掃描過的股票，依產業分類算近5日/20日平均漲幅，看現在資金往哪個產業輪動。要先按下方「鯨魚雷達」掃描一次才有資料(掃自選清單不會更新這裡，因為樣本太少)。</p>
+                        <div id="sector-rotation-list" class="space-y-1.5"></div>
+                    </div>
                 </div>
                 
                 <div id="scan-list" class="space-y-3 pb-8 mt-2"></div>
@@ -637,6 +653,117 @@
 
         // 大範圍掃描母清單：沿用名稱表裡有把握的常見大型/中型股代號(約80多檔)，不是官方即時成分股名單
         const MASTER_SCAN_LIST = Object.keys(STOCK_NAMES).filter(c => !['0050', '0056', '00878'].includes(c));
+        // 產業分類(手動整理母清單108檔，給「產業輪動排行」用；之後母清單如果增加新股票要記得補分類，沒分類的會歸到「其他」)
+        const SECTOR_MAP = {
+            '2303':'半導體',
+            '2330':'半導體',
+            '2408':'半導體',
+            '2454':'半導體',
+            '3034':'半導體',
+            '3035':'半導體',
+            '3105':'半導體',
+            '3661':'半導體',
+            '5347':'半導體',
+            '6239':'半導體',
+            '6770':'半導體',
+            '2455':'半導體',
+            '3711':'半導體',
+            '2327':'電子零組件',
+            '2492':'電子零組件',
+            '3533':'電子零組件',
+            '3037':'電子零組件',
+            '6213':'電子零組件',
+            '6155':'電子零組件',
+            '3702':'電子零組件',
+            '6409':'電子零組件',
+            '6531':'電子零組件',
+            '3036':'電子零組件',
+            '6269':'電子零組件',
+            '2301':'電子零組件',
+            '2308':'電子零組件',
+            '2353':'電腦及週邊',
+            '2357':'電腦及週邊',
+            '2376':'電腦及週邊',
+            '2377':'電腦及週邊',
+            '2382':'電腦及週邊',
+            '2360':'電腦及週邊',
+            '2395':'電腦及週邊',
+            '2401':'電腦及週邊',
+            '2451':'電腦及週邊',
+            '3231':'電腦及週邊',
+            '4938':'電腦及週邊',
+            '6669':'電腦及週邊',
+            '2385':'電腦及週邊',
+            '3653':'電腦及週邊',
+            '2498':'手機光學',
+            '3008':'手機光學',
+            '3406':'手機光學',
+            '2474':'手機光學',
+            '2345':'網通設備',
+            '2379':'網通設備',
+            '5388':'網通設備',
+            '5269':'網通設備',
+            '2409':'面板光電',
+            '3481':'面板光電',
+            '2317':'電子代工組裝',
+            '2354':'電子代工組裝',
+            '4958':'電子代工組裝',
+            '3665':'電子代工組裝',
+            '2812':'金融保險',
+            '2823':'金融保險',
+            '2834':'金融保險',
+            '2845':'金融保險',
+            '2880':'金融保險',
+            '2881':'金融保險',
+            '2882':'金融保險',
+            '2883':'金融保險',
+            '2884':'金融保險',
+            '2885':'金融保險',
+            '2886':'金融保險',
+            '2887':'金融保險',
+            '2888':'金融保險',
+            '2890':'金融保險',
+            '2891':'金融保險',
+            '2892':'金融保險',
+            '5880':'金融保險',
+            '5871':'金融保險',
+            '9941':'金融保險',
+            '6592':'金融保險',
+            '2603':'航運',
+            '2606':'航運',
+            '2609':'航運',
+            '2615':'航運',
+            '2618':'航運',
+            '2610':'航運',
+            '2633':'航運',
+            '1101':'塑化鋼鐵原物料',
+            '1102':'塑化鋼鐵原物料',
+            '1301':'塑化鋼鐵原物料',
+            '1303':'塑化鋼鐵原物料',
+            '1326':'塑化鋼鐵原物料',
+            '6505':'塑化鋼鐵原物料',
+            '2002':'塑化鋼鐵原物料',
+            '2027':'塑化鋼鐵原物料',
+            '1605':'塑化鋼鐵原物料',
+            '2207':'汽車',
+            '2227':'汽車',
+            '1216':'傳產消費',
+            '2912':'傳產消費',
+            '8454':'傳產消費',
+            '9904':'傳產消費',
+            '9910':'傳產消費',
+            '9921':'傳產消費',
+            '9945':'傳產消費',
+            '2542':'傳產消費',
+            '2371':'傳產消費',
+            '2412':'電信',
+            '3045':'電信',
+            '4904':'電信',
+            '6446':'生技醫藥',
+            '1590':'工業自動化設備',
+            '9933':'工業自動化設備',
+            '2105':'工業自動化設備'
+        };
         let scanScope = 'watchlist'; // 'watchlist' | 'master'
 
         function loadJSON(key, fallback) {
@@ -2406,17 +2533,61 @@
             }
             institutionalCache = null;
         }
-        function renderInstitutionalInfo(symbol) {
+        // FinMind三大法人買賣超：上市、上櫃股都查得到，T86(只有上市)查無資料時當備援用
+        // name欄位的分類字串FinMind沒有公開精確列舉，這裡用關鍵字寬鬆比對(foreign/trust/dealer)，
+        // 同一類有多筆(例如外資跟外資自營商分開列)就加總，盡量不要因為字串對不上而整個漏接。
+        function classifyInstName(name) {
+            const s = String(name || '').toLowerCase();
+            if (s.includes('foreign')) return 'foreign';
+            if (s.includes('trust')) return 'trust';
+            if (s.includes('dealer')) return 'dealer';
+            return null;
+        }
+        async function fetchInstitutionalFinMind(symbol) {
+            const end = new Date();
+            const start = new Date(); start.setDate(start.getDate() - 15);
+            const tokenParam = FINMIND_TOKEN ? `&token=${FINMIND_TOKEN}` : '';
+            const url = `https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockInstitutionalInvestorsBuySell&data_id=${symbol}&start_date=${start.toISOString().split('T')[0]}&end_date=${end.toISOString().split('T')[0]}${tokenParam}`;
+            const res = await corsFetch(url);
+            const json = await res.json();
+            if (json.status !== 200 || !Array.isArray(json.data) || json.data.length === 0) throw new Error('FinMind 三大法人無資料');
+            let latestDate = json.data[0].date;
+            json.data.forEach(r => { if (r.date > latestDate) latestDate = r.date; });
+            const rows = json.data.filter(r => r.date === latestDate);
+            const sums = { foreign: 0, trust: 0, dealer: 0 };
+            const matched = { foreign: false, trust: false, dealer: false };
+            rows.forEach(r => {
+                const cat = classifyInstName(r.name);
+                if (cat) { sums[cat] += (Number(r.buy) || 0) - (Number(r.sell) || 0); matched[cat] = true; }
+            });
+            const foreign = matched.foreign ? sums.foreign : null;
+            const trust = matched.trust ? sums.trust : null;
+            const dealer = matched.dealer ? sums.dealer : null;
+            const anyMatched = matched.foreign || matched.trust || matched.dealer;
+            const total = anyMatched ? (sums.foreign + sums.trust + sums.dealer) : null;
+            return { date: latestDate, foreign, trust, dealer, total };
+        }
+        async function renderInstitutionalInfo(symbol) {
             const el = document.getElementById('institutional-info');
             if (!el) return;
-            if (!institutionalCache) { el.innerHTML = '<p class="text-gray-500 text-sm">三大法人資料抓取失敗(這個資料源CORS穩定性還沒驗證過，可能你的瀏覽器環境抓不到，僅供參考用)</p>'; return; }
-            const row = institutionalCache.map[symbol];
-            if (!row) { el.innerHTML = `<p class="text-gray-500 text-sm">查無 ${symbol} 在 ${institutionalCache.date} 的資料(可能是上櫃股，這個來源只有上市股)</p>`; return; }
+            el.innerHTML = '<p class="text-gray-500 text-sm">載入中...</p>';
+            let row = institutionalCache && institutionalCache.map[symbol];
+            let dateLabel = institutionalCache ? institutionalCache.date : '';
+            let sourceLabel = '證交所T86(上市)';
+            if (!row) {
+                try {
+                    const fm = await fetchInstitutionalFinMind(symbol);
+                    row = fm;
+                    dateLabel = fm.date;
+                    sourceLabel = 'FinMind(上市+上櫃)';
+                } catch (e) { console.warn('FinMind三大法人備援也失敗', symbol, e.message); }
+            }
+            if (!row) { el.innerHTML = `<p class="text-gray-500 text-sm">查無 ${symbol} 的三大法人資料(可能是興櫃股，或資料來源暫時不穩，可以晚點再看)</p>`; return; }
             const fmtShares = n => n === null ? '--' : (n / 1000).toFixed(0) + '張';
             const colorOf = n => n === null ? 'text-gray-400' : n >= 0 ? 'text-red-400' : 'text-green-400';
             el.innerHTML = `
                 <div class="bg-gray-800 rounded p-3 text-sm">
-                    <div class="text-gray-500 text-xs mb-2">資料日期：${institutionalCache.date}(來源：證交所T86，紅字買超/綠字賣超)</div>
+                    <div class="text-gray-500 text-xs mb-2">資料日期：${dateLabel}(來源：${sourceLabel}，紅字買超/綠字賣超)</div>
                     <div class="grid grid-cols-2 gap-2 font-mono-num">
                         <div>外資：<span class="${colorOf(row.foreign)}">${row.foreign !== null && row.foreign >= 0 ? '+' : ''}${fmtShares(row.foreign)}</span></div>
                         <div>投信：<span class="${colorOf(row.trust)}">${row.trust !== null && row.trust >= 0 ? '+' : ''}${fmtShares(row.trust)}</span></div>
@@ -2424,6 +2595,65 @@
                         <div>三大法人合計：<span class="${colorOf(row.total)}">${row.total !== null && row.total >= 0 ? '+' : ''}${fmtShares(row.total)}</span></div>
                     </div>
                 </div>`;
+        }
+
+        // ============ 股利/除權息資料(FinMind，上市櫃都支援) ============
+        async function fetchDividendData(symbol) {
+            const tokenParam = FINMIND_TOKEN ? `&token=${FINMIND_TOKEN}` : '';
+            const url = `https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockDividend&data_id=${symbol}&start_date=2015-01-01${tokenParam}`;
+            const res = await corsFetch(url);
+            const json = await res.json();
+            if (json.status !== 200 || !Array.isArray(json.data) || json.data.length === 0) throw new Error('股利資料無資料');
+            const num = v => { const n = parseFloat(v); return isFinite(n) ? n : 0; };
+            const rows = json.data.map(r => ({
+                year: r.year,
+                cash: num(r.CashEarningsDistribution) + num(r.CashStatutorySurplus),
+                stock: num(r.StockEarningsDistribution) + num(r.StockStatutorySurplus),
+                cashExDate: r.CashExDividendTradingDate || '',
+                stockExDate: r.StockExDividendTradingDate || '',
+                payDate: r.CashDividendPaymentDate || '',
+            })).filter(d => d.cash > 0 || d.stock > 0);
+            // 同一年偶爾會配發多次(例如季配)，用年度加總後只留一筆排序用的代表列+明細
+            const byYear = {};
+            rows.forEach(r => {
+                if (!byYear[r.year]) byYear[r.year] = { year: r.year, cash: 0, stock: 0, items: [] };
+                byYear[r.year].cash += r.cash;
+                byYear[r.year].stock += r.stock;
+                byYear[r.year].items.push(r);
+            });
+            return Object.values(byYear).sort((a, b) => String(b.year).localeCompare(String(a.year))).slice(0, 5);
+        }
+        async function renderDividendInfo(symbol) {
+            const el = document.getElementById('dividend-info');
+            if (!el) return;
+            el.innerHTML = '<p class="text-gray-500 text-sm">載入中...</p>';
+            try {
+                const years = await fetchDividendData(symbol);
+                if (years.length === 0) { el.innerHTML = '<p class="text-gray-500 text-sm">查無股利發放紀錄(可能是從未配發過股利的個股)</p>'; return; }
+                const today = new Date().toISOString().split('T')[0];
+                el.innerHTML = `
+                    <div class="space-y-1.5">
+                        ${years.map(y => {
+                            const upcoming = y.items.some(it => (it.cashExDate && it.cashExDate >= today) || (it.stockExDate && it.stockExDate >= today));
+                            const exDateLabel = y.items.map(it => it.cashExDate || it.stockExDate).filter(Boolean).sort().join('、');
+                            return `
+                            <div class="bg-gray-800 rounded p-2.5 text-sm flex items-center justify-between ${upcoming ? 'border border-brand-cyan/40' : ''}">
+                                <div>
+                                    <span class="font-bold text-white">${y.year}年度</span>
+                                    <span class="text-gray-400 text-xs ml-1">${exDateLabel ? `除權息日:${exDateLabel}` : ''}</span>
+                                    ${upcoming ? '<span class="text-brand-cyan text-xs ml-1">🔔即將/近期除權息</span>' : ''}
+                                </div>
+                                <div class="font-mono-num text-right">
+                                    ${y.cash > 0 ? `<span class="text-amber-300">現金${y.cash.toFixed(2)}元</span>` : ''}
+                                    ${y.stock > 0 ? `<span class="text-emerald-300 ml-2">股票${y.stock.toFixed(2)}元</span>` : ''}
+                                </div>
+                            </div>`;
+                        }).join('')}
+                    </div>
+                    <p class="text-[10px] text-gray-500 mt-2">「現金/股票」單位都是每股配發金額(元)；除權息當天股價會自動扣減對應點數，這是正常現象，不是真的下跌。資料來源：FinMind。</p>`;
+            } catch (e) {
+                el.innerHTML = `<p class="text-gray-500 text-sm">查無 ${symbol} 的股利資料，或資料來源暫時不穩</p>`;
+            }
         }
 
         // ============ 個股估值參考(本益比/殖利率/股價淨值比，BWIBBU) ============
@@ -2545,6 +2775,7 @@
 
             renderInstitutionalInfo(symbol);
             renderValuationInfo(symbol);
+            renderDividendInfo(symbol);
         }
 
 
@@ -2588,6 +2819,7 @@
             target.classList.remove('hidden');
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tabName));
             if (tabName === 'beginner') renderRookieWatchlist();
+            if (tabName === 'scan') renderSectorRotation();
             requestAnimationFrame(() => {
                 syncChartSize(weeklyChart, document.getElementById('weekly-chart-container'));
                 syncChartSize(dailyChart, document.getElementById('daily-chart-container'));
@@ -2621,6 +2853,59 @@
             if (recent.length === 0) return null;
             const avgShares = recent.reduce((s, d) => s + d.volume, 0) / recent.length;
             return avgShares / 1000; // 股轉張
+        }
+
+        // ============ 產業輪動排行 ============
+        // 用已經抓過的stockCache(母清單掃描後就會有)，依SECTOR_MAP分組，算每個產業的近5日/20日平均漲幅做排行。
+        // 不會額外發API請求，純粹利用掃描時已經抓到的資料，所以一定要先掃過一次「鯨魚雷達(母清單)」才有東西可以算。
+        function computeSectorRotation() {
+            const bySector = {};
+            MASTER_SCAN_LIST.forEach(symbol => {
+                const daily = stockCache[symbol];
+                if (!daily || daily.length < 25) return;
+                const n = daily.length;
+                const closeNow = daily[n - 1].close;
+                const close5 = daily[n - 6] ? daily[n - 6].close : null;
+                const close20 = daily[n - 21] ? daily[n - 21].close : null;
+                const ret5 = (close5 && close5 > 0) ? (closeNow - close5) / close5 * 100 : null;
+                const ret20 = (close20 && close20 > 0) ? (closeNow - close20) / close20 * 100 : null;
+                const sector = SECTOR_MAP[symbol] || '其他';
+                if (!bySector[sector]) bySector[sector] = { ret5: [], ret20: [], symbols: [] };
+                if (ret5 !== null) bySector[sector].ret5.push(ret5);
+                if (ret20 !== null) bySector[sector].ret20.push(ret20);
+                bySector[sector].symbols.push(symbol);
+            });
+            const avg = arr => arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : null;
+            const result = Object.entries(bySector).map(([sector, v]) => ({
+                sector, count: v.symbols.length, avgRet5: avg(v.ret5), avgRet20: avg(v.ret20),
+            })).filter(r => r.avgRet5 !== null);
+            result.sort((a, b) => b.avgRet5 - a.avgRet5);
+            return result;
+        }
+        function renderSectorRotation() {
+            const el = document.getElementById('sector-rotation-list');
+            if (!el) return;
+            const data = computeSectorRotation();
+            if (data.length === 0) {
+                el.innerHTML = '<p class="text-gray-500 text-sm">還沒有資料，先按下面「鯨魚雷達(母清單)」掃描一次。</p>';
+                return;
+            }
+            const maxAbs = Math.max(...data.map(d => Math.abs(d.avgRet5)), 1);
+            el.innerHTML = data.map((d, idx) => {
+                const cls = d.avgRet5 >= 0 ? 'text-red-400' : 'text-green-400';
+                const barColor = d.avgRet5 >= 0 ? 'bg-red-500/60' : 'bg-green-500/60';
+                const widthPct = Math.max(2, Math.min(100, Math.abs(d.avgRet5) / maxAbs * 100));
+                const ret20Label = d.avgRet20 !== null ? `(20日${d.avgRet20 >= 0 ? '+' : ''}${d.avgRet20.toFixed(1)}%)` : '';
+                return `
+                <div class="flex items-center gap-2 text-sm">
+                    <span class="w-5 text-gray-500 text-xs shrink-0">${idx + 1}</span>
+                    <span class="w-20 sm:w-24 shrink-0 text-white text-xs sm:text-sm truncate">${d.sector}</span>
+                    <div class="flex-1 bg-gray-800 rounded h-4 relative overflow-hidden min-w-[40px]">
+                        <div class="${barColor} h-full" style="width:${widthPct}%"></div>
+                    </div>
+                    <span class="w-28 shrink-0 text-right font-mono-num text-xs ${cls}">${d.avgRet5 >= 0 ? '+' : ''}${d.avgRet5.toFixed(1)}% <span class="text-gray-500">${ret20Label}</span></span>
+                </div>`;
+            }).join('');
         }
 
         async function scanWatchlist() {
@@ -2698,6 +2983,7 @@
             scanBtn.disabled = false;
             scanBtn.innerHTML = '<i data-lucide="radar" class="w-5 h-5 text-brand-cyan"></i> 啟動雷達掃描';
             safeLucideIcons();
+            if (scanScope === 'master') renderSectorRotation();
         }
 
         // ============ 事件綁定 ============
