@@ -1161,7 +1161,7 @@
         // 實際部署到 Neocities 後證實browser fetch會被瀏覽器CORS政策擋下來(server端的Python不受CORS限制，這跟前端fetch是兩回事，這點我之前判斷錯了)。
         // 改成優先直接抓，失敗就走免費CORS代理服務(注意：這些代理服務本身也可能不穩定或受限，沒有100%保證)。
         const CORS_PROXIES = [
-            url => `https://tide-proxy.a0987009103.workers.dev/?url=${encodeURIComponent(url)}`, // 你自己的Cloudflare Worker(獨立新建的程式碼版Worker，跟ezpage靜態網站分開)，優先使用
+            url => `https://tide-proxy.sa66344.workers.dev/?url=${encodeURIComponent(url)}`, // 你自己的Cloudflare Worker(用sa66344這個subdomain，不會曝露電話號碼)，優先使用
             url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
             url => `https://proxy.killcors.com/?url=${encodeURIComponent(url)}`,
         ];
@@ -1187,7 +1187,7 @@
         // finmindCorsFetch會優先走Worker(才有token帶來的額度)，Worker萬一掛了就退回一般CORS代理(沒有token，吃FinMind免費額度，但至少不會整個壞掉)。
         async function finmindCorsFetch(url) {
             try {
-                const proxied = `https://tide-proxy.a0987009103.workers.dev/?url=${encodeURIComponent(url)}`;
+                const proxied = `https://tide-proxy.sa66344.workers.dev/?url=${encodeURIComponent(url)}`;
                 const res = await fetch(proxied);
                 if (res.ok) return res;
             } catch (e) { console.warn('FinMind走Worker代理失敗，改用一般CORS代理(這次不會帶token，吃FinMind免費額度)', e.message); }
