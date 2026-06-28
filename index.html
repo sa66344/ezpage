@@ -143,6 +143,7 @@
             </div>
             <div class="overflow-y-auto p-4 hide-scroll bg-brand-bg/50">
                 <div id="market-light-detail-panel"></div>
+                <div id="weekly-status-detail-panel" class="hidden"></div>
             </div>
         </div>
     </div>
@@ -236,12 +237,9 @@
                     <i data-lucide="gem" class="w-3.5 h-3.5"></i> 長週線波段工具 <span id="four-treasures-float-badge" class="font-bold text-white bg-amber-500/40 px-1 rounded text-[10px]">--</span>
                 </button>
                 <button id="weekly-bb-toggle-btn" class="shrink-0 bg-brand-bg hover:bg-slate-800 text-slate-300 border border-brand-border px-3 py-1.5 rounded-lg transition font-medium whitespace-nowrap">BB</button>
-                <div class="relative shrink-0">
-                    <button id="weekly-status-btn" class="shrink-0 flex items-center gap-1.5 bg-blue-900/30 text-blue-300 border border-blue-500/30 px-3 py-1.5 rounded-lg transition hover:bg-blue-900/50 whitespace-nowrap">
-                        <i data-lucide="activity" class="w-3.5 h-3.5"></i> 個股狀態 <span id="weekly-status-badge" class="font-bold"></span>
-                    </button>
-                    <div id="weekly-status-dropdown" class="hidden fixed w-72 max-h-[28rem] overflow-y-auto bg-brand-card border border-brand-border rounded-lg shadow-2xl z-50 p-3"></div>
-                </div>
+                <button id="weekly-status-btn" class="shrink-0 flex items-center gap-1.5 bg-blue-900/30 text-blue-300 border border-blue-500/30 px-3 py-1.5 rounded-lg transition hover:bg-blue-900/50 whitespace-nowrap">
+                    <i data-lucide="activity" class="w-3.5 h-3.5"></i> 個股狀態 <span id="weekly-status-badge" class="font-bold"></span>
+                </button>
                 <button id="weekly-refresh-btn" class="shrink-0 flex items-center gap-1 bg-brand-card text-slate-300 border border-brand-border px-2 py-1.5 rounded-lg transition hover:bg-slate-700 ml-auto" title="如果買賣點沒顯示，按這裡手動重整圖表">
                     <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> 重整圖表
                 </button>
@@ -457,39 +455,26 @@
                     </div>
                 </div>
 
-                <div class="tide-card">
-                    <button class="collapse-toggle w-full flex justify-between items-start gap-3 p-4 text-left" data-target="about-section-0b">
-                        <h3 class="text-brand-cyan font-bold flex items-center gap-2 text-base">🔥 核心亮點功能</h3>
-                        <span class="chevron text-slate-400 text-xs shrink-0 mt-1">▾</span>
-                    </button>
-                    <div id="about-section-0b" class="hidden px-4 pb-4 space-y-3 text-slate-300 text-[13px]">
-                        <p><b class="text-white">1. ✌️ 雙引擎交易策略</b><br>📈 日線短線衝刺：替我找出「站上 20MA、而且底下有 100MA 撐腰保護」的強勢好學生！進場後給它 3 天的觀察期，只要開始賺錢了，就會啟動「移動停利」幫我緊緊鎖住獲利哦。<br>📅 長線波段放長線：系統會自動替我抓出「帶量起漲」的關鍵點，買進後只要沒跌破上週低點，我就可以繼續安心抱著，讓我舒舒服服跟著大趨勢走～</p>
-                        <p><b class="text-white">2. 🔮 明日早知道＆今日防守線</b><br>手邊沒股票的時候，系統會先幫我偷偷試算「明天適不適合進場」以及「停損要設多少」；如果有持股了，每天都會為我動態更新最安全的防守低點！讓我安心上班去，再也不用偷偷躲在廁所看盤啦 💼✨</p>
-                        <p><b class="text-white">3. 📊 VCP評分與短線儀表板</b><br>把複雜的技術指標（KD、MACD、RSI、布林通道）通通濃縮成 0~18 分的超直覺量化分數 💯！這檔股票現在是多頭還是空頭，讓我看一眼儀表板就秒懂，完全不用燒腦。</p>
-                        <p><b class="text-white">4. 📡 鯨魚雷達全範圍掃描</b><br>只要按一個鍵，我就能快速掃描我的「自選漁場」或是內建的大型股名單！一秒把剛起漲、表現強勢或觸發買點的潛力股通通挑出來，還會貼心幫我自動過濾掉成交量太少、容易卡住的冷門股 🔍</p>
-                        <p><b class="text-white">5. 🛡️ 籌碼＆價值雙重體檢</b><br>幫我緊盯三大法人的買賣超動向，跟著聰明錢走！搭配「價值雷達」一秒檢查本益比 (PE)、股價淨值比 (PB) 和殖利率。另外還有超直覺的大盤與個股「紅綠燈號」，現在市場水位是高是低，讓我看燈號就清清楚楚 🚦！</p>
-                    </div>
-                </div>
-
                 <!-- 可收合區塊 -->
                 <div class="space-y-2">
                     <div class="tide-card">
                         <button class="collapse-toggle w-full flex justify-between items-center p-4 text-left" data-target="about-section-1">
-                            <h3 class="text-white font-bold flex items-center gap-2"><i data-lucide="layout-grid" class="w-4 h-4 text-brand-teal"></i> ① 🗺️ 我的專屬功能導覽</h3>
+                            <h3 class="text-white font-bold flex items-center gap-2"><i data-lucide="layout-grid" class="w-4 h-4 text-brand-teal"></i> 🗺️ 我的專屬功能導覽</h3>
                             <span class="chevron text-slate-400 text-xs">▾</span>
                         </button>
                         <div id="about-section-1" class="hidden px-4 pb-4 space-y-2 text-[13px]">
-                            <p><b class="text-white">📅 長線波段看盤：</b>專門用來看週 K 線的寬廣大局！只要點一下「長週線波段工具」按鈕，系統就會自動幫我盤點這週符合了幾項進場條件，圖表上還會貼心畫出「盤整框」跟明確的買賣點，完全不用自己辛苦拉線。</p>
-                            <p><b class="text-white">📊 日線戰術板：</b>這裡的 K 棒配有日 20/100MA 均線和布林通道撐腰。最方便的是上方的「VCP」、「短線」、「明日策略」三個按鈕，點開會彈出超詳細的分析小卡。為了維持畫面乾淨俐落，這些卡片設計得完全不佔圖表空間，看起來超級清爽！</p>
-                            <p><b class="text-white">📈 數據與績效中心：</b>這裡統整了三大法人的買賣超動向和價值雷達（PE/PB/Yield），幫我快速做完基本面體檢。底下還有長短線的勝率大 PK、每個月的績效追蹤，以及歷史交易回測紀錄，讓我的每一次覆盤都有憑有據。</p>
-                            <p><b class="text-white">🎯 全範圍掃描器：</b>可以對我的「自選清單」或系統內建的母清單進行全面大體檢！它會用 0~10 分的綜合評分幫我乖乖排序，只要總分超過 8 分的資優生，就會自動亮起「🎯 短線買入」的標記，找飆股就是這麼輕鬆。</p>
-                            <p><b class="text-white">ℹ️ 關於這個小工具：</b>其實就是現在正在看的這頁啦！所有的功能小提示、背後的策略運算邏輯，還有資料是從哪裡抓過來的，我通通都詳細記錄在這裡，當作自己的專屬開發筆記～</p>
+                            <p><b class="text-white">📊 日線戰術板：</b>找出「站上 20MA、底下有 100MA 撐腰保護」的強勢股，進場給 3 天觀察期，開始賺錢就啟動移動停利幫我鎖住獲利。K 棒配有日 20/100MA 均線和布林通道，上方「VCP」「短線」「明日策略」三個按鈕，可以看 0~18 分的量化評分儀表板，還能試算「明天適不適合進場、停損該設多少」，完全不佔圖表空間，畫面清爽。</p>
+                            <p><b class="text-white">📅 長線波段看盤：</b>自動抓出「帶量起漲」的關鍵買點，買進後只要沒跌破上週低點就安心抱著，跟著大趨勢走。點一下「長週線波段工具」按鈕，看本週符合幾項進場條件，圖表上會畫出盤整框跟明確的買賣點，完全不用自己拉線。</p>
+                            <p><b class="text-white">📈 數據與績效中心：</b>三大法人買賣超動向＋價值雷達（PE/PB/Yield）幫我快速做基本面體檢，搭配大盤與個股的紅綠燈號一秒看懂市場水位。底下還有長短線勝率 PK、每月績效追蹤，跟歷史交易回測紀錄，讓每次覆盤都有憑有據。</p>
+                            <p><b class="text-white">🎯 全範圍掃描器：</b>一鍵掃描「自選漁場」或內建的中大型股名單，用 0~10 分綜合評分排序，8 分以上自動標記「🎯 短線買入」，還會自動過濾成交量太少的冷門股，找飆股超輕鬆。</p>
+                            <p><b class="text-white">🔰 新手模式：</b>看不懂線圖、評分也沒關係！直接輸入想買的股票跟金額，就告訴你現在適不適合買、最多大概會賠多少錢，還能加入持股提醒清單，自動幫我比對停利/停損價位。</p>
+                            <p><b class="text-white">ℹ️ 關於這個小工具：</b>就是現在正在看的這頁！所有功能小提示、背後的策略運算邏輯，還有資料是從哪裡抓的，都詳細記錄在這裡，當作自己的專屬開發筆記。</p>
                         </div>
                     </div>
 
                     <div class="tide-card">
                         <button class="collapse-toggle w-full flex justify-between items-center p-4 text-left" data-target="about-section-2">
-                            <h3 class="text-white font-bold flex items-center gap-2"><i data-lucide="swords" class="w-4 h-4 text-brand-teal"></i> ② 📝 我的專屬買賣策略小抄</h3>
+                            <h3 class="text-white font-bold flex items-center gap-2"><i data-lucide="swords" class="w-4 h-4 text-brand-teal"></i> 📝 我的專屬買賣策略小抄</h3>
                             <span class="chevron text-slate-400 text-xs">▾</span>
                         </button>
                         <div id="about-section-2" class="hidden px-4 pb-4 space-y-3 text-[13px]">
@@ -508,7 +493,7 @@
 
                     <div class="tide-card">
                         <button class="collapse-toggle w-full flex justify-between items-center p-4 text-left" data-target="about-section-3">
-                            <h3 class="text-white font-bold flex items-center gap-2"><i data-lucide="clock" class="w-4 h-4 text-brand-teal"></i> ③ 資料更新紀錄</h3>
+                            <h3 class="text-white font-bold flex items-center gap-2"><i data-lucide="clock" class="w-4 h-4 text-brand-teal"></i> 資料更新紀錄</h3>
                             <span class="chevron text-slate-400 text-xs">▾</span>
                         </button>
                         <div id="about-section-3" class="hidden px-4 pb-4 text-[13px]">
@@ -518,7 +503,7 @@
 
                     <div class="tide-card">
                         <button class="collapse-toggle w-full flex justify-between items-center p-4 text-left" data-target="about-section-4">
-                            <h3 class="text-white font-bold flex items-center gap-2"><i data-lucide="smartphone" class="w-4 h-4 text-brand-teal"></i> ④ 加入手機主畫面(App模式)</h3>
+                            <h3 class="text-white font-bold flex items-center gap-2"><i data-lucide="smartphone" class="w-4 h-4 text-brand-teal"></i> 加入手機主畫面(App模式)</h3>
                             <span class="chevron text-slate-400 text-xs">▾</span>
                         </button>
                         <div id="about-section-4" class="hidden px-4 pb-4 space-y-3 text-[13px]">
@@ -536,7 +521,7 @@
 
                     <div class="tide-card tide-card--amber">
                         <div class="flex items-center gap-2 p-4 pb-2">
-                            <h3 class="text-amber-300 font-bold flex items-center gap-2 text-base"><i data-lucide="shield" class="w-4 h-4"></i> ⑤ 🛡️ 我的免責小聲明</h3>
+                            <h3 class="text-amber-300 font-bold flex items-center gap-2 text-base"><i data-lucide="shield" class="w-4 h-4"></i> 🛡️ 我的免責小聲明</h3>
                         </div>
                         <div class="px-4 pb-4 text-[13px] space-y-2">
                             <p class="text-amber-100 mb-1">雖然這是我用心打造的專屬工具包，但有些醜話還是得先說在前面喔！</p>
@@ -557,24 +542,34 @@
         <!-- 掃描分頁 -->
         <div id="panel-scan" class="absolute inset-0 hidden overflow-y-auto p-4 hide-scroll bg-brand-bg">
             <div class="max-w-3xl mx-auto space-y-4">
-                <div class="glass-panel rounded-xl p-4 text-xs text-slate-300 leading-relaxed">
-                    <div class="flex flex-wrap gap-3 mb-3">
-                        <span class="flex items-center gap-1 font-bold text-white"><i data-lucide="bell-ring" class="w-4 h-4 text-brand-cyan"></i> 觸發買點</span>
-                        <span class="flex items-center gap-1"><span class="px-1.5 py-0.5 rounded bg-brand-down/20 text-brand-down border border-brand-down/30">起漲</span> 剛站上均線</span>
-                        <span class="flex items-center gap-1"><span class="px-1.5 py-0.5 rounded bg-brand-teal/20 text-brand-teal border border-brand-teal/30">強勢</span> 贏大盤5%</span>
+                <div class="glass-panel rounded-xl overflow-hidden text-xs text-slate-300 leading-relaxed">
+                    <button class="collapse-toggle w-full flex justify-between items-center gap-3 p-4 text-left" data-target="scan-tip-1">
+                        <span class="flex items-center gap-1 font-bold text-white"><i data-lucide="bell-ring" class="w-4 h-4 text-brand-cyan"></i> 觸發買點圖例 ／ 雷達評分小秘訣</span>
+                        <span class="chevron text-slate-400 text-xs shrink-0">▾</span>
+                    </button>
+                    <div id="scan-tip-1" class="hidden px-4 pb-4">
+                        <div class="flex flex-wrap gap-3 mb-3">
+                            <span class="flex items-center gap-1"><span class="px-1.5 py-0.5 rounded bg-brand-down/20 text-brand-down border border-brand-down/30">起漲</span> 剛站上均線</span>
+                            <span class="flex items-center gap-1"><span class="px-1.5 py-0.5 rounded bg-brand-teal/20 text-brand-teal border border-brand-teal/30">強勢</span> 贏大盤5%</span>
+                        </div>
+                        <p class="text-white font-bold mb-1.5">🌟 【雷達評分小秘訣】（滿分 10 分） 🌟</p>
+                        <p class="mb-1"><b class="text-slate-200">配分大解密：</b>買點訊號 5 分 ＋ 起漲 2 分 ＋ 強勢 2 分 ＋ 流動性 1 分！</p>
+                        <p class="mb-1"><b class="text-slate-200">優等生獎勵：</b>只要拿到 8 分以上，就會幫你蓋上「🎯 短線買入」的榮譽標章！（貼心提醒：雷達僅供參考，還是要自己評估喔 😉）</p>
+                        <p class="mb-1"><b class="text-slate-200">嚴選活力股：</b>清單非常有個性！只會秀出「起漲」或「強勢」的活躍魚兒 🐟，平淡無亮點的就不會出來佔空間啦～</p>
+                        <p><b class="text-slate-200">明日小抄：</b>每一檔股票旁邊，都會貼心附上「隔天可否買入」的判斷小建議，讓你提早做準備！🚀</p>
                     </div>
-                    <p class="text-white font-bold mb-1.5">🌟 【雷達評分小秘訣】（滿分 10 分） 🌟</p>
-                    <p class="mb-1"><b class="text-slate-200">配分大解密：</b>買點訊號 5 分 ＋ 起漲 2 分 ＋ 強勢 2 分 ＋ 流動性 1 分！</p>
-                    <p class="mb-1"><b class="text-slate-200">優等生獎勵：</b>只要拿到 8 分以上，就會幫你蓋上「🎯 短線買入」的榮譽標章！（貼心提醒：雷達僅供參考，還是要自己評估喔 😉）</p>
-                    <p class="mb-1"><b class="text-slate-200">嚴選活力股：</b>清單非常有個性！只會秀出「起漲」或「強勢」的活躍魚兒 🐟，平淡無亮點的就不會出來佔空間啦～</p>
-                    <p><b class="text-slate-200">明日小抄：</b>每一檔股票旁邊，都會貼心附上「隔天可否買入」的判斷小建議，讓你提早做準備！🚀</p>
                 </div>
 
-                <div class="glass-panel rounded-xl p-4 text-xs text-slate-300 leading-relaxed">
-                    <p class="text-white font-bold mb-1.5">✨ 鯨魚雷達啟動準備 ✨</p>
-                    <p class="mb-1">第一次按下去，雷達會自動幫你掃描全市場，抓出當天成交金額 Top<span id="scan-list-count-note" class="text-brand-cyan font-bold">150</span> 的中大型股 🐋！</p>
-                    <p class="mb-1 text-slate-400">資料撈取中，要請您耐心等一下下 ⏳</p>
-                    <p class="text-slate-400">👉 小提示：若想掃描名單外的股票，請先到上方把它們加入『我的漁場』，雷達就會幫你一起掃描囉！👀</p>
+                <div class="glass-panel rounded-xl overflow-hidden text-xs text-slate-300 leading-relaxed">
+                    <button class="collapse-toggle w-full flex justify-between items-center gap-3 p-4 text-left" data-target="scan-tip-2">
+                        <span class="font-bold text-white">✨ 鯨魚雷達啟動準備</span>
+                        <span class="chevron text-slate-400 text-xs shrink-0">▾</span>
+                    </button>
+                    <div id="scan-tip-2" class="hidden px-4 pb-4">
+                        <p class="mb-1">第一次按下去，雷達會自動幫你掃描全市場，抓出當天成交金額 Top<span id="scan-list-count-note" class="text-brand-cyan font-bold">150</span> 的中大型股 🐋！</p>
+                        <p class="mb-1 text-slate-400">資料撈取中，要請您耐心等一下下 ⏳</p>
+                        <p class="text-slate-400">👉 小提示：若想掃描名單外的股票，請先到上方把它們加入『我的漁場』，雷達就會幫你一起掃描囉！👀</p>
+                    </div>
                 </div>
                 
                 <div class="flex bg-brand-card p-1 rounded-xl border border-brand-border">
@@ -1166,7 +1161,7 @@
         // 實際部署到 Neocities 後證實browser fetch會被瀏覽器CORS政策擋下來(server端的Python不受CORS限制，這跟前端fetch是兩回事，這點我之前判斷錯了)。
         // 改成優先直接抓，失敗就走免費CORS代理服務(注意：這些代理服務本身也可能不穩定或受限，沒有100%保證)。
         const CORS_PROXIES = [
-            url => `https://ezpage.a0987009103.workers.dev/?url=${encodeURIComponent(url)}`, // 你自己的Cloudflare Worker，優先使用
+            url => `https://tide-proxy.a0987009103.workers.dev/?url=${encodeURIComponent(url)}`, // 你自己的Cloudflare Worker(獨立新建的程式碼版Worker，跟ezpage靜態網站分開)，優先使用
             url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
             url => `https://proxy.killcors.com/?url=${encodeURIComponent(url)}`,
         ];
@@ -1192,7 +1187,7 @@
         // finmindCorsFetch會優先走Worker(才有token帶來的額度)，Worker萬一掛了就退回一般CORS代理(沒有token，吃FinMind免費額度，但至少不會整個壞掉)。
         async function finmindCorsFetch(url) {
             try {
-                const proxied = `https://ezpage.a0987009103.workers.dev/?url=${encodeURIComponent(url)}`;
+                const proxied = `https://tide-proxy.a0987009103.workers.dev/?url=${encodeURIComponent(url)}`;
                 const res = await fetch(proxied);
                 if (res.ok) return res;
             } catch (e) { console.warn('FinMind走Worker代理失敗，改用一般CORS代理(這次不會帶token，吃FinMind免費額度)', e.message); }
@@ -2185,7 +2180,7 @@
             return { state, closeNow, ma20Now, ma100Now };
         }
         function renderWeeklyStatusDropdown(symbol, wv) {
-            const dd = document.getElementById('weekly-status-dropdown');
+            const dd = document.getElementById('weekly-status-detail-panel');
             const dv = analysisCache[symbol] && analysisCache[symbol].dailyView;
             if (!dd) return;
             const light = dv ? computeStockLight(stockCache[symbol], dv.ind) : null;
@@ -3492,26 +3487,7 @@
                 ? 'shrink-0 bg-brand-cyan text-brand-bg border border-brand-cyan px-3 py-1.5 rounded-lg transition font-bold whitespace-nowrap'
                 : 'shrink-0 bg-brand-bg hover:bg-slate-800 text-slate-300 border border-brand-border px-3 py-1.5 rounded-lg transition font-medium whitespace-nowrap';
         });
-        document.getElementById('weekly-status-btn').addEventListener('click', (e) => {
-            e.stopPropagation();
-            const btn = document.getElementById('weekly-status-btn');
-            const dd = document.getElementById('weekly-status-dropdown');
-            const willShow = dd.classList.contains('hidden');
-            if (willShow) {
-                const rect = btn.getBoundingClientRect();
-                const ddWidth = 288; // w-72
-                let left = rect.left;
-                if (left + ddWidth > window.innerWidth - 8) left = Math.max(8, window.innerWidth - ddWidth - 8);
-                dd.style.top = `${rect.bottom + 4}px`;
-                dd.style.left = `${left}px`;
-            }
-            dd.classList.toggle('hidden');
-        });
-        document.addEventListener('click', (e) => {
-            const dd = document.getElementById('weekly-status-dropdown');
-            const btn = document.getElementById('weekly-status-btn');
-            if (dd && !dd.classList.contains('hidden') && !dd.contains(e.target) && !btn.contains(e.target)) dd.classList.add('hidden');
-        });
+        document.getElementById('weekly-status-btn').addEventListener('click', () => openDashboardModal('weeklystatus'));
         document.getElementById('daily-subpanel-select').addEventListener('change', (e) => {
             dailySubpanel = e.target.value;
             const dv = analysisCache[currentSymbol] && analysisCache[currentSymbol].dailyView;
@@ -3552,13 +3528,18 @@
         document.getElementById('daily-refresh-btn').addEventListener('click', refreshChartsManually);
         document.getElementById('modal-close-btn').addEventListener('click', () => document.getElementById('info-modal').classList.add('hidden'));
         document.getElementById('info-modal').addEventListener('click', (e) => { if (e.target.id === 'info-modal') e.currentTarget.classList.add('hidden'); });
-        function openDashboardModal() {
+        function openDashboardModal(which) {
             const titleEl = document.getElementById('dashboard-modal-title');
-            titleEl.innerHTML = '<i data-lucide="activity" class="w-5 h-5 text-brand-cyan"></i> 大盤燈號';
+            const isWeeklyStatus = which === 'weeklystatus';
+            document.getElementById('market-light-detail-panel').classList.toggle('hidden', isWeeklyStatus);
+            document.getElementById('weekly-status-detail-panel').classList.toggle('hidden', !isWeeklyStatus);
+            titleEl.innerHTML = isWeeklyStatus
+                ? '<i data-lucide="activity" class="w-5 h-5 text-brand-cyan"></i> 個股狀態'
+                : '<i data-lucide="activity" class="w-5 h-5 text-brand-cyan"></i> 大盤燈號';
             safeLucideIcons({ root: titleEl.parentElement });
             document.getElementById('dashboard-modal').classList.remove('hidden');
         }
-        document.getElementById('market-light-badge').addEventListener('click', openDashboardModal);
+        document.getElementById('market-light-badge').addEventListener('click', () => openDashboardModal('marketlight'));
         document.getElementById('dashboard-modal-close-btn').addEventListener('click', () => document.getElementById('dashboard-modal').classList.add('hidden'));
         document.getElementById('dashboard-modal').addEventListener('click', (e) => { if (e.target.id === 'dashboard-modal') e.currentTarget.classList.add('hidden'); });
         document.getElementById('settings-open-btn').addEventListener('click', (e) => { e.preventDefault(); document.getElementById('settings-panel').classList.remove('hidden'); });
