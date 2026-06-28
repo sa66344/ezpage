@@ -309,7 +309,17 @@
                 </div>
 
                 <section class="glass-panel rounded-xl p-4">
-                    <h3 class="text-brand-cyan font-bold mb-4 flex items-center gap-2"><i data-lucide="coins" class="w-5 h-5"></i> 股利 / 除權息 <span class="text-xs font-normal text-slate-400">(近5年發放紀錄)</span></h3>
+                    <h3 class="text-brand-cyan font-bold mb-4 flex items-center gap-2"><i data-lucide="landmark" class="w-5 h-5"></i> 券商分點進出 <span class="text-xs font-normal text-slate-400">(最新交易日)</span></h3>
+                    <div id="broker-info" class="space-y-2"></div>
+                </section>
+
+                <section class="glass-panel rounded-xl p-4">
+                    <h3 class="text-brand-cyan font-bold mb-4 flex items-center gap-2"><i data-lucide="newspaper" class="w-5 h-5"></i> 個股新聞 <span class="text-xs font-normal text-slate-400">(近2日)</span></h3>
+                    <div id="news-info" class="space-y-2"></div>
+                </section>
+
+                <section class="glass-panel rounded-xl p-4">
+                    <h3 class="text-brand-cyan font-bold mb-4 flex items-center gap-2"><i data-lucide="coins" class="w-5 h-5"></i> 股利 / 除權息 <span class="text-xs font-normal text-slate-400">(近3年發放紀錄)</span></h3>
                     <div id="dividend-info" class="space-y-2"></div>
                 </section>
 
@@ -496,12 +506,12 @@
                         <span class="flex items-center gap-1"><span class="px-1.5 py-0.5 rounded bg-brand-teal/20 text-brand-teal border border-brand-teal/30">強勢</span> 贏大盤5%</span>
                     </div>
                     <div class="text-slate-400">綜合評分滿分10分(買點訊號5分+起漲2分+強勢2分+流動性1分)，8分以上標記🎯短線買入，僅供參考。</div>
-                    <div class="text-slate-500 mt-1.5 pt-1.5 border-t border-brand-border/50">📌「鯨魚雷達」是固定<span id="scan-list-count-note" class="text-slate-300 font-bold">108</span>檔我手動挑選收錄的台灣50+中型100常見龍頭股母清單，不會自動變換成目前漲幅最大的個股；如果想掃描清單外的股票，請先在上方加到「我的漁場」自選清單。</div>
+                    <div class="text-slate-500 mt-1.5 pt-1.5 border-t border-brand-border/50">📌「鯨魚雷達」第一次按下去時，會抓全市場當天成交金額排行，動態列出最多<span id="scan-list-count-note" class="text-slate-300 font-bold">300</span>檔成交金額最高的中大型股(取代原本固定108檔的清單)；如果想掃描清單外的股票，請先在上方加到「我的漁場」自選清單。</div>
                 </div>
                 
                 <div class="flex bg-brand-card p-1 rounded-xl border border-brand-border">
                     <button id="scan-scope-watchlist" class="flex-1 text-sm py-2.5 rounded-lg font-bold transition-all bg-gradient-to-r from-brand-cyan to-brand-teal text-brand-bg shadow-md">我的漁場 (自選)</button>
-                    <button id="scan-scope-master" class="flex-1 text-sm py-2.5 rounded-lg font-medium transition-all text-slate-400 hover:text-white">鯨魚雷達 (<span id="master-scan-count">--</span>檔)</button>
+                    <button id="scan-scope-master" class="flex-1 text-sm py-2.5 rounded-lg font-medium transition-all text-slate-400 hover:text-white">鯨魚雷達 (<span id="master-scan-count">中大型股</span>)</button>
                 </div>
                 
                 <button id="scan-btn" class="w-full bg-brand-border hover:bg-slate-700 text-white border border-slate-600 rounded-xl py-3.5 font-bold flex items-center justify-center gap-2 shadow-lg transition active:scale-95">
@@ -765,6 +775,73 @@
             '2105':'工業自動化設備'
         };
         let scanScope = 'watchlist'; // 'watchlist' | 'master'
+
+        // ============ 動態母清單：用「當日成交金額」排行抓全市場中大型股，取代固定108檔 ============
+        // 為什麼不是直接用「市值」篩選：FinMind真正的市值資料集(TaiwanStockMarketValue)需要付費的
+        // Backer/Sponsor方案，免費token吃不到；改用證交所/櫃買中心都公開、免費、一次回傳全市場的
+        // 「當日成交金額」資料表當替代指標——成交金額越大通常代表公司規模/市場關注度越大，雖然不是
+        // 100%等同市值，但是免費、即時、不需要額外申請權限，是比較務實的折衷方案。
+        // SCAN_CAP_DYNAMIC：限制最多收錄幾檔，避免清單太大時掃描一次要等非常久(每檔都要單獨抓歷史K線)。
+        const SCAN_CAP_DYNAMIC = 300;
+        const KNOWN_ETF_CODES = new Set(['0050', '0051', '0052', '0053', '0054', '0055', '0056', '0057', '0061',
+            '00646', '00662', '00668', '00690', '00692', '00693', '00701', '00713', '00728', '00752', '00757',
+            '00761', '00762', '00763', '00770', '00783', '00830', '00850', '00851', '00852', '00861', '00865',
+            '00875', '00876', '00878', '00881', '00882', '00891', '00892', '00893', '00894', '00895', '00896',
+            '00900', '00905', '00915', '00916', '00918', '00919', '00929', '00930', '00935', '00936', '00939',
+            '00940', '00941', '00942', '00943', '006203', '006204', '006208']);
+        let dynamicScanList = null; // 抓過一次後快取在記憶體裡，同一次瀏覽session不用每次重抓
+        async function fetchTurnoverUniverse() {
+            const candidates = [];
+            try {
+                const url = 'https://www.twse.com.tw/exchangeReport/STOCK_DAY_ALL?response=json';
+                const res = await corsFetch(url);
+                const json = await res.json();
+                if (Array.isArray(json.data) && Array.isArray(json.fields)) {
+                    const fields = json.fields;
+                    const codeIdx = findFieldIdx(fields, ['證券代號']);
+                    const nameIdx = findFieldIdx(fields, ['證券名稱']);
+                    const valueIdx = findFieldIdx(fields, ['成交金額']);
+                    if (codeIdx >= 0 && valueIdx >= 0) {
+                        json.data.forEach(row => {
+                            const code = String(row[codeIdx]).trim();
+                            const turnover = parseFloat(String(row[valueIdx]).replace(/,/g, '')) || 0;
+                            if (/^\d{4,6}$/.test(code) && turnover > 0) {
+                                candidates.push({ code, name: nameIdx >= 0 ? String(row[nameIdx]).trim() : '', turnover });
+                            }
+                        });
+                    }
+                }
+            } catch (e) { console.warn('STOCK_DAY_ALL(上市全市場)抓取失敗', e.message); }
+            try {
+                const url = 'https://www.tpex.org.tw/openapi/v1/tpex_mainboard_daily_close_quotes';
+                const res = await corsFetch(url);
+                const json = await res.json();
+                if (Array.isArray(json)) {
+                    json.forEach(row => {
+                        const code = String(row.SecuritiesCompanyCode || row.Code || row.CompanyCode || '').trim();
+                        const turnoverRaw = row.TradingMoney ?? row.TransactionAmount ?? row.TradeValue ?? row.Amount ?? row.TradingAmount;
+                        const turnover = parseFloat(String(turnoverRaw).replace(/,/g, '')) || 0;
+                        if (/^\d{4,6}$/.test(code) && turnover > 0) {
+                            candidates.push({ code, name: row.CompanyName || row.Name || row.CommonName || '', turnover });
+                        }
+                    });
+                }
+            } catch (e) { console.warn('TPEx(上櫃全市場)抓取失敗，這個端點欄位名稱沒有100%驗證過', e.message); }
+            return candidates;
+        }
+        async function buildDynamicScanList() {
+            if (dynamicScanList) return dynamicScanList;
+            const universe = await fetchTurnoverUniverse();
+            if (universe.length === 0) { dynamicScanList = MASTER_SCAN_LIST; return dynamicScanList; }
+            const filtered = universe.filter(u => !KNOWN_ETF_CODES.has(u.code));
+            filtered.sort((a, b) => b.turnover - a.turnover);
+            const top = filtered.slice(0, SCAN_CAP_DYNAMIC);
+            top.forEach(u => { if (u.name && !STOCK_NAMES[u.code]) STOCK_NAMES[u.code] = u.name; });
+            dynamicScanList = top.map(u => u.code);
+            const countEl = document.getElementById('master-scan-count');
+            if (countEl) countEl.innerText = `${dynamicScanList.length}檔`;
+            return dynamicScanList;
+        }
 
         function loadJSON(key, fallback) {
             try { const raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : fallback; }
@@ -2074,6 +2151,36 @@
             document.getElementById('daily-stop-info').innerHTML = `停損參考：前日收盤 <span class="text-orange-400">${fmt(prevClose2)}</span> ／ 每股風險 <span class="text-orange-400">${fmt(riskPerShareRef)}元(${riskPctRef.toFixed(1)}%)</span> ｜ 綜合評分：${scoreEl}`;
         }
 
+        function evaluateWeeklyBuySuitability(wv) {
+            const ft = wv.fourTreasures;
+            const lastIdx = wv.weeks.length - 1;
+            const cb = detectConsolidationBreakout(wv.weeks, lastIdx);
+            const aboveMa = wv.lastMa20 !== null && wv.lastClose > wv.lastMa20;
+            const inConsolidation = cb.isConsolidation && !cb.breakout;
+            let light, label, advice;
+            if (inConsolidation) {
+                light = '🟡'; label = '請觀望';
+                advice = '目前還在盤整區間內(高不過前高、低不過前低)，依規則先不進出，等真正帶量突破盤整區上緣才考慮買進。';
+            } else if (!aboveMa) {
+                light = '🔴'; label = '不能買';
+                advice = '收盤還在週20MA之下，長線趨勢還沒站穩，不是建議的進場時機。';
+            } else if (ft.count >= 3) {
+                light = '🟢'; label = '可以買';
+                advice = `本週符合${ft.count}/4項長線條件，且站上週20MA，趨勢結構較完整。`;
+            } else if (ft.count >= 2) {
+                light = '🟡'; label = '可以少量買';
+                advice = `本週符合${ft.count}/4項條件，站上週20MA，但條件還不算齊全，建議小量或繼續觀察，不要重倉。`;
+            } else {
+                light = '🔴'; label = '不能買';
+                advice = `本週只符合${ft.count}/4項條件，站上均線但結構條件不足，暫不建議進場。`;
+            }
+            if (wv.openPosition) {
+                advice += `(備註：系統模擬從${wv.openPosition.entryTime}開始已經是持倉中，進場價${fmt(wv.openPosition.entryPrice)}，這跟上面燈號是兩套獨立判斷；如果你還沒買，這不是叫你買的訊號。)`;
+            } else if (wv.pendingEntry) {
+                advice += `(備註：本週剛出現「${wv.pendingEntry.reason}」買進訊號，依規則下週收盤才算正式進場。)`;
+            }
+            return { light, label, advice };
+        }
         function renderFourTreasuresPanel(symbol) {
             const wv = analysisCache[symbol] && analysisCache[symbol].weeklyView;
             const panel = document.getElementById('four-treasures-panel');
@@ -2088,14 +2195,19 @@
                 ['③ W型態完成', ft.wPattern.completed],
                 ['④ 底部位階爆量', ft.volSurge.surge],
             ];
+            const v = evaluateWeeklyBuySuitability(wv);
             panel.innerHTML = `
                 <div class="bg-gray-800 border ${tierStyle} rounded p-2.5">
                     <div class="flex justify-between items-center mb-1.5">
                         <span class="text-xl font-bold text-white">${ft.count}<span class="text-xs text-gray-400">/4 項工具(${ft.time}這週)</span></span>
                         <span class="text-xs text-right text-gray-200">${ft.count >= 3 ? '🌟 符合多項條件，值得關注' : ft.count >= 2 ? '👀 部分符合，持續觀察' : '一般，未明顯符合'}</span>
                     </div>
-                    <div class="grid grid-cols-2 gap-0.5 text-[11px]">
+                    <div class="grid grid-cols-2 gap-0.5 text-[11px] mb-2">
                         ${rows.map(([label, ok]) => `<div class="${ok ? 'text-green-400' : 'text-gray-500'}">${ok ? '✓' : '✗'} ${label}</div>`).join('')}
+                    </div>
+                    <div class="border-t border-gray-700 pt-2">
+                        <div class="text-lg font-bold mb-0.5">${v.light} ${v.label}</div>
+                        <div class="text-[11px] text-gray-300">${v.advice}</div>
                     </div>
                     <div class="mt-1.5 text-[11px] text-gray-500">②③④是用程式量化規則去近似判斷型態，跟肉眼判斷可能會有落差，僅供參考</div>
                 </div>`;
@@ -2621,7 +2733,7 @@
                 byYear[r.year].stock += r.stock;
                 byYear[r.year].items.push(r);
             });
-            return Object.values(byYear).sort((a, b) => String(b.year).localeCompare(String(a.year))).slice(0, 5);
+            return Object.values(byYear).sort((a, b) => String(b.year).localeCompare(String(a.year))).slice(0, 3);
         }
         async function renderDividendInfo(symbol) {
             const el = document.getElementById('dividend-info');
@@ -2653,6 +2765,119 @@
                     <p class="text-[10px] text-gray-500 mt-2">「現金/股票」單位都是每股配發金額(元)；除權息當天股價會自動扣減對應點數，這是正常現象，不是真的下跌。資料來源：FinMind。</p>`;
             } catch (e) {
                 el.innerHTML = `<p class="text-gray-500 text-sm">查無 ${symbol} 的股利資料，或資料來源暫時不穩</p>`;
+            }
+        }
+
+        // ============ 個股新聞(近2日，Google新聞RSS) ============
+        // 只抓標題、來源、連結、發布時間，不抓全文(避免版權問題，也避免顯示贅餘內容)；
+        // RSS本身不一定會回CORS header給瀏覽器直接抓，所以照樣走corsFetch代理鏈。
+        async function fetchStockNews(symbol) {
+            const name = stockName(symbol) || symbol;
+            const query = encodeURIComponent(`${name} ${symbol}`);
+            const url = `https://news.google.com/rss/search?q=${query}&hl=zh-TW&gl=TW&ceid=TW:zh-Hant`;
+            const res = await corsFetch(url);
+            const text = await res.text();
+            const xml = new DOMParser().parseFromString(text, 'text/xml');
+            const items = Array.from(xml.querySelectorAll('item'));
+            if (items.length === 0) throw new Error('新聞無資料');
+            const cutoff = Date.now() - 2 * 24 * 60 * 60 * 1000;
+            const news = items.map(item => {
+                let title = item.querySelector('title') ? item.querySelector('title').textContent : '';
+                const link = item.querySelector('link') ? item.querySelector('link').textContent : '';
+                const pubDate = item.querySelector('pubDate') ? item.querySelector('pubDate').textContent : '';
+                const sourceEl = item.querySelector('source');
+                const source = sourceEl ? sourceEl.textContent : '';
+                if (source && title.endsWith(' - ' + source)) title = title.slice(0, -(source.length + 3));
+                const ts = new Date(pubDate).getTime();
+                return { title, link, source, ts };
+            }).filter(n => n.title && isFinite(n.ts) && n.ts >= cutoff)
+              .sort((a, b) => b.ts - a.ts);
+            return news;
+        }
+        function timeAgoLabel(ts) {
+            const diffMin = Math.floor((Date.now() - ts) / 60000);
+            if (diffMin < 1) return '剛剛';
+            if (diffMin < 60) return `${diffMin}分鐘前`;
+            const diffHr = Math.floor(diffMin / 60);
+            if (diffHr < 24) return `${diffHr}小時前`;
+            return `${Math.floor(diffHr / 24)}天前`;
+        }
+        async function renderNewsInfo(symbol) {
+            const el = document.getElementById('news-info');
+            if (!el) return;
+            el.innerHTML = '<p class="text-gray-500 text-sm">載入中...</p>';
+            try {
+                const news = await fetchStockNews(symbol);
+                if (news.length === 0) { el.innerHTML = '<p class="text-gray-500 text-sm">近2天查無相關新聞</p>'; return; }
+                el.innerHTML = `
+                    <div class="space-y-2">
+                        ${news.slice(0, 10).map(n => `
+                            <a href="${n.link}" target="_blank" rel="noopener noreferrer" class="block bg-gray-800 hover:bg-gray-700 rounded p-2.5 text-sm transition">
+                                <div class="text-white leading-snug">${n.title}</div>
+                                <div class="text-gray-500 text-[11px] mt-1 flex items-center gap-2">
+                                    <span>${n.source || ''}</span><span>·</span><span>${timeAgoLabel(n.ts)}</span>
+                                </div>
+                            </a>`).join('')}
+                    </div>
+                    <p class="text-[10px] text-gray-500 mt-2">來源：Google新聞搜尋彙整，只顯示標題不顯示全文，點擊會開新分頁前往原始新聞網站。</p>`;
+            } catch (e) {
+                el.innerHTML = `<p class="text-gray-500 text-sm">新聞抓取失敗，或近2天沒有相關新聞</p>`;
+            }
+        }
+
+        // ============ 券商分點進出(FinMind taiwan_stock_trading_daily_report) ============
+        // 這是FinMind獨立的端點(不是走/v4/data?dataset=...的通用格式)，文件上是用Authorization Bearer header，
+        // 但跨網域代理(allorigins/killcors等)通常不會幫忙轉發自訂header，所以這裡跟其他FinMind請求一樣改用
+        // ?token=查詢參數帶過去(FinMind大部分端點兩種方式都吃，如果這個端點真的非header不可，之後要再調整)。
+        async function fetchBrokerData(symbol) {
+            const tokenParam = FINMIND_TOKEN ? `&token=${FINMIND_TOKEN}` : '';
+            for (let i = 0; i < 6; i++) {
+                const d = new Date(); d.setDate(d.getDate() - i);
+                const dateStr = d.toISOString().split('T')[0];
+                const url = `https://api.finmindtrade.com/api/v4/taiwan_stock_trading_daily_report?data_id=${symbol}&start_date=${dateStr}${tokenParam}`;
+                try {
+                    const res = await corsFetch(url);
+                    const json = await res.json();
+                    if (json && Array.isArray(json.data) && json.data.length > 0) {
+                        return { date: dateStr, rows: json.data };
+                    }
+                } catch (e) { console.warn('分點資料嘗試失敗', dateStr, e.message); }
+            }
+            throw new Error('分點資料抓取失敗(可能近期都查無資料，或這檔股票成交太冷清)');
+        }
+        async function renderBrokerInfo(symbol) {
+            const el = document.getElementById('broker-info');
+            if (!el) return;
+            el.innerHTML = '<p class="text-gray-500 text-sm">載入中...</p>';
+            try {
+                const { date, rows } = await fetchBrokerData(symbol);
+                const num = v => { const n = Number(v); return isFinite(n) ? n : 0; };
+                const processed = rows.map(r => ({
+                    name: r.securities_trader || r.securities_trader_id || '未知券商',
+                    buy: num(r.buy), sell: num(r.sell), net: num(r.buy) - num(r.sell),
+                })).filter(r => r.buy > 0 || r.sell > 0);
+                processed.sort((a, b) => b.net - a.net);
+                const topBuy = processed.filter(p => p.net > 0).slice(0, 5);
+                const topSell = processed.filter(p => p.net < 0).sort((a, b) => a.net - b.net).slice(0, 5);
+                const lots = n => (n / 1000).toFixed(0) + '張';
+                const rowHtml = (list, cls) => list.length === 0
+                    ? '<div class="text-gray-500 text-xs">無資料</div>'
+                    : list.map(p => `<div class="flex justify-between text-xs py-0.5"><span class="text-gray-300 truncate mr-2">${p.name}</span><span class="${cls} font-mono-num shrink-0">${p.net >= 0 ? '+' : ''}${lots(p.net)}</span></div>`).join('');
+                el.innerHTML = `
+                    <div class="text-gray-500 text-xs mb-2">資料日期：${date}(來源：FinMind分點資料，僅統計當天有出現在分點報表的券商)</div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <div class="text-red-400 text-xs font-bold mb-1">🔺買超分點 Top5</div>
+                            ${rowHtml(topBuy, 'text-red-400')}
+                        </div>
+                        <div>
+                            <div class="text-green-400 text-xs font-bold mb-1">🔻賣超分點 Top5</div>
+                            ${rowHtml(topSell, 'text-green-400')}
+                        </div>
+                    </div>
+                    <p class="text-[10px] text-gray-500 mt-2">分點進出只能看出「哪個券商營業據點」幫客戶買賣比較多，不能直接認定背後是哪個特定主力，僅供參考。</p>`;
+            } catch (e) {
+                el.innerHTML = `<p class="text-gray-500 text-sm">查無 ${symbol} 的分點資料，或資料來源暫時不穩(${e.message})</p>`;
             }
         }
 
@@ -2776,6 +3001,8 @@
             renderInstitutionalInfo(symbol);
             renderValuationInfo(symbol);
             renderDividendInfo(symbol);
+            renderNewsInfo(symbol);
+            renderBrokerInfo(symbol);
         }
 
 
@@ -2860,7 +3087,7 @@
         // 不會額外發API請求，純粹利用掃描時已經抓到的資料，所以一定要先掃過一次「鯨魚雷達(母清單)」才有東西可以算。
         function computeSectorRotation() {
             const bySector = {};
-            MASTER_SCAN_LIST.forEach(symbol => {
+            (dynamicScanList || MASTER_SCAN_LIST).forEach(symbol => {
                 const daily = stockCache[symbol];
                 if (!daily || daily.length < 25) return;
                 const n = daily.length;
@@ -2917,7 +3144,13 @@
             safeLucideIcons({ root: scanBtn });
             progress.classList.remove('hidden');
             progress.innerText = '準備掃描...';
-            const targets = scanScope === 'master' ? MASTER_SCAN_LIST : watchlist;
+            let targets;
+            if (scanScope === 'master') {
+                progress.innerText = '抓取全市場成交金額排行中...';
+                targets = await buildDynamicScanList();
+            } else {
+                targets = watchlist;
+            }
 
             let benchmarkDaily = stockCache['0050'];
             if (!benchmarkDaily) { try { benchmarkDaily = await fetchStockDataMulti('0050'); } catch (e) { benchmarkDaily = null; } }
@@ -3233,7 +3466,7 @@
             document.getElementById('volume-multiple-input').value = settings.volumeMultiple;
             document.getElementById('reclaim-stop-input').value = settings.reclaimStopPct;
             document.getElementById('breakout-target-input').value = settings.breakoutTakeProfitPct;
-            document.getElementById('master-scan-count').innerText = MASTER_SCAN_LIST.length;
+            document.getElementById('master-scan-count').innerText = '中大型股';
             initCharts();
             setupWatchlistControls();
             renderWatchlist();
