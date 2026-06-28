@@ -99,6 +99,23 @@
 </head>
 <body class="text-slate-200 font-sans flex flex-col overflow-hidden w-full h-full">
 
+    <!-- 登入畫面：預設蓋住整個App，要輸入密碼驗證成功才會隱藏 -->
+    <div id="login-screen" class="fixed inset-0 z-[100] bg-brand-bg flex items-center justify-center p-5">
+        <div class="w-full max-w-xs">
+            <div class="flex flex-col items-center mb-6">
+                <div class="bg-gradient-to-br from-brand-cyan to-brand-teal p-3 rounded-2xl shadow-lg mb-3"><i data-lucide="waves" class="text-brand-bg w-7 h-7"></i></div>
+                <h1 class="text-xl font-bold text-white">潮汐指標</h1>
+                <p class="text-slate-500 text-xs mt-1">請輸入密碼才能使用</p>
+            </div>
+            <form id="login-form" class="space-y-3">
+                <input type="password" id="login-password-input" placeholder="密碼" autocomplete="current-password"
+                       class="w-full bg-brand-card border border-brand-border text-white px-4 py-3 rounded-xl focus:outline-none focus:border-brand-cyan placeholder-slate-500 text-center transition">
+                <button type="submit" id="login-submit-btn" class="w-full bg-gradient-to-r from-brand-cyan to-brand-teal text-brand-bg font-bold py-3 rounded-xl transition active:scale-95">登入</button>
+                <p id="login-error" class="hidden text-red-400 text-xs text-center"></p>
+            </form>
+        </div>
+    </div>
+
     <!-- 頂部導覽列 -->
     <header class="bg-brand-card border-b border-brand-border p-3 flex flex-col sm:flex-row justify-between items-center gap-3 z-10 shrink-0 w-full shadow-md" style="padding-top: max(0.75rem, env(safe-area-inset-top)); padding-left: max(0.75rem, env(safe-area-inset-left)); padding-right: max(0.75rem, env(safe-area-inset-right));">
         <div class="flex items-center justify-between w-full sm:w-auto gap-2 flex-wrap">
@@ -107,6 +124,9 @@
                     <i data-lucide="waves" class="text-brand-bg w-5 h-5"></i>
                 </div>
                 <h1 class="text-lg font-bold text-white leading-tight tracking-wide shrink-0">潮汐指標</h1>
+                <span id="online-count-badge" class="hidden items-center gap-1 bg-brand-bg border border-brand-border rounded-full px-2 py-1 text-[11px] text-slate-400 shrink-0">
+                    <span class="w-1.5 h-1.5 rounded-full bg-green-400"></span> <span id="online-count-text">--</span>
+                </span>
             </div>
             <button id="market-light-badge" class="flex items-center gap-1.5 bg-brand-bg border border-brand-border rounded-lg px-2.5 py-1.5 text-xs font-bold transition hover:border-brand-cyan shrink-0">
                 <i data-lucide="activity" class="w-3 h-3 text-slate-500"></i>
@@ -188,6 +208,18 @@
             <div id="optimizer-result" class="mt-2"></div>
         </div>
 
+        <div class="bg-blue-900/15 border border-blue-500/25 rounded-lg p-3 mb-3">
+            <label class="text-white text-sm font-semibold flex items-center gap-1.5"><i data-lucide="key-round" class="w-3.5 h-3.5 text-blue-400"></i> 管理員：修改登入密碼</label>
+            <p class="text-slate-400 text-[11px] mt-1.5 mb-2 leading-relaxed">修改之後，所有裝置(包括你自己其他登入過的裝置)下次都要用新密碼才能登入，舊密碼立刻失效。</p>
+            <input type="password" id="change-password-current" placeholder="目前密碼" autocomplete="current-password" class="w-full bg-brand-bg border border-brand-border text-white px-3 py-2 rounded-lg mb-2 text-sm focus:outline-none focus:border-brand-cyan">
+            <input type="password" id="change-password-new" placeholder="新密碼(至少4個字元)" autocomplete="new-password" class="w-full bg-brand-bg border border-brand-border text-white px-3 py-2 rounded-lg mb-2 text-sm focus:outline-none focus:border-brand-cyan">
+            <button id="change-password-btn" class="w-full bg-blue-900/40 hover:bg-blue-900/60 border border-blue-500/40 text-blue-300 rounded-lg py-2 text-sm font-semibold flex items-center justify-center gap-1.5 transition">
+                <i data-lucide="key-round" class="w-4 h-4"></i> 更新密碼
+            </button>
+            <p id="change-password-msg" class="hidden text-xs text-center mt-2"></p>
+            <button id="logout-btn" class="w-full bg-brand-bg hover:bg-slate-800 border border-brand-border text-slate-400 rounded-lg py-2 text-xs font-medium mt-2 transition">登出</button>
+        </div>
+
         <div class="bg-red-900/15 border border-red-500/25 rounded-lg p-3 mb-3">
             <label class="text-white text-sm font-semibold flex items-center gap-1.5"><i data-lucide="trash-2" class="w-3.5 h-3.5 text-red-400"></i> 清除手機記憶體</label>
             <p class="text-slate-400 text-[11px] mt-1.5 mb-2 leading-relaxed">把這個App存在你手機(瀏覽器)裡的資料全部清掉，包括：追蹤清單、自訂股票名稱、參數設定、新手模式的持股提醒清單、全市場代碼名稱快取。<b class="text-amber-300">這個動作沒辦法復原</b>，通常是覺得App跑起來怪怪的、或想要從頭開始時才用。清除後會自動重新整理頁面。</p>
@@ -253,10 +285,11 @@
                             <h2 id="weekly-title" class="text-xl font-bold text-white font-mono-num truncate flex items-end gap-2">載入中...</h2>
                             <span class="chevron shrink-0 flex items-center gap-1 text-[11px] text-brand-cyan bg-brand-cyan/15 border border-brand-cyan/30 rounded-full px-2 py-1"><i data-lucide="chevron-down" class="chevron-icon w-3.5 h-3.5" style="transform:rotate(180deg)"></i>詳情</span>
                         </button>
+                        <p id="weekly-price-inspect" class="hidden mt-2 text-xs text-brand-cyan font-mono-num bg-brand-bg/80 border border-brand-cyan/30 rounded-md px-2 py-1.5"></p>
+                        <p id="weekly-disposition-warning" class="hidden mt-2 text-xs text-red-200 bg-red-900/50 border border-red-500/50 rounded-md px-2 py-1.5 leading-relaxed"></p>
                         <div id="weekly-info-body">
                             <p id="weekly-subtitle" class="text-xs text-slate-300 mt-1"></p>
                             <p id="weekly-ma-info" class="text-xs text-slate-300 mt-1 font-mono-num"></p>
-                            <p id="weekly-price-inspect" class="hidden mt-2 text-xs text-brand-cyan font-mono-num bg-brand-bg/80 border border-brand-cyan/30 rounded-md px-2 py-1.5"></p>
                         </div>
                     </div>
                 </div>
@@ -313,11 +346,12 @@
                             <h2 id="daily-title" class="text-xl font-bold text-white font-mono-num truncate flex items-end gap-2">載入中...</h2>
                             <span class="chevron shrink-0 flex items-center gap-1 text-[11px] text-brand-cyan bg-brand-cyan/15 border border-brand-cyan/30 rounded-full px-2 py-1"><i data-lucide="chevron-down" class="chevron-icon w-3.5 h-3.5" style="transform:rotate(180deg)"></i>詳情</span>
                         </button>
+                        <p id="daily-price-inspect" class="hidden mt-2 text-xs text-brand-cyan font-mono-num bg-brand-bg/80 border border-brand-cyan/30 rounded-md px-2 py-1.5"></p>
+                        <p id="daily-disposition-warning" class="hidden mt-2 text-xs text-red-200 bg-red-900/50 border border-red-500/50 rounded-md px-2 py-1.5 leading-relaxed"></p>
                         <div id="daily-info-body">
                             <p id="daily-stock-light" class="text-xs mt-1.5"></p>
                             <p id="daily-ma-info" class="text-xs text-slate-300 mt-1 font-mono-num"></p>
                             <p id="daily-stop-info" class="text-xs text-slate-300 mt-1 font-mono-num"></p>
-                            <p id="daily-price-inspect" class="hidden mt-2 text-xs text-brand-cyan font-mono-num bg-brand-bg/80 border border-brand-cyan/30 rounded-md px-2 py-1.5"></p>
                         </div>
                     </div>
                 </div>
@@ -1160,6 +1194,112 @@
         // 之前一直假設 FinMind/證交所這類「給程式爬的」端點瀏覽器可以直接 fetch，
         // 實際部署到 Neocities 後證實browser fetch會被瀏覽器CORS政策擋下來(server端的Python不受CORS限制，這跟前端fetch是兩回事，這點我之前判斷錯了)。
         // 改成優先直接抓，失敗就走免費CORS代理服務(注意：這些代理服務本身也可能不穩定或受限，沒有100%保證)。
+        // ============ 登入驗證 / 在線人數(都是透過tide-proxy這個Worker，搭配Cloudflare KV做session/在線清單) ============
+        const AUTH_BASE = 'https://tide-proxy.sa66344.workers.dev';
+        function getAuthToken() { try { return localStorage.getItem('trend_auth_token'); } catch (e) { return null; } }
+        function setAuthToken(t) { try { if (t) localStorage.setItem('trend_auth_token', t); else localStorage.removeItem('trend_auth_token'); } catch (e) {} }
+        function showLoginScreen() { document.getElementById('login-screen').classList.remove('hidden'); }
+        function hideLoginScreen() { document.getElementById('login-screen').classList.add('hidden'); }
+
+        async function verifyAuthToken() {
+            const token = getAuthToken();
+            if (!token) return false;
+            try {
+                const res = await fetch(`${AUTH_BASE}/verify`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token }) });
+                const json = await res.json();
+                return !!json.ok;
+            } catch (e) { console.warn('驗證登入狀態失敗', e.message); return false; }
+        }
+
+        let heartbeatTimer = null, onlineCountTimer = null;
+        function startPresenceLoops() {
+            sendHeartbeat();
+            fetchOnlineCount();
+            if (heartbeatTimer) clearInterval(heartbeatTimer);
+            if (onlineCountTimer) clearInterval(onlineCountTimer);
+            heartbeatTimer = setInterval(sendHeartbeat, 20000);
+            onlineCountTimer = setInterval(fetchOnlineCount, 20000);
+        }
+        function stopPresenceLoops() {
+            if (heartbeatTimer) clearInterval(heartbeatTimer);
+            if (onlineCountTimer) clearInterval(onlineCountTimer);
+            const badge = document.getElementById('online-count-badge');
+            if (badge) badge.classList.add('hidden');
+        }
+        async function sendHeartbeat() {
+            const token = getAuthToken();
+            if (!token) return;
+            try { await fetch(`${AUTH_BASE}/heartbeat`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token }) }); }
+            catch (e) { /* 心跳失敗不影響使用，安靜跳過就好 */ }
+        }
+        async function fetchOnlineCount() {
+            try {
+                const res = await fetch(`${AUTH_BASE}/online-count`);
+                const json = await res.json();
+                const badge = document.getElementById('online-count-badge');
+                const text = document.getElementById('online-count-text');
+                if (badge && text && isFinite(json.count)) {
+                    text.innerText = `在線 ${json.count} 人`;
+                    badge.classList.remove('hidden');
+                    badge.classList.add('flex');
+                }
+            } catch (e) { /* 抓不到在線人數不影響使用，安靜跳過就好 */ }
+        }
+        async function initAuth() {
+            const ok = await verifyAuthToken();
+            if (ok) { hideLoginScreen(); startPresenceLoops(); }
+            else { setAuthToken(null); showLoginScreen(); }
+        }
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('login-submit-btn');
+            const errEl = document.getElementById('login-error');
+            const pwInput = document.getElementById('login-password-input');
+            errEl.classList.add('hidden');
+            btn.disabled = true; btn.innerText = '登入中...';
+            try {
+                const res = await fetch(`${AUTH_BASE}/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: pwInput.value }) });
+                const json = await res.json();
+                if (json.ok && json.token) {
+                    setAuthToken(json.token);
+                    hideLoginScreen();
+                    startPresenceLoops();
+                    pwInput.value = '';
+                } else {
+                    errEl.innerText = json.error || '密碼錯誤，請再試一次';
+                    errEl.classList.remove('hidden');
+                }
+            } catch (e) {
+                errEl.innerText = '連線失敗，請檢查網路後再試一次(也可能是Worker還沒設定好)';
+                errEl.classList.remove('hidden');
+            }
+            btn.disabled = false; btn.innerText = '登入';
+        });
+        document.getElementById('change-password-btn').addEventListener('click', async () => {
+            const curInput = document.getElementById('change-password-current');
+            const newInput = document.getElementById('change-password-new');
+            const msgEl = document.getElementById('change-password-msg');
+            const token = getAuthToken();
+            const showMsg = (text, ok) => { msgEl.innerText = text; msgEl.className = `text-xs text-center mt-2 ${ok ? 'text-green-400' : 'text-red-400'}`; msgEl.classList.remove('hidden'); };
+            if (!token) { showMsg('請先登入', false); return; }
+            if (!curInput.value) { showMsg('請輸入目前密碼', false); return; }
+            if (!newInput.value || newInput.value.length < 4) { showMsg('新密碼至少要4個字元', false); return; }
+            try {
+                const res = await fetch(`${AUTH_BASE}/change-password`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token, currentPassword: curInput.value, newPassword: newInput.value }) });
+                const json = await res.json();
+                if (json.ok) { showMsg('✅ 密碼已更新！下次登入(包括其他裝置)都要用新密碼', true); curInput.value = ''; newInput.value = ''; }
+                else showMsg(json.error || '更新失敗，請再試一次', false);
+            } catch (e) { showMsg('連線失敗，請檢查網路後再試一次', false); }
+        });
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            if (!confirm('確定要登出嗎？登出後要重新輸入密碼才能使用。')) return;
+            setAuthToken(null);
+            stopPresenceLoops();
+            document.getElementById('settings-panel').classList.add('hidden');
+            showLoginScreen();
+        });
+        initAuth();
+
         const CORS_PROXIES = [
             url => `https://tide-proxy.sa66344.workers.dev/?url=${encodeURIComponent(url)}`, // 你自己的Cloudflare Worker(用sa66344這個subdomain，不會曝露電話號碼)，優先使用
             url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
@@ -2254,6 +2394,7 @@
                 renderFourTreasuresPanel(symbol);
                 updateTodaySignalBadge(symbol);
                 renderShortTermPanel(symbol);
+                renderDispositionWarning(symbol);
 
                 // 保險措施：部分瀏覽器在圖表第一次建立時，容器還沒有最終版面尺寸，導致標記畫不出來(要切換股票才會恢復)。
                 // 這裡緊跟著真正的資料渲染完成後，用requestAnimationFrame(等下一次畫面更新後)強制重新整理一次，
@@ -2991,6 +3132,36 @@
                         <div>三大法人合計：<span class="${colorOf(row.total)}">${row.total !== null && row.total >= 0 ? '+' : ''}${fmtShares(row.total)}</span></div>
                     </div>
                 </div>`;
+        }
+
+        // ============ 處置股警示(FinMind TaiwanStockDispositionSecuritiesPeriod) ============
+        // 注意：FinMind目前只有「處置股」(已經被限制交易，例如分盤撮合/預收款券/不可當沖)的資料集，
+        // 「注意股」(只是揭示公告、還沒限制交易的較輕等級)目前沒找到對應的開放資料源，所以這裡只能顯示處置股的部分。
+        async function fetchDispositionInfo(symbol) {
+            const today = new Date().toISOString().split('T')[0];
+            const start = new Date(); start.setDate(start.getDate() - 60); // 抓近60天的公告，找目前還在處置期間內的
+            const url = `https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockDispositionSecuritiesPeriod&data_id=${symbol}&start_date=${start.toISOString().split('T')[0]}`;
+            const res = await finmindCorsFetch(url);
+            const json = await res.json();
+            if (json.status !== 200 || !Array.isArray(json.data) || json.data.length === 0) return null;
+            // 找出「今天」還落在處置期間(period_start ~ period_end)內的紀錄；可能有多筆，取公布日最新的一筆
+            const active = json.data.filter(r => r.period_start && r.period_end && r.period_start <= today && today <= r.period_end);
+            if (active.length === 0) return null;
+            active.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+            return active[0];
+        }
+        async function renderDispositionWarning(symbol) {
+            const elDaily = document.getElementById('daily-disposition-warning');
+            const elWeekly = document.getElementById('weekly-disposition-warning');
+            if (elDaily) elDaily.classList.add('hidden');
+            if (elWeekly) elWeekly.classList.add('hidden');
+            try {
+                const info = await fetchDispositionInfo(symbol);
+                if (!info) return;
+                const html = `⚠️ <b>處置股警示</b>：第${info.disposition_cnt ?? '?'}次處置，期間 ${info.period_start}～${info.period_end}<br><span class="text-[10px] opacity-90">原因：${info.condition || '未提供'}｜限制：${info.measure || '未提供'}</span>`;
+                if (elDaily) { elDaily.innerHTML = html; elDaily.classList.remove('hidden'); }
+                if (elWeekly) { elWeekly.innerHTML = html; elWeekly.classList.remove('hidden'); }
+            } catch (e) { console.warn('處置股資料查詢失敗', symbol, e.message); }
         }
 
         // ============ 股利/除權息資料(FinMind，上市櫃都支援) ============
