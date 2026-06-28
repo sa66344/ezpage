@@ -117,6 +117,9 @@
         </div>
     </div>
 
+    <!-- 45度淡浮水印，蓋在整個App上方但不擋互動(pointer-events:none) -->
+    <div id="watermark-overlay" class="fixed inset-0 pointer-events-none" style="z-index:90; opacity:0.12; background-image:url('data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22640%22%20height%3D%22360%22%3E%0A%3Ctext%20x%3D%22320%22%20y%3D%22180%22%20font-size%3D%2215%22%20fill%3D%22rgba%28255%2C255%2C255%2C0.55%29%22%20font-family%3D%22sans-serif%22%20text-anchor%3D%22middle%22%20transform%3D%22rotate%28-45%20320%20180%29%22%3E%E6%98%9F%E5%85%92%E8%A3%BD%E4%BD%9C-%E6%9C%AC%E5%B9%B3%E5%8F%B0%E6%95%B8%E6%93%9A%E5%83%85%E4%BE%9B%E5%AD%B8%E8%A1%93%E7%A0%94%E7%A9%B6%E8%88%87%E5%9B%9E%E6%B8%AC%E5%8F%83%E8%80%83%EF%BC%8C%E4%B8%8D%E6%A7%8B%E6%88%90%E6%8A%95%E8%B3%87%E5%BB%BA%E8%AD%B0%E3%80%82%E5%83%85%E4%BE%9B%E5%8F%83%E8%80%83%3C/text%3E%0A%3C/svg%3E'); background-repeat:repeat;"></div>
+
     <!-- 頂部導覽列 -->
     <header class="bg-brand-card border-b border-brand-border p-3 flex flex-col sm:flex-row justify-between items-center gap-3 z-10 shrink-0 w-full shadow-md" style="padding-top: max(0.75rem, env(safe-area-inset-top)); padding-left: max(0.75rem, env(safe-area-inset-left)); padding-right: max(0.75rem, env(safe-area-inset-right));">
         <div class="flex items-center justify-between w-full sm:w-auto gap-2 flex-wrap">
@@ -1190,6 +1193,18 @@
         // 實際部署到 Neocities 後證實browser fetch會被瀏覽器CORS政策擋下來(server端的Python不受CORS限制，這跟前端fetch是兩回事，這點我之前判斷錯了)。
         // 改成優先直接抓，失敗就走免費CORS代理服務(注意：這些代理服務本身也可能不穩定或受限，沒有100%保證)。
         // ============ 登入驗證 / 在線人數(都是透過tide-proxy這個Worker，搭配Cloudflare KV做session/在線清單) ============
+        // ============ 基本防護：擋右鍵選單跟常見的開發者工具快捷鍵 ============
+        // 提醒：這只能擋掉隨手的右鍵/快捷鍵，擋不住真的想看原始碼的人(例如打 view-source: 或用command line工具)，
+        // 純粹是基本門檔，不是真正的程式碼保護機制。
+        document.addEventListener('contextmenu', e => e.preventDefault());
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'F12') { e.preventDefault(); return; }
+            const k = e.key ? e.key.toUpperCase() : '';
+            if (e.ctrlKey && e.shiftKey && (k === 'I' || k === 'J' || k === 'C')) { e.preventDefault(); return; }
+            if (e.ctrlKey && k === 'U') { e.preventDefault(); return; }
+            if (e.metaKey && e.altKey && (k === 'I' || k === 'J' || k === 'C')) { e.preventDefault(); return; } // Mac版開發者工具快捷鍵
+        });
+
         const AUTH_BASE = 'https://tide-proxy.sa66344.workers.dev';
         function getAuthToken() { try { return sessionStorage.getItem('trend_auth_token'); } catch (e) { return null; } }
         function setAuthToken(t) { try { if (t) sessionStorage.setItem('trend_auth_token', t); else sessionStorage.removeItem('trend_auth_token'); } catch (e) {} }
