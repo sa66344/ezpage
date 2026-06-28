@@ -309,11 +309,6 @@
                 </div>
 
                 <section class="glass-panel rounded-xl p-4">
-                    <h3 class="text-brand-cyan font-bold mb-4 flex items-center gap-2"><i data-lucide="landmark" class="w-5 h-5"></i> 券商分點進出 <span class="text-xs font-normal text-slate-400">(最新交易日)</span></h3>
-                    <div id="broker-info" class="space-y-2"></div>
-                </section>
-
-                <section class="glass-panel rounded-xl p-4">
                     <h3 class="text-brand-cyan font-bold mb-4 flex items-center gap-2"><i data-lucide="newspaper" class="w-5 h-5"></i> 個股新聞 <span class="text-xs font-normal text-slate-400">(近2日)</span></h3>
                     <div id="news-info" class="space-y-2"></div>
                 </section>
@@ -505,7 +500,7 @@
                         <span class="flex items-center gap-1"><span class="px-1.5 py-0.5 rounded bg-brand-down/20 text-brand-down border border-brand-down/30">起漲</span> 剛站上均線</span>
                         <span class="flex items-center gap-1"><span class="px-1.5 py-0.5 rounded bg-brand-teal/20 text-brand-teal border border-brand-teal/30">強勢</span> 贏大盤5%</span>
                     </div>
-                    <div class="text-slate-400">綜合評分滿分10分(買點訊號5分+起漲2分+強勢2分+流動性1分)，8分以上標記🎯短線買入，僅供參考。</div>
+                    <div class="text-slate-400">綜合評分滿分10分(買點訊號5分+起漲2分+強勢2分+流動性1分)，8分以上標記🎯短線買入，僅供參考。列表只會顯示「起漲」或「強勢」的股票，平淡無亮點的不會列出來，每一筆也會多標「隔天可否買入」的判斷。</div>
                     <div class="text-slate-500 mt-1.5 pt-1.5 border-t border-brand-border/50">📌「鯨魚雷達」第一次按下去時，會抓全市場當天成交金額排行，動態列出最多<span id="scan-list-count-note" class="text-slate-300 font-bold">300</span>檔成交金額最高的中大型股(取代原本固定108檔的清單)；如果想掃描清單外的股票，請先在上方加到「我的漁場」自選清單。</div>
                 </div>
                 
@@ -790,25 +785,49 @@
             '00900', '00905', '00915', '00916', '00918', '00919', '00929', '00930', '00935', '00936', '00939',
             '00940', '00941', '00942', '00943', '006203', '006204', '006208']);
         let dynamicScanList = null; // 抓過一次後快取在記憶體裡，同一次瀏覽session不用每次重抓
+        // 簡單的CSV單行解析(處理欄位被雙引號包住、裡面又有逗號千分位的情況，例如 "1,234,567")
+        function parseCsvLine(line) {
+            const cells = [];
+            let cur = '', inQuotes = false;
+            for (let i = 0; i < line.length; i++) {
+                const ch = line[i];
+                if (inQuotes) {
+                    if (ch === '"') { if (line[i + 1] === '"') { cur += '"'; i++; } else inQuotes = false; }
+                    else cur += ch;
+                } else {
+                    if (ch === '"') inQuotes = true;
+                    else if (ch === ',') { cells.push(cur); cur = ''; }
+                    else cur += ch;
+                }
+            }
+            cells.push(cur);
+            return cells;
+        }
         async function fetchTurnoverUniverse() {
             const candidates = [];
             try {
-                const url = 'https://www.twse.com.tw/exchangeReport/STOCK_DAY_ALL?response=json';
+                // 注意：STOCK_DAY_ALL不支援response=json(之前這裡用json解析，結果一律失敗，
+                // 導致動態清單永遠抓不到、靜默退回固定108檔)，這個端點只支援response=open_data的CSV格式。
+                const url = 'https://www.twse.com.tw/exchangeReport/STOCK_DAY_ALL?response=open_data';
                 const res = await corsFetch(url);
-                const json = await res.json();
-                if (Array.isArray(json.data) && Array.isArray(json.fields)) {
-                    const fields = json.fields;
-                    const codeIdx = findFieldIdx(fields, ['證券代號']);
-                    const nameIdx = findFieldIdx(fields, ['證券名稱']);
-                    const valueIdx = findFieldIdx(fields, ['成交金額']);
+                const text = await res.text();
+                const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+                if (lines.length > 1) {
+                    const header = parseCsvLine(lines[0]);
+                    const codeIdx = header.findIndex(h => h.includes('證券代號') || h.includes('代號'));
+                    const nameIdx = header.findIndex(h => h.includes('證券名稱') || h.includes('名稱'));
+                    const valueIdx = header.findIndex(h => h.includes('成交金額'));
                     if (codeIdx >= 0 && valueIdx >= 0) {
-                        json.data.forEach(row => {
-                            const code = String(row[codeIdx]).trim();
-                            const turnover = parseFloat(String(row[valueIdx]).replace(/,/g, '')) || 0;
+                        for (let i = 1; i < lines.length; i++) {
+                            const cells = parseCsvLine(lines[i]);
+                            const code = (cells[codeIdx] || '').trim();
+                            const turnover = parseFloat((cells[valueIdx] || '').replace(/,/g, '')) || 0;
                             if (/^\d{4,6}$/.test(code) && turnover > 0) {
-                                candidates.push({ code, name: nameIdx >= 0 ? String(row[nameIdx]).trim() : '', turnover });
+                                candidates.push({ code, name: nameIdx >= 0 ? (cells[nameIdx] || '').trim() : '', turnover });
                             }
-                        });
+                        }
+                    } else {
+                        console.warn('STOCK_DAY_ALL欄位比對失敗，header:', header);
                     }
                 }
             } catch (e) { console.warn('STOCK_DAY_ALL(上市全市場)抓取失敗', e.message); }
@@ -832,7 +851,11 @@
         async function buildDynamicScanList() {
             if (dynamicScanList) return dynamicScanList;
             const universe = await fetchTurnoverUniverse();
-            if (universe.length === 0) { dynamicScanList = MASTER_SCAN_LIST; return dynamicScanList; }
+            if (universe.length === 0) {
+                showToast('全市場清單抓取失敗，暫時改用固定108檔母清單', 'error');
+                dynamicScanList = MASTER_SCAN_LIST;
+                return dynamicScanList;
+            }
             const filtered = universe.filter(u => !KNOWN_ETF_CODES.has(u.code));
             filtered.sort((a, b) => b.turnover - a.turnover);
             const top = filtered.slice(0, SCAN_CAP_DYNAMIC);
@@ -2825,62 +2848,6 @@
             }
         }
 
-        // ============ 券商分點進出(FinMind taiwan_stock_trading_daily_report) ============
-        // 這是FinMind獨立的端點(不是走/v4/data?dataset=...的通用格式)，文件上是用Authorization Bearer header，
-        // 但跨網域代理(allorigins/killcors等)通常不會幫忙轉發自訂header，所以這裡跟其他FinMind請求一樣改用
-        // ?token=查詢參數帶過去(FinMind大部分端點兩種方式都吃，如果這個端點真的非header不可，之後要再調整)。
-        async function fetchBrokerData(symbol) {
-            const tokenParam = FINMIND_TOKEN ? `&token=${FINMIND_TOKEN}` : '';
-            for (let i = 0; i < 6; i++) {
-                const d = new Date(); d.setDate(d.getDate() - i);
-                const dateStr = d.toISOString().split('T')[0];
-                const url = `https://api.finmindtrade.com/api/v4/taiwan_stock_trading_daily_report?data_id=${symbol}&start_date=${dateStr}${tokenParam}`;
-                try {
-                    const res = await corsFetch(url);
-                    const json = await res.json();
-                    if (json && Array.isArray(json.data) && json.data.length > 0) {
-                        return { date: dateStr, rows: json.data };
-                    }
-                } catch (e) { console.warn('分點資料嘗試失敗', dateStr, e.message); }
-            }
-            throw new Error('分點資料抓取失敗(可能近期都查無資料，或這檔股票成交太冷清)');
-        }
-        async function renderBrokerInfo(symbol) {
-            const el = document.getElementById('broker-info');
-            if (!el) return;
-            el.innerHTML = '<p class="text-gray-500 text-sm">載入中...</p>';
-            try {
-                const { date, rows } = await fetchBrokerData(symbol);
-                const num = v => { const n = Number(v); return isFinite(n) ? n : 0; };
-                const processed = rows.map(r => ({
-                    name: r.securities_trader || r.securities_trader_id || '未知券商',
-                    buy: num(r.buy), sell: num(r.sell), net: num(r.buy) - num(r.sell),
-                })).filter(r => r.buy > 0 || r.sell > 0);
-                processed.sort((a, b) => b.net - a.net);
-                const topBuy = processed.filter(p => p.net > 0).slice(0, 5);
-                const topSell = processed.filter(p => p.net < 0).sort((a, b) => a.net - b.net).slice(0, 5);
-                const lots = n => (n / 1000).toFixed(0) + '張';
-                const rowHtml = (list, cls) => list.length === 0
-                    ? '<div class="text-gray-500 text-xs">無資料</div>'
-                    : list.map(p => `<div class="flex justify-between text-xs py-0.5"><span class="text-gray-300 truncate mr-2">${p.name}</span><span class="${cls} font-mono-num shrink-0">${p.net >= 0 ? '+' : ''}${lots(p.net)}</span></div>`).join('');
-                el.innerHTML = `
-                    <div class="text-gray-500 text-xs mb-2">資料日期：${date}(來源：FinMind分點資料，僅統計當天有出現在分點報表的券商)</div>
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <div class="text-red-400 text-xs font-bold mb-1">🔺買超分點 Top5</div>
-                            ${rowHtml(topBuy, 'text-red-400')}
-                        </div>
-                        <div>
-                            <div class="text-green-400 text-xs font-bold mb-1">🔻賣超分點 Top5</div>
-                            ${rowHtml(topSell, 'text-green-400')}
-                        </div>
-                    </div>
-                    <p class="text-[10px] text-gray-500 mt-2">分點進出只能看出「哪個券商營業據點」幫客戶買賣比較多，不能直接認定背後是哪個特定主力，僅供參考。</p>`;
-            } catch (e) {
-                el.innerHTML = `<p class="text-gray-500 text-sm">查無 ${symbol} 的分點資料，或資料來源暫時不穩(${e.message})</p>`;
-            }
-        }
-
         // ============ 個股估值參考(本益比/殖利率/股價淨值比，BWIBBU) ============
         async function fetchBWIBBU(symbol, dateStr) {
             const url = `https://www.twse.com.tw/exchangeReport/BWIBBU?response=json&date=${dateStr}&stockNo=${symbol}`;
@@ -2910,6 +2877,17 @@
             const num = s => { const n = parseFloat(String(s).replace(/,/g, '')); return isNaN(n) ? null : n; };
             return { yield: num(row.YieldRatio), pe: num(row.PriceEarningRatio), pb: num(row.PriceBookRatio), source: 'tpex' };
         }
+        // 價值雷達總評分(0~100)：PE/PB越低分數越高，殖利率越高分數越高，三項平均(缺資料的項目不列入平均)。
+        // 門檻是參考一般合理範圍訂的粗略標準(PE上限30、PB上限5、殖利率上限8%)，不同產業合理區間本來就不一樣，
+        // 這個分數只是「跟一般水準比起來便宜/划算的程度」，不是絕對的好壞，金融股、景氣循環股這種PE/PB慣性不同的類股要打折看。
+        function computeValuationScore(v) {
+            const subs = [];
+            if (v.pe !== null && !isNaN(v.pe) && v.pe > 0) subs.push(Math.max(0, Math.min(100, 100 - (v.pe / 30) * 100)));
+            if (v.pb !== null && !isNaN(v.pb) && v.pb > 0) subs.push(Math.max(0, Math.min(100, 100 - (v.pb / 5) * 100)));
+            if (v.yield !== null && !isNaN(v.yield) && v.yield >= 0) subs.push(Math.max(0, Math.min(100, (v.yield / 8) * 100)));
+            if (subs.length === 0) return null;
+            return Math.round(subs.reduce((a, b) => a + b, 0) / subs.length);
+        }
         async function renderValuationInfo(symbol) {
             const el = document.getElementById('valuation-info');
             if (!el) return;
@@ -2924,9 +2902,16 @@
                     v = await fetchTPExValuation(symbol); // 上市股查無資料時，改試上櫃股來源
                     sourceLabel = '櫃買中心(上櫃)';
                 }
+                const score = computeValuationScore(v);
+                const scoreCls = score === null ? 'text-gray-500' : score >= 70 ? 'text-red-400' : score >= 40 ? 'text-amber-300' : 'text-green-400';
+                const scoreLabel = score === null ? '資料不足' : score >= 70 ? '相對便宜/高息' : score >= 40 ? '中等水準' : '相對偏貴/低息';
                 el.innerHTML = `
                     <div class="bg-gray-800 rounded p-3 text-sm">
                         <div class="text-[10px] text-gray-500 mb-2">資料來源：${sourceLabel}</div>
+                        <div class="flex items-center justify-between bg-gray-900/40 rounded-lg p-2.5 mb-3">
+                            <span class="text-xs text-gray-400">價值總評分</span>
+                            <span class="font-mono-num"><span class="text-2xl font-bold ${scoreCls}">${score === null ? '--' : score}</span><span class="text-xs text-gray-500">/100</span> <span class="text-xs ${scoreCls}">${scoreLabel}</span></span>
+                        </div>
                         <div class="grid grid-cols-3 gap-2 text-center font-mono-num mb-2">
                             <div><div class="text-gray-500 text-[10px]">本益比PE</div><div class="text-white font-bold">${v.pe !== null && !isNaN(v.pe) ? v.pe.toFixed(1) : '--'}</div></div>
                             <div><div class="text-gray-500 text-[10px]">殖利率</div><div class="text-white font-bold">${v.yield !== null && !isNaN(v.yield) ? v.yield.toFixed(2) + '%' : '--'}</div></div>
@@ -2935,7 +2920,8 @@
                         <div class="text-[10px] text-gray-500 leading-relaxed">
                             <b>本益比(PE)</b>：股價是每股賺的錢的幾倍，數字越小代表股價相對便宜(但不同產業合理範圍不同，不能直接比較)。<br>
                             <b>殖利率</b>：把現金股利除以股價算出的報酬率，數字越高代表配得越大方(相對股價而言)。<br>
-                            <b>股價淨值比(PB)</b>：股價是公司帳上淨值的幾倍，小於1代表股價低於帳面價值。
+                            <b>股價淨值比(PB)</b>：股價是公司帳上淨值的幾倍，小於1代表股價低於帳面價值。<br>
+                            <b>總評分</b>：把PE、PB、殖利率各自換算成0~100分後平均(PE/PB越低分越高、殖利率越高分越高)，只是「相對便宜程度」的粗略參考，金融股/景氣循環股的合理PE、PB水準本來就跟一般股不同，分數高低不能當成投資建議。
                         </div>
                     </div>`;
             } catch (e) {
@@ -3002,7 +2988,6 @@
             renderValuationInfo(symbol);
             renderDividendInfo(symbol);
             renderNewsInfo(symbol);
-            renderBrokerInfo(symbol);
         }
 
 
@@ -3177,15 +3162,21 @@
                     const liquidity = avgDailyVolumeLots(daily, 20);
                     const liquidityOk = liquidity !== null && liquidity >= 1000;
                     const score = (isBuy ? 5 : 0) + (justTurning ? 2 : 0) + (isStrong ? 2 : 0) + (liquidityOk ? 1 : 0);
-                    rows.push({ symbol, close: lastClose, ma: lastMa20, diffPct, isBuy, justTurning, isStrong, liquidity, liquidityOk, score, source: dataSourceCache[symbol] });
+                    let buyVerdict = null;
+                    try { buyVerdict = evaluateBuySuitability(computeDailyView(daily)); } catch (e) { /* 資料不足時跳過，不影響掃描其他項目 */ }
+                    rows.push({ symbol, close: lastClose, ma: lastMa20, diffPct, isBuy, justTurning, isStrong, liquidity, liquidityOk, score, source: dataSourceCache[symbol], buyVerdict });
                 } catch (e) {
                     rows.push({ symbol, close: null, ma: null, diffPct: null, isBuy: false, justTurning: false, isStrong: false, liquidity: null, liquidityOk: false, score: -1, source: 'mock' });
                 }
                 await new Promise(r => setTimeout(r, 200));
             }
             rows.sort((a, b) => (b.score - a.score) || ((a.diffPct ?? 999) - (b.diffPct ?? 999)));
+            const visibleRows = rows.filter(r => r.justTurning || r.isStrong);
 
-            list.innerHTML = rows.map(r => `
+            if (visibleRows.length === 0) {
+                list.innerHTML = '<p class="text-gray-500 text-sm text-center py-6">這次掃描沒有「起漲」或「強勢」的股票，目前市場可能比較平淡，可以晚點再掃一次。</p>';
+            } else {
+            list.innerHTML = visibleRows.map(r => `
                 <div class="bg-gray-800 rounded p-2.5 ${r.isBuy ? 'border border-amber-500' : ''}">
                     <div class="flex justify-between items-center flex-wrap gap-1">
                         <div class="flex items-center gap-1.5 flex-wrap">
@@ -3202,7 +3193,9 @@
                             ${!watchlist.includes(r.symbol) ? `<button class="add-watch-btn bg-blue-600 hover:bg-blue-700 text-white text-[10px] px-1.5 py-1 rounded" data-symbol="${r.symbol}">➕追蹤</button>` : '<span class="text-[10px] text-gray-600">已追蹤</span>'}
                         </div>
                     </div>
+                    ${r.buyVerdict ? `<div class="mt-1.5 pt-1.5 border-t border-gray-700 text-[11px]"><span class="text-gray-500">隔天可否買入：</span>${r.buyVerdict.light} <span class="font-semibold">${r.buyVerdict.label}</span></div>` : ''}
                 </div>`).join('');
+            }
 
             document.querySelectorAll('.add-watch-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
@@ -3410,8 +3403,20 @@
                 if (stats && stats.count >= 5) results.push({ combo, stats });
             }
             settings = origSettings; // 還原使用者原本的設定，回測過程不影響目前畫面
-            results.sort((a, b) => b.stats.winLossRatio - a.stats.winLossRatio);
-            const top = results.slice(0, 3);
+
+            // 用9檔股票、192種參數組合回測時，很常出現「不同參數組合算出一模一樣的數字」——
+            // 這不是算錯，是因為樣本股票在這段歷史期間，根本沒有交易去測到某些參數的門檻(例如從來沒有
+            // 觸發過「盤整突破」型買點，那consolidationRangePct/volumeMultiple怎麼調都不會影響結果)。
+            // 所以這裡先把「結果完全相同」的組合合併，只排前3種「真正不同」的結果，比較有意義。
+            const seen = new Map();
+            for (const r of results) {
+                const key = `${r.stats.count}|${r.stats.winRate.toFixed(2)}|${r.stats.avgWin.toFixed(4)}|${r.stats.avgLoss.toFixed(4)}`;
+                if (!seen.has(key)) seen.set(key, { combo: r.combo, stats: r.stats, tieCount: 1 });
+                else seen.get(key).tieCount++;
+            }
+            const distinctResults = Array.from(seen.values());
+            distinctResults.sort((a, b) => b.stats.winLossRatio - a.stats.winLossRatio);
+            const top = distinctResults.slice(0, 3);
             btn.disabled = false;
             btn.innerHTML = '<i data-lucide="flask-conical" class="w-4 h-4"></i> 重新回測';
             safeLucideIcons({ root: btn });
@@ -3420,7 +3425,7 @@
                 return;
             }
             resultEl.innerHTML = `
-                <p class="text-slate-500 text-[11px] mb-2">用${usable.length}檔股票回測，依「賺賠比」(平均賺幅÷平均賠幅)排名前3組：</p>
+                <p class="text-slate-500 text-[11px] mb-2">用${usable.length}檔股票回測，依「賺賠比」(平均賺幅÷平均賠幅)排名前${top.length}種不同的結果：</p>
                 ${top.map((r, idx) => `
                     <div class="bg-brand-card border ${idx === 0 ? 'border-brand-cyan/50' : 'border-brand-border'} rounded-lg p-2.5 mb-2">
                         <div class="flex justify-between items-center mb-1">
@@ -3428,10 +3433,11 @@
                             <span class="text-[11px] text-slate-400">賺賠比 ${r.stats.winLossRatio === 999 ? '∞' : r.stats.winLossRatio.toFixed(2)}</span>
                         </div>
                         <div class="text-[11px] text-slate-400 font-mono-num mb-1.5">盤整${r.combo.consolidationRangePct}% / 爆量${r.combo.volumeMultiple}倍 / 停損${r.combo.reclaimStopPct}% / 停利${r.combo.breakoutTakeProfitPct}%</div>
-                        <div class="text-[11px] text-slate-400 font-mono-num mb-2">勝率${r.stats.winRate.toFixed(0)}% ｜ 平均賺${r.stats.avgWin.toFixed(1)}% ｜ 平均賠${r.stats.avgLoss.toFixed(1)}% ｜ 共${r.stats.count}筆交易</div>
+                        <div class="text-[11px] text-slate-400 font-mono-num mb-1.5">勝率${r.stats.winRate.toFixed(0)}% ｜ 平均賺${r.stats.avgWin.toFixed(1)}% ｜ 平均賠${r.stats.avgLoss.toFixed(1)}% ｜ 共${r.stats.count}筆交易</div>
+                        ${r.tieCount > 1 ? `<div class="text-[10px] text-amber-400 mb-2">⚠️ 另外還有${r.tieCount - 1}組參數算出跟這組一模一樣的結果(這段歷史資料沒測到那些參數的門檻，不是算錯，套用上面列出的這組數值即可)</div>` : ''}
                         <button class="optimizer-apply-btn w-full bg-brand-border hover:bg-slate-700 text-white text-xs py-1.5 rounded-lg transition" data-idx="${idx}">套用這組參數</button>
                     </div>`).join('')}
-                <p class="text-slate-500 text-[10px] mt-1 leading-relaxed">⚠️ 樣本只有你追蹤清單的${usable.length}檔股票、且是用現有抓到的歷史資料區間回測，過去績效不代表未來；換股票或換時間區間排名可能會不同，建議當參考方向，不要照單全收。</p>`;
+                <p class="text-slate-500 text-[10px] mt-1 leading-relaxed">⚠️ 樣本只有你追蹤清單的${usable.length}檔股票、且是用現有抓到的歷史資料區間回測，過去績效不代表未來；換股票或換時間區間排名可能會不同，建議當參考方向，不要照單全收。股票數越少，越容易出現「好幾組參數打平」的情況，是正常現象。</p>`;
             safeLucideIcons({ root: resultEl });
             resultEl.querySelectorAll('.optimizer-apply-btn').forEach(b => b.addEventListener('click', () => {
                 const r = top[parseInt(b.dataset.idx)];
