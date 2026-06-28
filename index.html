@@ -58,7 +58,45 @@
         /* Chart Container */
         .cursor-crosshair { cursor: crosshair; }
         .glass-panel { background: rgba(15, 33, 59, 0.8); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(30, 56, 92, 0.8); }
+
+        /* ============ 潮汐質感卡片(用在「關於」頁面) ============ */
+        /* 漸層光暈邊框：用雙層background(padding-box裝底色、border-box裝漸層)做出來，比純色border更有質感，相容性也比mask遮罩寫法好 */
+        .tide-card {
+            position: relative;
+            border-radius: 18px;
+            border: 1px solid transparent;
+            background:
+                linear-gradient(165deg, rgba(18, 38, 67, 0.95), rgba(6, 14, 27, 0.97)) padding-box,
+                linear-gradient(135deg, rgba(0, 242, 254, 0.45), rgba(79, 172, 254, 0.06) 45%, rgba(0, 242, 254, 0.28)) border-box;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            overflow: hidden;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07), 0 12px 28px -16px rgba(0, 0, 0, 0.65);
+            transition: transform 0.35s cubic-bezier(.2, .8, .2, 1), box-shadow 0.35s ease;
+        }
+        /* 環境光暈：左上角一抹柔光，像月光灑在潮水面上 */
+        .tide-card::after {
+            content: '';
+            position: absolute;
+            top: -35%; left: -15%;
+            width: 65%; height: 65%;
+            background: radial-gradient(circle, rgba(0, 242, 254, 0.13), transparent 70%);
+            pointer-events: none;
+        }
+        .tide-card:active { transform: scale(0.99); }
+        .tide-card > * { position: relative; z-index: 1; }
+        /* 免責聲明用的琥珀色變體，維持警示色但同樣的精緻處理 */
+        .tide-card--amber {
+            background:
+                linear-gradient(165deg, rgba(64, 42, 17, 0.55), rgba(26, 17, 6, 0.88)) padding-box,
+                linear-gradient(135deg, rgba(251, 191, 36, 0.5), rgba(251, 191, 36, 0.06) 45%, rgba(251, 191, 36, 0.32)) border-box;
+        }
+        .tide-card--amber::after { background: radial-gradient(circle, rgba(251, 191, 36, 0.15), transparent 70%); }
+        /* 簽名元素：流動的潮水波光分隔線，純SVG+SMIL動畫，不用JS */
+        .tide-hero-wave { width: 100%; height: 28px; margin: -2px 0 4px; }
+        .tide-hero-wave svg { width: 100%; height: 100%; display: block; }
     </style>
+</head>
 <body class="text-slate-200 font-sans flex flex-col overflow-hidden w-full h-full">
 
     <!-- 頂部導覽列 -->
@@ -360,7 +398,23 @@
                     <h2 class="text-2xl font-bold text-white tracking-wider">潮汐指標 <span class="text-sm font-normal text-slate-400">Tide Indicator</span></h2>
                 </div>
 
-                <div class="glass-panel rounded-xl overflow-hidden">
+                <div class="tide-hero-wave">
+                    <svg viewBox="0 0 600 28" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M0,15 C50,4 100,26 150,15 C200,4 250,26 300,15 C350,4 400,26 450,15 C500,4 550,26 600,15" fill="none" stroke="rgba(148,163,184,0.18)" stroke-width="1"/>
+                        <defs>
+                            <linearGradient id="tideShine" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" stop-color="#00f2fe" stop-opacity="0.1"/>
+                                <stop offset="45%" stop-color="#00f2fe" stop-opacity="0.95"/>
+                                <stop offset="55%" stop-color="#4facfe" stop-opacity="0.95"/>
+                                <stop offset="100%" stop-color="#4facfe" stop-opacity="0.1"/>
+                                <animateTransform attributeName="gradientTransform" type="translate" from="-700 0" to="700 0" dur="5s" repeatCount="indefinite"/>
+                            </linearGradient>
+                        </defs>
+                        <path d="M0,15 C50,4 100,26 150,15 C200,4 250,26 300,15 C350,4 400,26 450,15 C500,4 550,26 600,15" fill="none" stroke="url(#tideShine)" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </div>
+
+                <div class="tide-card">
                     <button class="collapse-toggle w-full flex justify-between items-start gap-3 p-4 text-left" data-target="about-section-0a">
                         <h3 class="text-brand-cyan font-bold flex items-center gap-2 text-base">💡 關於潮汐指標</h3>
                         <span class="chevron text-slate-400 text-xs shrink-0 mt-1">▾</span>
@@ -376,7 +430,7 @@
                     </div>
                 </div>
 
-                <div class="glass-panel rounded-xl overflow-hidden">
+                <div class="tide-card">
                     <button class="collapse-toggle w-full flex justify-between items-start gap-3 p-4 text-left" data-target="about-section-0c">
                         <h3 class="text-brand-cyan font-bold flex items-center gap-2 text-base">🧠 我的交易心法與長短線碎念</h3>
                         <span class="chevron text-slate-400 text-xs shrink-0 mt-1">▾</span>
@@ -403,7 +457,7 @@
                     </div>
                 </div>
 
-                <div class="glass-panel rounded-xl overflow-hidden">
+                <div class="tide-card">
                     <button class="collapse-toggle w-full flex justify-between items-start gap-3 p-4 text-left" data-target="about-section-0b">
                         <h3 class="text-brand-cyan font-bold flex items-center gap-2 text-base">🔥 核心亮點功能</h3>
                         <span class="chevron text-slate-400 text-xs shrink-0 mt-1">▾</span>
@@ -419,7 +473,7 @@
 
                 <!-- 可收合區塊 -->
                 <div class="space-y-2">
-                    <div class="glass-panel rounded-xl overflow-hidden">
+                    <div class="tide-card">
                         <button class="collapse-toggle w-full flex justify-between items-center p-4 text-left" data-target="about-section-1">
                             <h3 class="text-white font-bold flex items-center gap-2"><i data-lucide="layout-grid" class="w-4 h-4 text-brand-teal"></i> ① 🗺️ 我的專屬功能導覽</h3>
                             <span class="chevron text-slate-400 text-xs">▾</span>
@@ -433,7 +487,7 @@
                         </div>
                     </div>
 
-                    <div class="glass-panel rounded-xl overflow-hidden">
+                    <div class="tide-card">
                         <button class="collapse-toggle w-full flex justify-between items-center p-4 text-left" data-target="about-section-2">
                             <h3 class="text-white font-bold flex items-center gap-2"><i data-lucide="swords" class="w-4 h-4 text-brand-teal"></i> ② 📝 我的專屬買賣策略小抄</h3>
                             <span class="chevron text-slate-400 text-xs">▾</span>
@@ -452,7 +506,7 @@
                         </div>
                     </div>
 
-                    <div class="glass-panel rounded-xl overflow-hidden">
+                    <div class="tide-card">
                         <button class="collapse-toggle w-full flex justify-between items-center p-4 text-left" data-target="about-section-3">
                             <h3 class="text-white font-bold flex items-center gap-2"><i data-lucide="clock" class="w-4 h-4 text-brand-teal"></i> ③ 資料更新紀錄</h3>
                             <span class="chevron text-slate-400 text-xs">▾</span>
@@ -462,7 +516,7 @@
                         </div>
                     </div>
 
-                    <div class="glass-panel rounded-xl overflow-hidden">
+                    <div class="tide-card">
                         <button class="collapse-toggle w-full flex justify-between items-center p-4 text-left" data-target="about-section-4">
                             <h3 class="text-white font-bold flex items-center gap-2"><i data-lucide="smartphone" class="w-4 h-4 text-brand-teal"></i> ④ 加入手機主畫面(App模式)</h3>
                             <span class="chevron text-slate-400 text-xs">▾</span>
@@ -480,7 +534,7 @@
                         </div>
                     </div>
 
-                    <div class="glass-panel rounded-xl overflow-hidden border border-amber-500/30">
+                    <div class="tide-card tide-card--amber">
                         <div class="flex items-center gap-2 p-4 pb-2">
                             <h3 class="text-amber-300 font-bold flex items-center gap-2 text-base"><i data-lucide="shield" class="w-4 h-4"></i> ⑤ 🛡️ 我的免責小聲明</h3>
                         </div>
