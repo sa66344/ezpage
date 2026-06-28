@@ -737,9 +737,8 @@
             const ts = loadJSON('trend_all_stock_info_ts', 0);
             if (allStockInfoMap && (Date.now() - ts) < ONE_DAY) return allStockInfoMap;
             try {
-                const tokenParam = FINMIND_TOKEN ? `&token=${FINMIND_TOKEN}` : '';
-                const url = `https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockInfo${tokenParam}`;
-                const res = await corsFetch(url);
+                const url = `https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockInfo`;
+                const res = await finmindCorsFetch(url);
                 const json = await res.json();
                 if (json.status === 200 && Array.isArray(json.data)) {
                     const map = {};
@@ -1167,7 +1166,7 @@
         // 實際部署到 Neocities 後證實browser fetch會被瀏覽器CORS政策擋下來(server端的Python不受CORS限制，這跟前端fetch是兩回事，這點我之前判斷錯了)。
         // 改成優先直接抓，失敗就走免費CORS代理服務(注意：這些代理服務本身也可能不穩定或受限，沒有100%保證)。
         const CORS_PROXIES = [
-            url => `https://636.a0987009103.workers.dev/?url=${encodeURIComponent(url)}`, // 使用者自架的Cloudflare Worker，優先使用(格式是猜測的?url=參數，如果跟實際worker寫法不同要請她調整)
+            url => `https://ezpage.a0987009103.workers.dev/?url=${encodeURIComponent(url)}`, // 你自己的Cloudflare Worker，優先使用
             url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
             url => `https://proxy.killcors.com/?url=${encodeURIComponent(url)}`,
         ];
@@ -1188,19 +1187,24 @@
         }
 
         // ============ 資料來源 1: FinMind ============
-        // ⚠️ 安全性提醒：這個token是寫死在這份公開部署的HTML原始碼裡，任何人打開瀏覽器「檢視原始碼」都看得到。
-        // FinMind的token主要是用來提高你帳號的API呼叫額度限制(不是金流/扣款用途)，曝露的風險是「別人可能會跟你共用/消耗掉這個額度」，
-        // 不是金錢損失風險。如果在意，更安全的做法是把這個token改放到你自己的Cloudflare Worker(CORS代理)裡，
-        // 由Worker幫忙加上token再轉發給FinMind，這樣公開的HTML原始碼裡就完全不會出現token本身。
-        const FINMIND_TOKEN = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoiYTA5ODcwMDkxMDNAZ21haWwuY29tIiwiZW1haWwiOiJhMDk4NzAwOTEwM0BnbWFpbC5jb20iLCJ0b2tlbl92ZXJzaW9uIjowfQ.l1dUirfk3gxxvEQiJsUwQCm9ZK9S7C8T831zRn4G1sk';
+        // token已經改放到你自己的Cloudflare Worker裡(伺服器端，不會出現在這份公開的HTML原始碼中)，
+        // 由Worker幫你自動加上token再轉發給FinMind，這份原始碼本身不再帶任何token。
+        // finmindCorsFetch會優先走Worker(才有token帶來的額度)，Worker萬一掛了就退回一般CORS代理(沒有token，吃FinMind免費額度，但至少不會整個壞掉)。
+        async function finmindCorsFetch(url) {
+            try {
+                const proxied = `https://ezpage.a0987009103.workers.dev/?url=${encodeURIComponent(url)}`;
+                const res = await fetch(proxied);
+                if (res.ok) return res;
+            } catch (e) { console.warn('FinMind走Worker代理失敗，改用一般CORS代理(這次不會帶token，吃FinMind免費額度)', e.message); }
+            return await corsFetch(url);
+        }
         async function fetchFinMind(symbol, monthsBack) {
             const end = new Date();
             const start = new Date();
             start.setMonth(start.getMonth() - monthsBack);
-            const tokenParam = FINMIND_TOKEN ? `&token=${FINMIND_TOKEN}` : '';
-            const url = `https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockPrice&data_id=${symbol}&start_date=${start.toISOString().split('T')[0]}&end_date=${end.toISOString().split('T')[0]}${tokenParam}`;
+            const url = `https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockPrice&data_id=${symbol}&start_date=${start.toISOString().split('T')[0]}&end_date=${end.toISOString().split('T')[0]}`;
             // 不用 AbortController：部分瀏覽器/預覽環境對 fetch+signal 組合會直接拋錯，改用 Promise.race 做逾時保護
-            const fetchPromise = corsFetch(url).then(async res => res.json());
+            const fetchPromise = finmindCorsFetch(url).then(async res => res.json());
             const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('finmind timeout')), 10000));
             const json = await Promise.race([fetchPromise, timeoutPromise]);
             if (json.status !== 200 || !Array.isArray(json.data) || json.data.length === 0) throw new Error('finmind empty');
@@ -1409,6 +1413,28 @@
             return data;
         }
         let taiexSourceLabel = '';
+
+        // ============ 加權指數「即時報價」(跟上面的歷史收盤資料是不同的API) ============
+        // 用證交所「基本市況報導網站」即時系統，tse_t00.tw是加權指數專用代碼(這個代碼是社群長期使用、已驗證過的寫法)。
+        // 這個只用來「顯示當下這一刻的數字」給你參考；大盤燈號的多空判斷還是用收盤資料算MA20/MA100，
+        // 不會改用即時跳動的價格來判斷，避免燈號因為盤中價格小波動而一直閃爍不穩定。
+        async function fetchTaiexRealtime() {
+            const url = 'https://mis.twse.com.tw/stock/api/getStockInfo.jsp?ex_ch=tse_t00.tw&json=1&delay=0';
+            const res = await corsFetch(url);
+            const json = await res.json();
+            const item = json && Array.isArray(json.msgArray) ? json.msgArray[0] : null;
+            if (!item) throw new Error('即時報價無資料');
+            let price = parseFloat(item.z);
+            if (!isFinite(price) || price <= 0) price = parseFloat(item.o); // z是'-'代表還沒成交，退回開盤價
+            const prevClose = parseFloat(item.y);
+            const updateMs = parseInt(item.tlong);
+            if (!isFinite(price) || price <= 0) throw new Error('即時報價格式異常');
+            return {
+                price,
+                prevClose: isFinite(prevClose) ? prevClose : null,
+                updateTime: isFinite(updateMs) ? new Date(updateMs) : null,
+            };
+        }
 
         // ============ 共用數學工具 ============
         function mondayOf(dateStr) {
@@ -2028,6 +2054,12 @@
                     usedProxy,
                     source: usedProxy ? `0050(代理)・${dataSourceCache['0050']}` : taiexSourceLabel,
                 };
+                try {
+                    marketLightCache.realtime = await fetchTaiexRealtime();
+                } catch (e) {
+                    console.warn('加權指數即時報價抓取失敗(不影響燈號本身的多空判斷)', e.message);
+                    marketLightCache.realtime = null;
+                }
             } catch (e) {
                 console.warn('大盤燈號計算失敗', e);
                 marketLightCache = null;
@@ -2055,19 +2087,34 @@
             badgeText.innerHTML = `${m.emoji}${m.label} <span class="opacity-80">(${m.shortAlloc})</span>`;
             badge.className = `flex items-center gap-1 bg-brand-bg border rounded-lg px-2 py-1.5 text-xs font-bold transition hover:border-brand-cyan shrink-0 ${m.cls}`;
             const proxyWarn = marketLightCache.usedProxy ? `<div class="mt-2 text-amber-400 text-xs">⚠️ 加權指數資料來源暫時都抓不到，這次先用0050股價代理計算，跟實際加權指數可能會有些落差</div>` : '';
+            const rt = marketLightCache.realtime;
+            const rtHtml = rt ? (() => {
+                const chg = rt.prevClose !== null ? rt.price - rt.prevClose : null;
+                const pct = (chg !== null && rt.prevClose) ? (chg / rt.prevClose * 100) : null;
+                const cls = chg === null ? 'text-slate-300' : chg >= 0 ? 'text-red-400' : 'text-green-400';
+                const sign = chg !== null && chg >= 0 ? '+' : '';
+                const timeStr = rt.updateTime ? rt.updateTime.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' }) : '--';
+                return `<div class="mt-2 pt-2 border-t border-white/10 text-xs">
+                    <span class="text-slate-400">即時報價</span>
+                    <span class="font-bold ${cls} font-mono-num ml-1">${fmt(rt.price)}</span>
+                    ${chg !== null ? `<span class="${cls} font-mono-num ml-1">${sign}${fmt(chg)}(${sign}${pct.toFixed(2)}%)</span>` : ''}
+                    <span class="text-slate-500 ml-1">(${timeStr}更新)</span>
+                </div>`;
+            })() : '<div class="mt-2 pt-2 border-t border-white/10 text-xs text-slate-500">即時報價暫時抓不到，只能看下面的收盤計算基準</div>';
             detail.innerHTML = `
                 <div class="rounded-xl p-4 border ${m.cls} bg-brand-card/60">
                     <div class="text-2xl font-bold mb-1">${m.emoji} ${m.label}</div>
                     <div class="text-sm text-slate-200 mb-3">${m.alloc}</div>
                     <div class="grid grid-cols-1 gap-1.5 text-xs font-mono-num bg-brand-bg/60 rounded-lg p-2.5 text-slate-300">
-                        <div>${marketLightCache.usedProxy ? '0050(代理)' : '加權指數'}：<span class="text-white font-bold">${fmt(marketLightCache.closeNow)}</span></div>
+                        <div>${marketLightCache.usedProxy ? '0050(代理)' : '加權指數'}(收盤計算基準)：<span class="text-white font-bold">${fmt(marketLightCache.closeNow)}</span></div>
                         <div>日20MA：<span class="text-blue-400">${fmt(marketLightCache.ma20Now)}</span></div>
                         <div>日100MA：<span class="text-amber-400">${fmt(marketLightCache.ma100Now)}</span></div>
                     </div>
+                    ${rtHtml}
                     <div class="mt-1.5 text-[10px] text-slate-500">資料來源：${marketLightCache.source}</div>
                     ${proxyWarn}
                 </div>
-                <p class="text-slate-500 text-[11px] mt-3 leading-relaxed">用加權指數的日20MA、日100MA交叉位置代表大盤多空位階：同在均線上方=多頭、同在下方=空頭，介於中間的「拉回/反彈」是過渡狀態，建議成數是依邏輯內插的參考值，不是精確公式。</p>
+                <p class="text-slate-500 text-[11px] mt-3 leading-relaxed">用加權指數的日20MA、日100MA交叉位置代表大盤多空位階：同在均線上方=多頭、同在下方=空頭，介於中間的「拉回/反彈」是過渡狀態，建議成數是依邏輯內插的參考值，不是精確公式。燈號的多空判斷固定用「收盤計算基準」算MA，不會因為盤中即時報價跳動而一直變來變去；即時報價只是讓你看一下現在這一刻大概在哪裡，純參考用。</p>
                 <button id="market-light-retry" class="mt-3 w-full bg-brand-border hover:bg-slate-700 text-white px-3 py-2 rounded-lg text-sm font-semibold transition flex items-center justify-center gap-1.5"><i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> 重新計算</button>`;
             safeLucideIcons({ root: detail });
             document.getElementById('market-light-retry').addEventListener('click', () => { loadMarketLight(); });
@@ -2901,9 +2948,8 @@
         async function fetchInstitutionalFinMind(symbol) {
             const end = new Date();
             const start = new Date(); start.setDate(start.getDate() - 15);
-            const tokenParam = FINMIND_TOKEN ? `&token=${FINMIND_TOKEN}` : '';
-            const url = `https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockInstitutionalInvestorsBuySell&data_id=${symbol}&start_date=${start.toISOString().split('T')[0]}&end_date=${end.toISOString().split('T')[0]}${tokenParam}`;
-            const res = await corsFetch(url);
+            const url = `https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockInstitutionalInvestorsBuySell&data_id=${symbol}&start_date=${start.toISOString().split('T')[0]}&end_date=${end.toISOString().split('T')[0]}`;
+            const res = await finmindCorsFetch(url);
             const json = await res.json();
             if (json.status !== 200 || !Array.isArray(json.data) || json.data.length === 0) throw new Error('FinMind 三大法人無資料');
             let latestDate = json.data[0].date;
@@ -2954,9 +3000,8 @@
 
         // ============ 股利/除權息資料(FinMind，上市櫃都支援) ============
         async function fetchDividendData(symbol) {
-            const tokenParam = FINMIND_TOKEN ? `&token=${FINMIND_TOKEN}` : '';
-            const url = `https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockDividend&data_id=${symbol}&start_date=2015-01-01${tokenParam}`;
-            const res = await corsFetch(url);
+            const url = `https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockDividend&data_id=${symbol}&start_date=2015-01-01`;
+            const res = await finmindCorsFetch(url);
             const json = await res.json();
             if (json.status !== 200 || !Array.isArray(json.data) || json.data.length === 0) throw new Error('股利資料無資料');
             const num = v => { const n = parseFloat(v); return isFinite(n) ? n : 0; };
