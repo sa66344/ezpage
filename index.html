@@ -84,8 +84,9 @@
             <form id="add-stock-form" class="flex flex-1 sm:flex-initial gap-1.5">
                 <div class="relative w-20 shrink-0">
                     <i data-lucide="search" class="absolute left-2 top-2.5 w-3.5 h-3.5 text-slate-400"></i>
-                    <input type="text" id="stock-input" placeholder="代號"
+                    <input type="text" id="stock-input" placeholder="代號" autocomplete="off"
                            class="w-full bg-brand-bg border border-brand-border text-white pl-[26px] pr-1 py-2 rounded-lg focus:outline-none focus:border-brand-cyan placeholder-slate-500 text-sm transition">
+                    <div id="stock-suggest-dropdown" class="hidden absolute left-0 top-full mt-1 w-64 max-h-72 overflow-y-auto bg-brand-card border border-brand-border rounded-lg shadow-2xl z-50"></div>
                 </div>
                 <input type="text" id="stock-name-input" placeholder="名稱(選填)"
                        class="w-24 sm:w-28 min-w-0 bg-brand-bg border border-brand-border text-white px-2 py-2 rounded-lg focus:outline-none focus:border-brand-cyan placeholder-slate-500 text-sm transition">
@@ -495,13 +496,23 @@
         <div id="panel-scan" class="absolute inset-0 hidden overflow-y-auto p-4 hide-scroll bg-brand-bg">
             <div class="max-w-3xl mx-auto space-y-4">
                 <div class="glass-panel rounded-xl p-4 text-xs text-slate-300 leading-relaxed">
-                    <div class="flex flex-wrap gap-3 mb-2">
+                    <div class="flex flex-wrap gap-3 mb-3">
                         <span class="flex items-center gap-1 font-bold text-white"><i data-lucide="bell-ring" class="w-4 h-4 text-brand-cyan"></i> 觸發買點</span>
                         <span class="flex items-center gap-1"><span class="px-1.5 py-0.5 rounded bg-brand-down/20 text-brand-down border border-brand-down/30">起漲</span> 剛站上均線</span>
                         <span class="flex items-center gap-1"><span class="px-1.5 py-0.5 rounded bg-brand-teal/20 text-brand-teal border border-brand-teal/30">強勢</span> 贏大盤5%</span>
                     </div>
-                    <div class="text-slate-400">綜合評分滿分10分(買點訊號5分+起漲2分+強勢2分+流動性1分)，8分以上標記🎯短線買入，僅供參考。列表只會顯示「起漲」或「強勢」的股票，平淡無亮點的不會列出來，每一筆也會多標「隔天可否買入」的判斷。</div>
-                    <div class="text-slate-500 mt-1.5 pt-1.5 border-t border-brand-border/50">📌「鯨魚雷達」第一次按下去時，會抓全市場當天成交金額排行，動態列出最多<span id="scan-list-count-note" class="text-slate-300 font-bold">300</span>檔成交金額最高的中大型股(取代原本固定108檔的清單)；如果想掃描清單外的股票，請先在上方加到「我的漁場」自選清單。</div>
+                    <p class="text-white font-bold mb-1.5">🌟 【雷達評分小秘訣】（滿分 10 分） 🌟</p>
+                    <p class="mb-1"><b class="text-slate-200">配分大解密：</b>買點訊號 5 分 ＋ 起漲 2 分 ＋ 強勢 2 分 ＋ 流動性 1 分！</p>
+                    <p class="mb-1"><b class="text-slate-200">優等生獎勵：</b>只要拿到 8 分以上，就會幫你蓋上「🎯 短線買入」的榮譽標章！（貼心提醒：雷達僅供參考，還是要自己評估喔 😉）</p>
+                    <p class="mb-1"><b class="text-slate-200">嚴選活力股：</b>清單非常有個性！只會秀出「起漲」或「強勢」的活躍魚兒 🐟，平淡無亮點的就不會出來佔空間啦～</p>
+                    <p><b class="text-slate-200">明日小抄：</b>每一檔股票旁邊，都會貼心附上「隔天可否買入」的判斷小建議，讓你提早做準備！🚀</p>
+                </div>
+
+                <div class="glass-panel rounded-xl p-4 text-xs text-slate-300 leading-relaxed">
+                    <p class="text-white font-bold mb-1.5">✨ 鯨魚雷達啟動準備 ✨</p>
+                    <p class="mb-1">第一次按下去，雷達會自動幫你掃描全市場，抓出當天成交金額 Top<span id="scan-list-count-note" class="text-brand-cyan font-bold">150</span> 的中大型股 🐋！</p>
+                    <p class="mb-1 text-slate-400">資料撈取中，要請您耐心等一下下 ⏳</p>
+                    <p class="text-slate-400">👉 小提示：若想掃描名單外的股票，請先到上方把它們加入『我的漁場』，雷達就會幫你一起掃描囉！👀</p>
                 </div>
                 
                 <div class="flex bg-brand-card p-1 rounded-xl border border-brand-border">
@@ -653,8 +664,66 @@
             '9933': '中鼎', '9941': '裕融', '9945': '潤泰新'
         };
         function getUserNames() { return loadJSON('trend_user_names', {}); }
-        function stockName(code) { const u = getUserNames(); return u[code] || STOCK_NAMES[code] || ''; }
+        let allStockInfoMap = loadJSON('trend_all_stock_info', null); // {code: name}，全市場代碼對照表，給代號輸入自動完成用
+        function stockName(code) { const u = getUserNames(); return u[code] || STOCK_NAMES[code] || (allStockInfoMap && allStockInfoMap[code]) || ''; }
         function stockLabel(code) { const n = stockName(code); return n ? `${code} ${n}` : code; }
+
+        // ============ 全市場代碼/名稱對照表(自動完成用) ============
+        // 用FinMind的TaiwanStockInfo一次抓全部上市櫃股票代碼+名稱(免費資料集)，存在localStorage，一天內不重抓。
+        async function ensureAllStockInfo() {
+            const ONE_DAY = 24 * 60 * 60 * 1000;
+            const ts = loadJSON('trend_all_stock_info_ts', 0);
+            if (allStockInfoMap && (Date.now() - ts) < ONE_DAY) return allStockInfoMap;
+            try {
+                const tokenParam = FINMIND_TOKEN ? `&token=${FINMIND_TOKEN}` : '';
+                const url = `https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockInfo${tokenParam}`;
+                const res = await corsFetch(url);
+                const json = await res.json();
+                if (json.status === 200 && Array.isArray(json.data)) {
+                    const map = {};
+                    json.data.forEach(r => {
+                        if (r.stock_id && r.stock_name && /^\d{4,6}$/.test(r.stock_id) && !map[r.stock_id]) {
+                            map[r.stock_id] = r.stock_name;
+                        }
+                    });
+                    if (Object.keys(map).length > 100) {
+                        allStockInfoMap = map;
+                        saveJSON('trend_all_stock_info', map);
+                        saveJSON('trend_all_stock_info_ts', Date.now());
+                    }
+                }
+            } catch (e) { console.warn('全市場股票清單抓取失敗(自動完成功能會變得比較有限)', e.message); }
+            return allStockInfoMap || {};
+        }
+        function searchStockSuggestions(query, limit = 8) {
+            const q = query.trim().toLowerCase();
+            if (!q) return [];
+            const pool = allStockInfoMap || STOCK_NAMES;
+            const userNames = getUserNames();
+            const merged = { ...pool, ...STOCK_NAMES, ...userNames };
+            const byCode = [], byName = [];
+            for (const code in merged) {
+                const name = merged[code];
+                if (code.toLowerCase().startsWith(q)) byCode.push({ code, name });
+                else if (name && name.toLowerCase().includes(q)) byName.push({ code, name });
+                if (byCode.length >= limit) break;
+            }
+            return [...byCode, ...byName].slice(0, limit);
+        }
+        function renderStockSuggestDropdown(items) {
+            const dd = document.getElementById('stock-suggest-dropdown');
+            if (!dd) return;
+            if (items.length === 0) { dd.classList.add('hidden'); dd.innerHTML = ''; return; }
+            dd.innerHTML = items.map(it => `<button type="button" class="stock-suggest-item w-full text-left px-3 py-2 text-sm hover:bg-brand-bg transition flex items-center gap-2" data-code="${it.code}" data-name="${it.name}"><span class="font-mono-num text-brand-cyan">${it.code}</span><span class="text-slate-200 truncate">${it.name}</span></button>`).join('');
+            dd.classList.remove('hidden');
+            dd.querySelectorAll('.stock-suggest-item').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.getElementById('stock-input').value = btn.dataset.code;
+                    document.getElementById('stock-name-input').value = btn.dataset.name;
+                    dd.classList.add('hidden');
+                });
+            });
+        }
 
         // 大範圍掃描母清單：沿用名稱表裡有把握的常見大型/中型股代號(約80多檔)，不是官方即時成分股名單
         const MASTER_SCAN_LIST = Object.keys(STOCK_NAMES).filter(c => !['0050', '0056', '00878'].includes(c));
@@ -777,7 +846,7 @@
         // 「當日成交金額」資料表當替代指標——成交金額越大通常代表公司規模/市場關注度越大，雖然不是
         // 100%等同市值，但是免費、即時、不需要額外申請權限，是比較務實的折衷方案。
         // SCAN_CAP_DYNAMIC：限制最多收錄幾檔，避免清單太大時掃描一次要等非常久(每檔都要單獨抓歷史K線)。
-        const SCAN_CAP_DYNAMIC = 300;
+        const SCAN_CAP_DYNAMIC = 150;
         const KNOWN_ETF_CODES = new Set(['0050', '0051', '0052', '0053', '0054', '0055', '0056', '0057', '0061',
             '00646', '00662', '00668', '00690', '00692', '00693', '00701', '00713', '00728', '00752', '00757',
             '00761', '00762', '00763', '00770', '00783', '00830', '00850', '00851', '00852', '00861', '00865',
@@ -3227,7 +3296,22 @@
             }
             if (!watchlist.includes(symbol)) { watchlist.unshift(symbol); showToast(`已追蹤 ${stockLabel(symbol)}`, 'success'); }
             input.value = ''; nameInput.value = ''; input.blur();
+            document.getElementById('stock-suggest-dropdown').classList.add('hidden');
             renderWatchlist(); loadStock(symbol);
+        });
+        // 代號輸入自動完成：打代號或公司名稱都會跳出建議清單，選了會自動帶入名稱欄位，不用再手動打名稱
+        document.getElementById('stock-input').addEventListener('input', (e) => {
+            const val = e.target.value.trim();
+            const exactName = val ? stockName(val.toUpperCase()) : '';
+            if (exactName) document.getElementById('stock-name-input').value = exactName;
+            renderStockSuggestDropdown(searchStockSuggestions(val));
+        });
+        document.getElementById('stock-input').addEventListener('focus', (e) => {
+            if (e.target.value.trim()) renderStockSuggestDropdown(searchStockSuggestions(e.target.value));
+        });
+        document.addEventListener('click', (e) => {
+            const dd = document.getElementById('stock-suggest-dropdown');
+            if (dd && !dd.contains(e.target) && e.target.id !== 'stock-input') dd.classList.add('hidden');
         });
         document.querySelectorAll('.tab-btn').forEach(btn => btn.addEventListener('click', () => switchTab(btn.dataset.tab)));
 
@@ -3478,6 +3562,7 @@
             renderWatchlist();
             loadMarketLight();
             loadInstitutionalData().then(() => { if (currentSymbol) renderInstitutionalInfo(currentSymbol); }).catch(() => {});
+            ensureAllStockInfo().catch(() => {});
             setTimeout(() => loadStock(watchlist[0]), 300);
         });
     </script>
