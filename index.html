@@ -247,7 +247,8 @@
 
     <!-- 分頁籤 -->
     <div class="w-full bg-brand-card border-b border-brand-border flex shrink-0 overflow-x-auto hide-scroll text-sm font-medium z-10">
-        <button class="tab-btn active flex-1 min-w-[80px] py-3 text-slate-400 flex justify-center items-center gap-1.5" data-tab="daily"><i data-lucide="bar-chart-3" class="w-4 h-4"></i>日線</button>
+        <button class="tab-btn active flex-1 min-w-[80px] py-3 text-slate-400 flex justify-center items-center gap-1.5" data-tab="dashboard"><i data-lucide="layout-dashboard" class="w-4 h-4"></i>儀表板</button>
+        <button class="tab-btn flex-1 min-w-[80px] py-3 text-slate-400 flex justify-center items-center gap-1.5" data-tab="daily"><i data-lucide="bar-chart-3" class="w-4 h-4"></i>日線</button>
         <button class="tab-btn flex-1 min-w-[80px] py-3 text-slate-400 flex justify-center items-center gap-1.5" data-tab="weekly"><i data-lucide="calendar-range" class="w-4 h-4"></i>長線</button>
         <button class="tab-btn flex-1 min-w-[80px] py-3 text-slate-400 flex justify-center items-center gap-1.5" data-tab="signals"><i data-lucide="pie-chart" class="w-4 h-4"></i>數據</button>
         <button class="tab-btn flex-1 min-w-[80px] py-3 text-slate-400 flex justify-center items-center gap-1.5" data-tab="scan"><i data-lucide="radar" class="w-4 h-4"></i>掃描</button>
@@ -301,7 +302,29 @@
         </div>
 
         <!-- 日線分頁 -->
-        <div id="panel-daily" class="absolute inset-0 flex flex-col">
+        <div id="panel-dashboard" class="absolute inset-0 overflow-y-auto p-4 hide-scroll bg-brand-bg space-y-3">
+            <div class="flex items-center justify-between">
+                <h2 class="text-white font-bold text-lg flex items-center gap-2"><i data-lucide="layout-dashboard" class="w-5 h-5 text-brand-cyan"></i> 我的追蹤總覽</h2>
+                <button id="dashboard-refresh-btn" class="flex items-center gap-1 bg-brand-card text-slate-300 border border-brand-border px-2.5 py-1.5 rounded-lg transition hover:bg-slate-700 text-xs">
+                    <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> 重新整理
+                </button>
+            </div>
+            <p class="text-slate-500 text-[11px] leading-relaxed">一次看完追蹤清單裡每一檔的即時價格、個股狀態、長短線買進建議跟處置股警示，不用一個一個點進去看。點卡片可以直接切換到那檔股票的日線圖。</p>
+
+            <div class="glass-panel rounded-xl overflow-hidden">
+                <button id="daily-report-toggle-btn" class="collapse-toggle w-full flex justify-between items-center p-4 text-left" data-target="daily-report-content">
+                    <h3 class="text-white font-bold flex items-center gap-2 text-sm"><i data-lucide="newspaper" class="w-4 h-4 text-brand-cyan"></i> 📊 盤後速報</h3>
+                    <span class="chevron text-slate-400 text-xs">▾</span>
+                </button>
+                <div id="daily-report-content" class="hidden px-4 pb-4">
+                    <p class="text-slate-500 text-xs">點上面標題展開，會逐檔檢查追蹤清單產生報告(範圍只有追蹤清單，不是全市場)</p>
+                </div>
+            </div>
+
+            <div id="dashboard-list" class="space-y-2"></div>
+        </div>
+
+        <div id="panel-daily" class="hidden absolute inset-0 flex flex-col">
             <!-- 日線專屬工具列 (整合按鈕) -->
             <div class="shrink-0 flex items-center gap-2 px-3 py-2 bg-brand-card border-b border-brand-border text-xs overflow-x-auto hide-scroll z-20 shadow-md">
                 <button id="bb-toggle-btn" class="bg-brand-bg hover:bg-slate-800 text-slate-300 border border-brand-border px-3 py-1.5 rounded-lg shrink-0 transition font-medium whitespace-nowrap">BB</button>
@@ -324,6 +347,9 @@
                 </button>
                 <button id="shortterm-float-btn" class="shrink-0 flex items-center gap-1.5 bg-blue-900/30 text-blue-300 border border-blue-500/30 px-3 py-1.5 rounded-lg transition hover:bg-blue-900/50 whitespace-nowrap">
                     <i data-lucide="zap" class="w-3.5 h-3.5"></i> 短線指標
+                </button>
+                <button id="intraday-btn" class="shrink-0 flex items-center gap-1.5 bg-pink-900/30 text-pink-300 border border-pink-500/30 px-3 py-1.5 rounded-lg transition hover:bg-pink-900/50 whitespace-nowrap">
+                    <i data-lucide="radio" class="w-3.5 h-3.5"></i> 盤中速覽
                 </button>
                 <button id="daily-refresh-btn" class="shrink-0 flex items-center gap-1 bg-brand-card text-slate-300 border border-brand-border px-2 py-1.5 rounded-lg transition hover:bg-slate-700" title="如果買賣點沒顯示，按這裡手動重整圖表">
                     <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> 重整圖表
@@ -370,6 +396,7 @@
                     <div id="shortterm-panel" class="space-y-3"></div>
                     <div id="predict-panel" class="space-y-3 hidden"></div>
                     <div id="four-treasures-panel" class="space-y-3 hidden"></div>
+                    <div id="intraday-panel" class="space-y-3 hidden"></div>
                 </div>
             </div>
         </div>
@@ -393,6 +420,11 @@
                 <section class="glass-panel rounded-xl p-4">
                     <h3 class="text-brand-cyan font-bold mb-4 flex items-center gap-2"><i data-lucide="coins" class="w-5 h-5"></i> 股利 / 除權息 <span class="text-xs font-normal text-slate-400">(近3年發放紀錄)</span></h3>
                     <div id="dividend-info" class="space-y-2"></div>
+                </section>
+
+                <section class="glass-panel rounded-xl p-4">
+                    <h3 class="text-brand-cyan font-bold mb-4 flex items-center gap-2"><i data-lucide="landmark" class="w-5 h-5"></i> 券商分點進出 <span class="text-xs font-normal text-slate-400">(最新交易日)</span></h3>
+                    <div id="broker-info" class="space-y-2"></div>
                 </section>
 
                 <div id="winrate-compare" class="glass-panel rounded-xl p-5 shadow-lg"></div>
@@ -1576,6 +1608,111 @@
                 price,
                 prevClose: isFinite(prevClose) ? prevClose : null,
                 updateTime: isFinite(updateMs) ? new Date(updateMs) : null,
+            };
+        }
+
+        // ============ 盤中型態判斷 ============
+        // 用即時報價的開/高/低/現價/昨收去判斷簡單的盤中型態(開高走低/開低走高/貼著高低點等)。
+        // ⚠️ 老實說明限制：三大法人買賣超是「收盤後才公布」的資料，沒有即時的版本，
+        // 所以這裡沒辦法真正偵測「外資/主力現在正在盤中倒貨」這種事，只能用「價格+量」的型態去推測可能性，
+        // 不是真的看到籌碼流向，這點要請你知道，僅供參考，不要當成確定的訊號。
+        function classifyIntradayPattern(rt) {
+            if (rt.open === null || rt.prevClose === null || rt.high === null || rt.low === null) return null;
+            const gapPct = (rt.open - rt.prevClose) / rt.prevClose * 100;
+            const fromHighPct = rt.high > 0 ? (rt.price - rt.high) / rt.high * 100 : 0;
+            const fromLowPct = rt.low > 0 ? (rt.price - rt.low) / rt.low * 100 : 0;
+            const dayRangePct = rt.low > 0 ? (rt.high - rt.low) / rt.low * 100 : 0;
+            const openedHigher = gapPct > 0.3, openedLower = gapPct < -0.3;
+            const pulledBackFromHigh = fromHighPct <= -1.5, bouncedFromLow = fromLowPct >= 1.5;
+
+            let state, emoji, cls, label, detail;
+            if (openedHigher && pulledBackFromHigh) {
+                state = 'gap_up_fade'; emoji = '⚠️'; cls = 'text-orange-300'; label = '開高走低';
+                detail = `今天開盤比昨收高${gapPct.toFixed(1)}%，但目前股價已經從當天最高點回落${Math.abs(fromHighPct).toFixed(1)}%。這種型態常常是早盤追高的人現在套在高點，如果你還沒進場，建議先觀察尾盤是否能站穩，不要追在當天最高點附近。`;
+            } else if (openedLower && bouncedFromLow) {
+                state = 'gap_down_bounce'; emoji = '📈'; cls = 'text-sky-300'; label = '開低走高';
+                detail = `今天開盤比昨收低${Math.abs(gapPct).toFixed(1)}%，但目前股價已經從當天最低點反彈${fromLowPct.toFixed(1)}%，屬於止穩回升的型態，相對健康一些，但還是要留意尾盤能不能撐住，不要太早樂觀。`;
+            } else if (dayRangePct < 1.5) {
+                state = 'tight'; emoji = '😐'; cls = 'text-slate-300'; label = '區間整理';
+                detail = `今天股價波動幅度很小(最高最低差距只有${dayRangePct.toFixed(1)}%)，盤中沒有明顯方向，屬於觀望整理的格局，量縮的話更要小心隨時可能變盤。`;
+            } else if (rt.price >= rt.high * 0.995) {
+                state = 'near_high'; emoji = '🚀'; cls = 'text-red-400'; label = '貼著高點';
+                detail = `目前股價貼著當天最高點附近，盤中走勢強勢，但這個位置追價風險也比較高，建議留意成交量是否同步放大，沒有量的噴高要小心是曇花一現。`;
+            } else if (rt.price <= rt.low * 1.005) {
+                state = 'near_low'; emoji = '🔻'; cls = 'text-green-400'; label = '貼著低點';
+                detail = `目前股價貼著當天最低點附近，盤中偏弱。如果你已經持有，要留意停損價位；如果還沒進場，建議先觀望，不要在弱勢時搶進。`;
+            } else {
+                state = 'neutral'; emoji = '〜'; cls = 'text-slate-300'; label = '高低點之間遊走';
+                detail = `目前股價在今天的高低點之間遊走，沒有特別明顯的開高走低或開低走高型態，盤中還算正常震盪。`;
+            }
+            return { state, emoji, cls, label, detail, gapPct, fromHighPct, fromLowPct, dayRangePct };
+        }
+        async function renderIntradayPanel(symbol) {
+            const panel = document.getElementById('intraday-panel');
+            if (!panel) return;
+            panel.innerHTML = '<p class="text-gray-500 text-sm">即時報價載入中...</p>';
+            try {
+                const rt = await fetchStockRealtime(symbol);
+                const pattern = classifyIntradayPattern(rt);
+                const chg = rt.prevClose !== null ? rt.price - rt.prevClose : null;
+                const pct = (chg !== null && rt.prevClose) ? (chg / rt.prevClose * 100) : null;
+                const chgCls = chg === null ? 'text-gray-300' : chg >= 0 ? 'text-red-400' : 'text-green-400';
+                const sign = chg !== null && chg >= 0 ? '+' : '';
+                const timeStr = rt.updateTime ? rt.updateTime.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' }) : '--';
+                const daily = stockCache[symbol];
+                const avgVol20 = daily ? avgDailyVolumeLots(daily, 20) : null;
+                const volRatio = (avgVol20 && rt.volLots !== null && avgVol20 > 0) ? (rt.volLots / avgVol20 * 100) : null;
+                panel.innerHTML = `
+                    <div class="bg-gray-800 rounded p-3">
+                        <div class="flex items-baseline gap-2 mb-2">
+                            <span class="text-2xl font-bold ${chgCls} font-mono-num">${fmt(rt.price)}</span>
+                            ${chg !== null ? `<span class="${chgCls} font-mono-num text-sm">${sign}${fmt(chg)}(${sign}${pct.toFixed(2)}%)</span>` : ''}
+                            <span class="text-[10px] text-gray-500 ml-auto">${timeStr}更新</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-1.5 text-xs font-mono-num text-gray-300 mb-3">
+                            <div>今開：${fmt(rt.open)}</div>
+                            <div>昨收：${fmt(rt.prevClose)}</div>
+                            <div>今高：${fmt(rt.high)}</div>
+                            <div>今低：${fmt(rt.low)}</div>
+                        </div>
+                        ${pattern ? `
+                            <div class="border-t border-gray-700 pt-2">
+                                <div class="text-base font-bold ${pattern.cls} mb-1">${pattern.emoji} ${pattern.label}</div>
+                                <div class="text-[11px] text-gray-300 leading-relaxed">${pattern.detail}</div>
+                            </div>` : '<div class="text-xs text-gray-500 border-t border-gray-700 pt-2">資料不足，無法判斷盤中型態</div>'}
+                        ${volRatio !== null ? `<div class="mt-2 pt-2 border-t border-gray-700 text-[11px] text-gray-400">目前累計成交量 ${rt.volLots.toFixed(0)}張，約為近20日平均量的 <span class="${volRatio >= 150 ? 'text-amber-300 font-bold' : ''}">${volRatio.toFixed(0)}%</span>(這是跟「整天的均量」比，不是跟「同一時間點」比，所以這個數字會隨著愈接近收盤愈有參考價值，早盤看到的比例本來就會偏低，不是異常)</div>` : ''}
+                    </div>
+                    <div class="bg-amber-900/15 border border-amber-500/25 rounded p-2.5 text-[11px] text-amber-100/90 leading-relaxed">
+                        ⚠️ <b>重要限制</b>：三大法人(外資/投信/自營商)買賣超是「收盤後才公布」的資料，沒有即時版本，所以這個功能<b>沒辦法真正偵測「主力現在正在盤中洗盤/出貨」</b>，只能從現在的「價格+量」型態去推測可能性，不是真的看到籌碼在流動。真正的主力動向，要等明天的三大法人公布後，去「數據」分頁的「資金水位」卡片才看得到昨天(也就是今天收盤後)的結果。
+                    </div>`;
+            } catch (e) {
+                panel.innerHTML = `<p class="text-gray-500 text-sm">即時報價抓取失敗：${e.message}</p>`;
+            }
+        }
+
+
+        // 同時查tse_(上市)跟otc_(上櫃)兩個代碼，不用先判斷這檔股票是哪個市場，錯誤的那邊MIS系統會回空值，自動忽略。
+        async function fetchStockRealtime(symbol) {
+            const url = `https://mis.twse.com.tw/stock/api/getStockInfo.jsp?ex_ch=tse_${symbol}.tw|otc_${symbol}.tw&json=1&delay=0`;
+            const res = await corsFetch(url);
+            const json = await res.json();
+            const arr = json && Array.isArray(json.msgArray) ? json.msgArray : [];
+            const item = arr.find(it => it && it.z && it.z !== '-') || arr[0];
+            if (!item) throw new Error('個股即時報價無資料(可能是非交易時間，或這檔股票今天還沒成交)');
+            let price = parseFloat(item.z);
+            if (!isFinite(price) || price <= 0) price = parseFloat(item.o);
+            const open = parseFloat(item.o), high = parseFloat(item.h), low = parseFloat(item.l), prevClose2 = parseFloat(item.y);
+            const volLots = parseFloat(item.v); // 累積成交量，單位是「張」
+            const updateMs2 = parseInt(item.tlong);
+            if (!isFinite(price) || price <= 0) throw new Error('個股即時報價格式異常');
+            return {
+                price,
+                open: isFinite(open) && open > 0 ? open : null,
+                high: isFinite(high) && high > 0 ? high : null,
+                low: isFinite(low) && low > 0 ? low : null,
+                prevClose: isFinite(prevClose2) && prevClose2 > 0 ? prevClose2 : null,
+                volLots: isFinite(volLots) ? volLots : null,
+                updateTime: isFinite(updateMs2) ? new Date(updateMs2) : null,
             };
         }
 
@@ -3145,6 +3282,59 @@
         // ============ 處置股警示(FinMind TaiwanStockDispositionSecuritiesPeriod) ============
         // 注意：FinMind目前只有「處置股」(已經被限制交易，例如分盤撮合/預收款券/不可當沖)的資料集，
         // 「注意股」(只是揭示公告、還沒限制交易的較輕等級)目前沒找到對應的開放資料源，所以這裡只能顯示處置股的部分。
+        // ============ 券商分點進出(FinMind taiwan_stock_trading_daily_report) ============
+        // 之前這個功能失敗過一次，原因是當時Worker還沒設定好token轉發，這次改用finmindCorsFetch
+        // (會優先走你的tide-proxy Worker，由Worker在伺服器端加token)，理論上應該會比之前可靠。
+        async function fetchBrokerData(symbol) {
+            for (let i = 0; i < 6; i++) {
+                const d = new Date(); d.setDate(d.getDate() - i);
+                const dateStr = d.toISOString().split('T')[0];
+                const url = `https://api.finmindtrade.com/api/v4/taiwan_stock_trading_daily_report?data_id=${symbol}&start_date=${dateStr}`;
+                try {
+                    const res = await finmindCorsFetch(url);
+                    const json = await res.json();
+                    const rows = Array.isArray(json) ? json : (Array.isArray(json.data) ? json.data : null);
+                    if (rows && rows.length > 0) return { date: dateStr, rows };
+                } catch (e) { console.warn('分點資料嘗試失敗', dateStr, e.message); }
+            }
+            throw new Error('分點資料抓取失敗(可能近期都查無資料，或這檔股票成交太冷清)');
+        }
+        async function renderBrokerInfo(symbol) {
+            const el = document.getElementById('broker-info');
+            if (!el) return;
+            el.innerHTML = '<p class="text-gray-500 text-sm">載入中...</p>';
+            try {
+                const { date, rows } = await fetchBrokerData(symbol);
+                const num = v => { const n = Number(v); return isFinite(n) ? n : 0; };
+                const processed = rows.map(r => ({
+                    name: r.securities_trader || r.securities_trader_id || '未知券商',
+                    buy: num(r.buy), sell: num(r.sell), net: num(r.buy) - num(r.sell),
+                })).filter(r => r.buy > 0 || r.sell > 0);
+                processed.sort((a, b) => b.net - a.net);
+                const topBuy = processed.filter(p => p.net > 0).slice(0, 5);
+                const topSell = processed.filter(p => p.net < 0).sort((a, b) => a.net - b.net).slice(0, 5);
+                const lots = n => (n / 1000).toFixed(0) + '張';
+                const rowHtml = (list, cls) => list.length === 0
+                    ? '<div class="text-gray-500 text-xs">無資料</div>'
+                    : list.map(p => `<div class="flex justify-between text-xs py-0.5"><span class="text-gray-300 truncate mr-2">${p.name}</span><span class="${cls} font-mono-num shrink-0">${p.net >= 0 ? '+' : ''}${lots(p.net)}</span></div>`).join('');
+                el.innerHTML = `
+                    <div class="text-gray-500 text-xs mb-2">資料日期：${date}(來源：FinMind分點資料，僅統計當天有出現在分點報表的券商)</div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <div class="text-red-400 text-xs font-bold mb-1">🔺買超分點 Top5</div>
+                            ${rowHtml(topBuy, 'text-red-400')}
+                        </div>
+                        <div>
+                            <div class="text-green-400 text-xs font-bold mb-1">🔻賣超分點 Top5</div>
+                            ${rowHtml(topSell, 'text-green-400')}
+                        </div>
+                    </div>
+                    <p class="text-[10px] text-gray-500 mt-2">分點進出只能看出「哪個券商營業據點」幫客戶買賣比較多，不能直接認定背後是哪個特定主力，僅供參考。</p>`;
+            } catch (e) {
+                el.innerHTML = `<p class="text-gray-500 text-sm">查無 ${symbol} 的分點資料，或資料來源暫時不穩(${e.message})</p>`;
+            }
+        }
+
         async function fetchDispositionInfo(symbol) {
             const today = new Date().toISOString().split('T')[0];
             const start = new Date(); start.setDate(start.getDate() - 60); // 抓近60天的公告，找目前還在處置期間內的
@@ -3158,6 +3348,214 @@
             active.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
             return active[0];
         }
+        // ============ 儀表板：追蹤清單總覽 ============
+        // ============ 全市場三大法人買賣超彙總(BFI82U)，給盤後速報的大盤摘要用 ============
+        // 跟T86不一樣：T86是「每一檔股票」的買賣超，BFI82U是「全市場加總」的買賣金額，單位是NT$元，
+        // 換算成「億」比較好看。欄位名稱沒有100%驗證過實際的JSON格式，這裡用關鍵字寬鬆比對「外資」「投信」，
+        // 抓不到的話會優雅地顯示「--」，不會讓整個盤後速報壞掉。
+        async function fetchMarketInstitutionalSummary() {
+            const url = 'https://www.twse.com.tw/fund/BFI82U?response=json&type=day';
+            const res = await corsFetch(url);
+            const json = await res.json();
+            if (!Array.isArray(json.data) || !Array.isArray(json.fields)) throw new Error('大盤法人彙總無資料(可能非交易日)');
+            const fields = json.fields;
+            const nameIdx = findFieldIdx(fields, ['名稱']) >= 0 ? findFieldIdx(fields, ['名稱']) : 0;
+            const netIdx = findFieldIdx(fields, ['買賣']);
+            if (netIdx < 0) throw new Error('大盤法人彙總欄位比對失敗');
+            const num = v => parseFloat(String(v).replace(/,/g, '')) || 0;
+            let foreignNet = 0, foreignMatched = false, trustNet = 0, trustMatched = false, dealerNet = 0, dealerMatched = false;
+            json.data.forEach(row => {
+                const name = String(row[nameIdx] || '');
+                const net = num(row[netIdx]);
+                if (name.includes('外資')) { foreignNet += net; foreignMatched = true; }
+                else if (name.includes('投信')) { trustNet += net; trustMatched = true; }
+                else if (name.includes('自營')) { dealerNet += net; dealerMatched = true; }
+            });
+            const toYi = n => n / 1e8; // 轉換成「億」
+            return {
+                foreignYi: foreignMatched ? toYi(foreignNet) : null,
+                trustYi: trustMatched ? toYi(trustNet) : null,
+                dealerYi: dealerMatched ? toYi(dealerNet) : null,
+            };
+        }
+
+        // ============ 盤後速報(範圍是追蹤清單，不是全市場) ============
+        async function getStockInstitutionalNet(symbol) {
+            let row = institutionalCache && institutionalCache.map[symbol];
+            if (row) return row;
+            try { return await fetchInstitutionalFinMind(symbol); } catch (e) { return null; }
+        }
+        async function generateDailyReport() {
+            const lines = { highlow: [], limit: [], instBuy: [], instSell: [], volSurge: [], disposition: [] };
+            for (const symbol of watchlist) {
+                try {
+                    const daily = stockCache[symbol] || await fetchStockDataMulti(symbol);
+                    if (daily.length < 21) continue;
+                    const n = daily.length;
+                    const today = daily[n - 1];
+                    const yesterday = daily[n - 2];
+                    const chgPct = yesterday ? (today.close - yesterday.close) / yesterday.close * 100 : null;
+
+                    // 突破20日新高/新低(用「今天以外」的前20天高低點比較，不含今天自己)
+                    const last20 = daily.slice(n - 21, n - 1);
+                    const high20 = Math.max(...last20.map(d => d.high));
+                    const low20 = Math.min(...last20.map(d => d.low));
+                    if (today.close > high20) lines.highlow.push(`🌟 ${stockLabel(symbol)}　收 ${fmt(today.close)}（突破20日新高 ${fmt(high20)}）`);
+                    else if (today.close < low20) lines.highlow.push(`💀 ${stockLabel(symbol)}　收 ${fmt(today.close)}（突破20日新低 ${fmt(low20)}）`);
+
+                    // 漲跌停(±9.5%以上)
+                    if (chgPct !== null && Math.abs(chgPct) >= 9.5) {
+                        lines.limit.push(`${chgPct >= 0 ? '🔺' : '🟢'} ${stockLabel(symbol)}　收 ${fmt(today.close)} (${chgPct >= 0 ? '+' : ''}${chgPct.toFixed(1)}%)`);
+                    }
+
+                    // 量能>1.5倍(跟近20日均量比)
+                    const avgVol20 = avgDailyVolumeLots(daily.slice(0, n - 1), 20);
+                    const todayVolLots = today.volume / 1000;
+                    if (avgVol20 && avgVol20 > 0) {
+                        const ratio = todayVolLots / avgVol20;
+                        if (ratio >= 1.5) lines.volSurge.push(`• ${stockLabel(symbol)}　${ratio.toFixed(2)}x`);
+                    }
+
+                    // 法人買賣超
+                    const inst = await getStockInstitutionalNet(symbol);
+                    if (inst) {
+                        const lots = v => v === null ? null : Math.round(v / 1000);
+                        const f = lots(inst.foreign), t = lots(inst.trust), d = lots(inst.dealer);
+                        const total = (f ?? 0) + (t ?? 0) + (d ?? 0);
+                        const detail = `外${f !== null ? (f >= 0 ? '+' : '') + f : '--'} 投${t !== null ? (t >= 0 ? '+' : '') + t : '--'} 自${d !== null ? (d >= 0 ? '+' : '') + d : '--'}`;
+                        if (total > 0) lines.instBuy.push(`• ${stockLabel(symbol)}　${detail}`);
+                        else if (total < 0) lines.instSell.push(`• ${stockLabel(symbol)}　${detail}`);
+                    }
+
+                    // 處置股
+                    const dispo = await fetchDispositionInfo(symbol).catch(() => null);
+                    if (dispo) lines.disposition.push(`⚠️ ${stockLabel(symbol)}　第${dispo.disposition_cnt ?? '?'}次，期間至${dispo.period_end}`);
+                } catch (e) { console.warn('盤後速報處理失敗', symbol, e.message); }
+            }
+            return lines;
+        }
+        async function renderDailyReport() {
+            const el = document.getElementById('daily-report-content');
+            if (!el) return;
+            el.innerHTML = '<p class="text-gray-500 text-sm">產生中，這要逐檔檢查追蹤清單，會花一點時間...</p>';
+            try {
+                const todayStr = new Date().toLocaleDateString('zh-TW', { month: '2-digit', day: '2-digit', weekday: 'short' });
+                let taiexHtml = '';
+                try {
+                    const rt = await fetchTaiexRealtime();
+                    const chg = rt.prevClose !== null ? rt.price - rt.prevClose : null;
+                    const pct = (chg !== null && rt.prevClose) ? (chg / rt.prevClose * 100) : null;
+                    const cls = chg === null ? 'text-white' : chg >= 0 ? 'text-red-400' : 'text-green-400';
+                    taiexHtml = `<div class="${cls} font-bold">${chg >= 0 ? '🔺' : '🟢'} 加權 ${fmt(rt.price)} (${chg >= 0 ? '+' : ''}${fmt(chg)} ${chg >= 0 ? '+' : ''}${pct.toFixed(2)}%)</div>`;
+                } catch (e) { taiexHtml = '<div class="text-gray-500">加權指數抓取失敗</div>'; }
+                let marketInstHtml = '';
+                try {
+                    const m = await fetchMarketInstitutionalSummary();
+                    const seg = (label, v) => v === null ? `${label} --` : `${label} ${v >= 0 ? '+' : ''}${v.toFixed(0)}億`;
+                    marketInstHtml = `<div class="text-gray-300 text-sm">${seg('外資', m.foreignYi)} / ${seg('投信', m.trustYi)}</div>`;
+                } catch (e) { marketInstHtml = '<div class="text-gray-500 text-sm">全市場法人彙總抓取失敗</div>'; }
+
+                const lines = await generateDailyReport();
+                const section = (emoji, title, arr, emptyOk = true) => {
+                    if (arr.length === 0 && !emptyOk) return '';
+                    return `<div class="mt-3"><div class="text-white font-bold text-sm mb-1">${emoji} ${title}</div>${arr.length ? arr.map(l => `<div class="text-xs text-gray-300 font-mono-num">${l}</div>`).join('') : '<div class="text-xs text-gray-500">（無）</div>'}</div>`;
+                };
+                document.getElementById('daily-report-content').innerHTML = `
+                    <div class="text-slate-400 text-xs mb-2">📊 ${todayStr} 盤後速報</div>
+                    <div class="bg-gray-800 rounded-lg p-3 mb-2">
+                        ${taiexHtml}
+                        ${marketInstHtml}
+                    </div>
+                    ${section('🌟', '追蹤清單：突破20日新高/新低', lines.highlow)}
+                    ${section('🟥', '漲跌停（≥9.5%）', lines.limit)}
+                    ${section('📈', '法人買超', lines.instBuy)}
+                    ${section('📉', '法人賣超', lines.instSell)}
+                    ${section('🔊', '量能 > 1.5x', lines.volSurge)}
+                    ${section('⚠️', '處置中', lines.disposition)}
+                    <p class="text-[10px] text-gray-500 mt-3 leading-relaxed">範圍只有你的追蹤清單，不是全市場。外資台指期未平倉、主動ETF持股變化、公告這三項沒有可靠的免費資料源，做不出來。資料可能有些微落差，僅供參考。</p>`;
+            } catch (e) {
+                el.innerHTML = `<p class="text-gray-500 text-sm">盤後速報產生失敗：${e.message}</p>`;
+            }
+        }
+
+        async function renderDashboard() {
+            const listEl = document.getElementById('dashboard-list');
+            if (!listEl) return;
+            if (watchlist.length === 0) {
+                listEl.innerHTML = '<p class="text-gray-500 text-sm text-center py-6">追蹤清單是空的，先到上方加幾檔股票吧</p>';
+                return;
+            }
+            listEl.innerHTML = watchlist.map(symbol => `
+                <div class="dashboard-card glass-panel rounded-xl p-3 cursor-pointer active:scale-[0.99] transition" data-symbol="${symbol}">
+                    <div class="flex items-center justify-between">
+                        <span class="font-bold text-white">${stockLabel(symbol)}</span>
+                        <span class="text-xs text-gray-500">載入中...</span>
+                    </div>
+                </div>`).join('');
+            listEl.querySelectorAll('.dashboard-card').forEach(card => {
+                card.addEventListener('click', () => { loadStock(card.dataset.symbol); switchTab('daily'); });
+            });
+            watchlist.forEach(symbol => loadDashboardCard(symbol));
+        }
+        async function loadDashboardCard(symbol) {
+            const card = document.querySelector(`.dashboard-card[data-symbol="${symbol}"]`);
+            if (!card) return;
+            try {
+                const daily = await fetchStockDataMulti(symbol);
+                let analysis = analysisCache[symbol];
+                if (!analysis) { analysis = analyzeSymbol(daily); analysisCache[symbol] = analysis; }
+                const dv = analysis.dailyView, wv = analysis.weeklyView;
+                const light = computeStockLight(daily, dv.ind);
+                const lightMap = {
+                    red: { emoji: '📈', label: '多頭排列', cls: 'text-red-400' },
+                    green: { emoji: '📉', label: '空頭排列', cls: 'text-green-400' },
+                    redyellow: { emoji: '📉', label: '漲多拉回', cls: 'text-amber-400' },
+                    greenyellow: { emoji: '📈', label: '止跌反彈', cls: 'text-yellow-300' },
+                };
+                const lightHtml = light ? `<span class="${lightMap[light.state].cls}">${lightMap[light.state].emoji}${lightMap[light.state].label}</span>` : '<span class="text-gray-500">資料不足</span>';
+
+                let dailyVerdict = null, weeklyVerdict = null;
+                try { dailyVerdict = evaluateBuySuitability(dv); } catch (e) {}
+                try { weeklyVerdict = evaluateWeeklyBuySuitability(wv); } catch (e) {}
+
+                let rtHtml;
+                try {
+                    const rt = await fetchStockRealtime(symbol);
+                    const chg = rt.prevClose !== null ? rt.price - rt.prevClose : null;
+                    const pct = (chg !== null && rt.prevClose) ? (chg / rt.prevClose * 100) : null;
+                    const cls = chg === null ? 'text-white' : chg >= 0 ? 'text-red-400' : 'text-green-400';
+                    rtHtml = `<span class="${cls} font-mono-num font-bold">${fmt(rt.price)}</span>${chg !== null ? ` <span class="${cls} font-mono-num text-xs">${chg >= 0 ? '+' : ''}${pct.toFixed(2)}%</span>` : ''}`;
+                } catch (e) {
+                    const lastClose = daily.length ? daily[daily.length - 1].close : null;
+                    rtHtml = `<span class="text-white font-mono-num">${fmt(lastClose)}</span><span class="text-[10px] text-gray-500 ml-1">(收盤價)</span>`;
+                }
+
+                let dispoHtml = '';
+                try {
+                    const dispo = await fetchDispositionInfo(symbol);
+                    if (dispo) dispoHtml = `<div class="mt-1.5 text-[11px] text-red-300 bg-red-900/40 border border-red-500/40 rounded px-2 py-1">⚠️ 處置股第${dispo.disposition_cnt ?? '?'}次，期間至${dispo.period_end}</div>`;
+                } catch (e) {}
+
+                const scoreVal = dv.latestScore ? dv.latestScore.score : null;
+                card.innerHTML = `
+                    <div class="flex items-center justify-between mb-1.5">
+                        <span class="font-bold text-white">${stockLabel(symbol)}</span>
+                        ${rtHtml}
+                    </div>
+                    <div class="flex items-center gap-3 text-xs mb-1.5">
+                        <span>個股狀態：${lightHtml}</span>
+                        <span class="text-gray-500">VCP ${scoreVal ?? '--'}/18</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 text-[11px]">
+                        <div class="bg-gray-800 rounded px-2 py-1">${dailyVerdict ? `<span class="text-gray-500">短線：</span>${dailyVerdict.light} ${dailyVerdict.label}` : '<span class="text-gray-500">短線：資料不足</span>'}</div>
+                        <div class="bg-gray-800 rounded px-2 py-1">${weeklyVerdict ? `<span class="text-gray-500">長線：</span>${weeklyVerdict.light} ${weeklyVerdict.label}` : '<span class="text-gray-500">長線：資料不足</span>'}</div>
+                    </div>
+                    ${dispoHtml}`;
+            } catch (e) {
+                card.innerHTML = `<div class="flex items-center justify-between"><span class="font-bold text-white">${stockLabel(symbol)}</span><span class="text-xs text-red-400">資料載入失敗</span></div>`;
+            }
+        }
+
         async function renderDispositionWarning(symbol) {
             const elDaily = document.getElementById('daily-disposition-warning');
             const elWeekly = document.getElementById('weekly-disposition-warning');
@@ -3369,6 +3767,7 @@
             renderInstitutionalInfo(symbol);
             renderValuationInfo(symbol);
             renderDividendInfo(symbol);
+            renderBrokerInfo(symbol);
         }
 
 
@@ -3413,6 +3812,7 @@
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tabName));
             if (tabName === 'beginner') renderRookieWatchlist();
             if (tabName === 'scan') renderSectorRotation();
+            if (tabName === 'dashboard') renderDashboard();
             requestAnimationFrame(() => {
                 syncChartSize(weeklyChart, document.getElementById('weekly-chart-container'));
                 syncChartSize(dailyChart, document.getElementById('daily-chart-container'));
@@ -3690,31 +4090,33 @@
             document.getElementById('shortterm-panel').classList.toggle('hidden', which !== 'shortterm');
             document.getElementById('predict-panel').classList.toggle('hidden', which !== 'predict');
             document.getElementById('four-treasures-panel').classList.toggle('hidden', which !== 'fourtreasures');
+            document.getElementById('intraday-panel').classList.toggle('hidden', which !== 'intraday');
             const titleEl = document.getElementById('modal-title');
             if (which === 'vcp') titleEl.innerHTML = '<i data-lucide="activity" class="w-5 h-5 text-brand-cyan"></i> VCP 評分參考';
             else if (which === 'shortterm') titleEl.innerHTML = '<i data-lucide="zap" class="w-5 h-5 text-brand-cyan"></i> 短線技術指標';
             else if (which === 'predict') titleEl.innerHTML = '<i data-lucide="compass" class="w-5 h-5 text-brand-cyan"></i> 明日策略・買點建議';
             else if (which === 'fourtreasures') titleEl.innerHTML = '<i data-lucide="gem" class="w-5 h-5 text-brand-cyan"></i> 長週線波段工具';
+            else if (which === 'intraday') titleEl.innerHTML = '<i data-lucide="radio" class="w-5 h-5 text-brand-cyan"></i> 盤中速覽';
             safeLucideIcons({ root: titleEl.parentElement });
             if (which === 'predict') renderTodaySignal(currentSymbol);
+            if (which === 'intraday') renderIntradayPanel(currentSymbol);
             document.getElementById('info-modal').classList.remove('hidden');
         }
         document.getElementById('vcp-float-btn').addEventListener('click', () => openInfoModal('vcp'));
         document.getElementById('shortterm-float-btn').addEventListener('click', () => openInfoModal('shortterm'));
         document.getElementById('predict-btn').addEventListener('click', () => openInfoModal('predict'));
         document.getElementById('four-treasures-float-btn').addEventListener('click', () => openInfoModal('fourtreasures'));
+        document.getElementById('intraday-btn').addEventListener('click', () => openInfoModal('intraday'));
         function refreshChartsManually() {
             syncChartSize(weeklyChart, document.getElementById('weekly-chart-container'));
             syncChartSize(dailyChart, document.getElementById('daily-chart-container'));
-            const cached = analysisCache[currentSymbol];
-            const dailyData = stockCache[currentSymbol];
-            if (cached && dailyData) {
-                renderWeeklyChart(currentSymbol, dailyData, cached.weeklyView);
-                renderDailyChart(currentSymbol, dailyData, cached.dailyView, cached.weeklyView);
-                showToast('已重新整理圖表', 'success');
-            } else {
-                loadStock(currentSymbol);
-            }
+            // 故意清掉這檔的快取，逼系統重新向資料源要最新的一筆——不然收盤後按這個鍵，
+            // 還是會用收盤前就抓好、暫存在記憶體裡的舊資料畫圖，看不到剛收盤的新K棒。
+            delete stockCache[currentSymbol];
+            delete analysisCache[currentSymbol];
+            delete dataSourceCache[currentSymbol];
+            showToast('正在重新抓取最新資料...', 'info');
+            loadStock(currentSymbol);
         }
         document.getElementById('weekly-refresh-btn').addEventListener('click', refreshChartsManually);
         document.getElementById('daily-refresh-btn').addEventListener('click', refreshChartsManually);
@@ -3922,6 +4324,16 @@
             loadInstitutionalData().then(() => { if (currentSymbol) renderInstitutionalInfo(currentSymbol); }).catch(() => {});
             ensureAllStockInfo().catch(() => {});
             setTimeout(() => loadStock(watchlist[0]), 300);
+            renderDashboard();
+            document.getElementById('dashboard-refresh-btn').addEventListener('click', () => {
+                watchlist.forEach(s => { delete stockCache[s]; delete analysisCache[s]; });
+                renderDashboard();
+            });
+            document.getElementById('daily-report-toggle-btn').addEventListener('click', () => {
+                const content = document.getElementById('daily-report-content');
+                // collapse-toggle的通用監聽會negate hidden，這裡用setTimeout讓那個監聽先跑完，再判斷現在是不是變成展開狀態
+                setTimeout(() => { if (!content.classList.contains('hidden')) renderDailyReport(); }, 0);
+            });
         });
     </script>
 </body>
