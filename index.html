@@ -121,16 +121,12 @@
         </div>
     </div>
 
-    <!-- 45度淡浮水印，蓋在整個App上方但不擋互動(pointer-events:none) -->
-    <div id="watermark-overlay" class="fixed inset-0 pointer-events-none" style="z-index:90; opacity:0.12; background-image:url('data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22640%22%20height%3D%22360%22%3E%0A%3Ctext%20x%3D%22320%22%20y%3D%22180%22%20font-size%3D%2215%22%20fill%3D%22rgba%28255%2C255%2C255%2C0.55%29%22%20font-family%3D%22sans-serif%22%20text-anchor%3D%22middle%22%20transform%3D%22rotate%28-45%20320%20180%29%22%3E%E6%98%9F%E5%85%92%E8%A3%BD%E4%BD%9C-%E6%9C%AC%E5%B9%B3%E5%8F%B0%E6%95%B8%E6%93%9A%E5%83%85%E4%BE%9B%E5%AD%B8%E8%A1%93%E7%A0%94%E7%A9%B6%E8%88%87%E5%9B%9E%E6%B8%AC%E5%8F%83%E8%80%83%EF%BC%8C%E4%B8%8D%E6%A7%8B%E6%88%90%E6%8A%95%E8%B3%87%E5%BB%BA%E8%AD%B0%E3%80%82%E5%83%85%E4%BE%9B%E5%8F%83%E8%80%83%3C/text%3E%0A%3C/svg%3E'); background-repeat:repeat;"></div>
-
     <!-- 頂部導覽列 -->
     <header class="bg-brand-card border-b border-brand-border px-3 py-2 flex items-center justify-between gap-2 z-10 shrink-0 w-full shadow-md" style="padding-top: max(0.5rem, env(safe-area-inset-top)); padding-left: max(0.75rem, env(safe-area-inset-left)); padding-right: max(0.75rem, env(safe-area-inset-right));">
         <div class="flex items-center gap-1.5 min-w-0">
             <div class="bg-gradient-to-br from-brand-cyan to-brand-teal p-1 rounded-lg shadow-lg shrink-0">
                 <i data-lucide="waves" class="text-brand-bg w-4 h-4"></i>
             </div>
-            <h1 class="text-base font-bold text-white leading-tight tracking-wide shrink-0">潮汐指標</h1>
             <span id="online-count-badge" class="hidden items-center gap-1 bg-brand-bg border border-brand-border rounded-full px-2 py-0.5 text-[10px] text-slate-400 shrink-0">
                 <span class="w-1.5 h-1.5 rounded-full bg-green-400"></span> <span id="online-count-text">--</span>
             </span>
@@ -140,11 +136,11 @@
                 <i data-lucide="activity" class="w-3 h-3 text-slate-500 shrink-0"></i>
                 <span id="market-light-badge-text" class="font-mono-num truncate">計算中...</span>
             </button>
-            <button id="settings-open-btn" class="flex items-center justify-center bg-brand-cyan/15 hover:bg-brand-cyan/25 text-brand-cyan border border-brand-cyan/40 rounded-lg p-2 transition shrink-0" title="系統參數設定">
-                <i data-lucide="sliders" class="w-4 h-4"></i>
+            <button id="settings-open-btn" class="flex items-center justify-center gap-1 bg-brand-cyan/15 hover:bg-brand-cyan/25 text-brand-cyan border border-brand-cyan/40 rounded-lg px-2 py-2 transition shrink-0 text-[10px] font-bold tracking-wide" title="系統參數設定">
+                <i data-lucide="sliders" class="w-4 h-4"></i> SETTING
             </button>
-            <button id="add-stock-toggle-btn" class="flex items-center justify-center bg-brand-bg border border-brand-border rounded-lg p-2 text-slate-300 hover:border-brand-cyan transition shrink-0" title="新增追蹤股票">
-                <i data-lucide="plus" class="w-4 h-4"></i>
+            <button id="add-stock-toggle-btn" class="flex items-center justify-center gap-1 bg-brand-bg border border-brand-border rounded-lg px-2 py-2 text-slate-300 hover:border-brand-cyan transition shrink-0 text-[10px] font-bold tracking-wide" title="新增追蹤股票">
+                <i data-lucide="search" class="w-4 h-4"></i> SEARCH
             </button>
         </div>
     </header>
@@ -254,7 +250,7 @@
     </div>
 
     <!-- 分頁籤 -->
-    <div class="w-full bg-brand-card border-b border-brand-border flex shrink-0 overflow-x-auto hide-scroll text-sm font-medium z-10">
+    <div class="w-full bg-brand-card border-b border-brand-border flex shrink-0 overflow-x-auto styled-scroll text-sm font-medium z-10">
         <button class="tab-btn active flex-1 min-w-[80px] py-3 text-slate-400 flex justify-center items-center gap-1.5" data-tab="dashboard"><i data-lucide="layout-dashboard" class="w-4 h-4"></i>儀表板</button>
         <button class="tab-btn flex-1 min-w-[80px] py-3 text-slate-400 flex justify-center items-center gap-1.5" data-tab="daily"><i data-lucide="bar-chart-3" class="w-4 h-4"></i>日線</button>
         <button class="tab-btn flex-1 min-w-[80px] py-3 text-slate-400 flex justify-center items-center gap-1.5" data-tab="weekly"><i data-lucide="calendar-range" class="w-4 h-4"></i>長線</button>
@@ -271,7 +267,7 @@
 
         <!-- 週線分頁 -->
         <div id="panel-weekly" class="absolute inset-0 hidden flex flex-col">
-            <div class="shrink-0 flex items-center gap-2 px-3 py-2 bg-brand-card border-b border-brand-border text-xs overflow-x-auto hide-scroll z-20 shadow-md">
+            <div class="shrink-0 flex items-center gap-2 px-3 py-2 bg-brand-card border-b border-brand-border text-xs overflow-x-auto styled-scroll z-20 shadow-md">
                 <button id="four-treasures-float-btn" class="shrink-0 flex items-center gap-1.5 bg-amber-900/30 text-amber-300 border border-amber-500/30 px-3 py-1.5 rounded-lg transition hover:bg-amber-900/50 whitespace-nowrap">
                     <i data-lucide="gem" class="w-3.5 h-3.5"></i> 長週線波段工具 <span id="four-treasures-float-badge" class="font-bold text-white bg-amber-500/40 px-1 rounded text-[10px]">--</span>
                 </button>
@@ -428,6 +424,11 @@
                 <section class="glass-panel rounded-xl p-4">
                     <h3 class="text-brand-cyan font-bold mb-4 flex items-center gap-2"><i data-lucide="coins" class="w-5 h-5"></i> 股利 / 除權息 <span class="text-xs font-normal text-slate-400">(近3年發放紀錄)</span></h3>
                     <div id="dividend-info" class="space-y-2"></div>
+                </section>
+
+                <section class="glass-panel rounded-xl p-4">
+                    <h3 class="text-brand-cyan font-bold mb-4 flex items-center gap-2"><i data-lucide="alert-triangle" class="w-5 h-5"></i> 處置股資訊</h3>
+                    <div id="disposition-info" class="space-y-2"></div>
                 </section>
 
                 <section class="glass-panel rounded-xl p-4">
@@ -751,7 +752,8 @@
     </main>
 
     <footer class="w-full bg-brand-card border-t border-brand-border shrink-0 px-3 py-1.5 text-center z-10" style="padding-bottom: max(0.375rem, env(safe-area-inset-bottom));">
-        <p class="text-slate-500 text-[10px] sm:text-[11px] leading-tight">本平台數據僅供學術研究與回測參考，不構成投資建議。</p>
+        <p class="text-slate-500 text-[10px] sm:text-[11px] leading-tight">© 2026 Star Yang. All rights reserved.</p>
+        <p class="text-slate-500 text-[10px] sm:text-[11px] leading-tight">免責聲明：本平台數據僅供學術研究與回測參考，不構成投資建議</p>
     </footer>
 
 
@@ -1277,6 +1279,9 @@
 
         let heartbeatTimer = null, onlineCountTimer = null;
         function startPresenceLoops() {
+            const badge = document.getElementById('online-count-badge');
+            const text = document.getElementById('online-count-text');
+            if (badge && text) { text.innerText = '連線中...'; badge.classList.remove('hidden'); badge.classList.add('flex'); }
             sendHeartbeat();
             fetchOnlineCount();
             if (heartbeatTimer) clearInterval(heartbeatTimer);
@@ -1307,7 +1312,7 @@
                     badge.classList.remove('hidden');
                     badge.classList.add('flex');
                 }
-            } catch (e) { /* 抓不到在線人數不影響使用，安靜跳過就好 */ }
+            } catch (e) { console.warn('在線人數抓取失敗(不影響其他功能使用)', e.message); }
         }
         async function initAuth() {
             const ok = await verifyAuthToken();
@@ -2372,7 +2377,7 @@
                 greenyellow: { emoji: '🟡', label: '空頭反彈', shortAlloc: '試單2成', alloc: '建議僅試單約2成(內插值)', cls: 'text-yellow-300 border-yellow-500/40' },
             };
             const m = map[marketLightCache.state];
-            badgeText.innerHTML = `${m.emoji}${m.label} <span class="opacity-80">(${m.shortAlloc})</span>`;
+            badgeText.innerHTML = `${m.emoji}${m.label}`;
             badge.className = `flex items-center gap-1 bg-brand-bg border rounded-lg px-2 py-1.5 text-xs font-bold transition hover:border-brand-cyan shrink-0 ${m.cls}`;
             const proxyWarn = marketLightCache.usedProxy ? `<div class="mt-2 text-amber-400 text-xs">⚠️ 加權指數資料來源暫時都抓不到，這次先用0050股價代理計算，跟實際加權指數可能會有些落差</div>` : '';
             const rt = marketLightCache.realtime;
@@ -3293,6 +3298,27 @@
         // ============ 券商分點進出(FinMind taiwan_stock_trading_daily_report) ============
         // 之前這個功能失敗過一次，原因是當時Worker還沒設定好token轉發，這次改用finmindCorsFetch
         // (會優先走你的tide-proxy Worker，由Worker在伺服器端加token)，理論上應該會比之前可靠。
+        async function renderDispositionInfo(symbol) {
+            const el = document.getElementById('disposition-info');
+            if (!el) return;
+            el.innerHTML = '<p class="text-gray-500 text-sm">載入中...</p>';
+            try {
+                const info = await fetchDispositionInfo(symbol);
+                if (!info) { el.innerHTML = '<p class="text-gray-500 text-sm">目前沒有處置紀錄(不在處置期間內)</p>'; return; }
+                el.innerHTML = `
+                    <div class="bg-red-900/30 border border-red-500/40 rounded p-3 text-sm space-y-1.5">
+                        <div class="text-red-300 font-bold">⚠️ 處置中(第${info.disposition_cnt ?? '?'}次)</div>
+                        <div class="text-gray-300">處置期間：<span class="font-mono-num">${info.period_start || '--'} ～ ${info.period_end || '--'}</span></div>
+                        <div class="text-gray-300">公告日期：<span class="font-mono-num">${info.date || '--'}</span></div>
+                        <div class="text-gray-300">處置條件：${info.condition || '未提供'}</div>
+                        <div class="text-gray-300">處置內容(幾分盤等)：${info.measure || '未提供'}</div>
+                    </div>
+                    <p class="text-[10px] text-gray-500 mt-2">「處置內容」這欄通常會寫分盤撮合的細節(例如多久撮合一次)，資料來源：FinMind，只有處置期間內才會顯示。</p>`;
+            } catch (e) {
+                el.innerHTML = `<p class="text-gray-500 text-sm">處置股資料抓取失敗：${e.message}</p>`;
+            }
+        }
+
         async function fetchBrokerData(symbol) {
             for (let i = 0; i < 6; i++) {
                 const d = new Date(); d.setDate(d.getDate() - i);
@@ -3676,6 +3702,30 @@
             if (subs.length === 0) return null;
             return Math.round(subs.reduce((a, b) => a + b, 0) / subs.length);
         }
+        // 簡易Sparkline產生器：純SVG折線，不用額外的圖表套件
+        function renderSparklineSvg(values, width = 280, height = 40) {
+            if (!values || values.length < 2) return '';
+            const min = Math.min(...values), max = Math.max(...values);
+            const range = (max - min) || 1;
+            const points = values.map((v, i) => {
+                const x = (i / (values.length - 1)) * width;
+                const y = height - ((v - min) / range) * (height - 4) - 2;
+                return `${x.toFixed(1)},${y.toFixed(1)}`;
+            }).join(' ');
+            return `<svg viewBox="0 0 ${width} ${height}" class="w-full" style="height:40px" preserveAspectRatio="none"><polyline points="${points}" fill="none" stroke="#00f2fe" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round" /></svg>`;
+        }
+        // 用「目前PE反推出來的隱含EPS」(假設這段期間EPS不變)，套用到過去的股價上，近似算出6個月的PE走勢小圖。
+        // 這是用價格變動去推估，不是真正逐日重新計算EPS，EPS如果中間有財報修正，這條線會跟實際歷史PE有落差，僅供參考型態用。
+        function computeApproxPeTrend(daily, currentPe) {
+            if (!currentPe || !isFinite(currentPe) || currentPe <= 0 || !daily || daily.length < 10) return null;
+            const n = daily.length;
+            const currentPrice = daily[n - 1].close;
+            if (!currentPrice) return null;
+            const impliedEps = currentPrice / currentPe;
+            if (!impliedEps || impliedEps <= 0) return null;
+            const start = Math.max(0, n - 126); // 大約6個月的交易日數
+            return daily.slice(start).map(d => d.close / impliedEps);
+        }
         async function renderValuationInfo(symbol) {
             const el = document.getElementById('valuation-info');
             if (!el) return;
@@ -3691,8 +3741,9 @@
                     sourceLabel = '櫃買中心(上櫃)';
                 }
                 const score = computeValuationScore(v);
-                const scoreCls = score === null ? 'text-gray-500' : score >= 70 ? 'text-red-400' : score >= 40 ? 'text-amber-300' : 'text-green-400';
-                const scoreLabel = score === null ? '資料不足' : score >= 70 ? '相對便宜/高息' : score >= 40 ? '中等水準' : '相對偏貴/低息';
+                const scoreCls = score === null ? 'text-gray-500' : score >= 71 ? 'text-green-400' : score >= 31 ? 'text-amber-300' : 'text-red-400';
+                const scoreLabel = score === null ? '資料不足' : score >= 71 ? '相對便宜' : score >= 31 ? '中性合理' : '相對昂貴';
+                const peTrend = (v.pe !== null && !isNaN(v.pe)) ? computeApproxPeTrend(stockCache[symbol], v.pe) : null;
                 el.innerHTML = `
                     <div class="bg-gray-800 rounded p-3 text-sm">
                         <div class="text-[10px] text-gray-500 mb-2">資料來源：${sourceLabel}</div>
@@ -3705,7 +3756,8 @@
                             <div><div class="text-gray-500 text-[10px]">殖利率</div><div class="text-white font-bold">${v.yield !== null && !isNaN(v.yield) ? v.yield.toFixed(2) + '%' : '--'}</div></div>
                             <div><div class="text-gray-500 text-[10px]">股價淨值比PB</div><div class="text-white font-bold">${v.pb !== null && !isNaN(v.pb) ? v.pb.toFixed(2) : '--'}</div></div>
                         </div>
-                        <div class="text-[10px] text-gray-500 leading-relaxed">
+                        ${peTrend ? `<div class="mt-2 pt-2 border-t border-gray-700"><div class="text-[10px] text-gray-500 mb-1">近6個月PE走勢(用目前PE反推估算，僅供參考型態)</div>${renderSparklineSvg(peTrend)}</div>` : ''}
+                        <div class="text-[10px] text-gray-500 leading-relaxed mt-2">
                             <b>本益比(PE)</b>：股價是每股賺的錢的幾倍，數字越小代表股價相對便宜(但不同產業合理範圍不同，不能直接比較)。<br>
                             <b>殖利率</b>：把現金股利除以股價算出的報酬率，數字越高代表配得越大方(相對股價而言)。<br>
                             <b>股價淨值比(PB)</b>：股價是公司帳上淨值的幾倍，小於1代表股價低於帳面價值。<br>
@@ -3775,6 +3827,7 @@
             renderInstitutionalInfo(symbol);
             renderValuationInfo(symbol);
             renderDividendInfo(symbol);
+            renderDispositionInfo(symbol);
             renderBrokerInfo(symbol);
         }
 
@@ -3985,7 +4038,14 @@
             if (visibleRows.length === 0) {
                 list.innerHTML = dataTimeNote + '<p class="text-gray-500 text-sm text-center py-6">這次掃描沒有「起漲」或「強勢」的股票，目前市場可能比較平淡，可以晚點再掃一次。</p>';
             } else {
-            list.innerHTML = dataTimeNote + visibleRows.map(r => `
+            list.innerHTML = dataTimeNote + visibleRows.map(r => {
+                const longOk = r.isBuy;
+                const shortOk = !!(r.buyVerdict && (r.buyVerdict.light === '🟢' || r.buyVerdict.light === '🟡'));
+                let combo = null;
+                if (longOk && shortOk) combo = { text: '✨ 長短線都可以買', cls: 'bg-amber-400 text-gray-900' };
+                else if (longOk) combo = { text: '📅 長線可以買', cls: 'bg-blue-400 text-gray-900' };
+                else if (shortOk) combo = { text: '📊 短線可以買', cls: 'bg-sky-400 text-gray-900' };
+                return `
                 <div class="bg-gray-800 rounded p-2.5 ${r.isBuy ? 'border border-amber-500' : ''}">
                     <div class="flex justify-between items-center flex-wrap gap-1">
                         <div class="flex items-center gap-1.5 flex-wrap">
@@ -4003,9 +4063,20 @@
                         </div>
                     </div>
                     <div class="mt-1 text-[10px] text-gray-600">資料日期：${r.lastDate || '--'}${r.alreadyCached ? '(沿用本次瀏覽已抓取的資料)' : '(本次新抓取)'}</div>
-                    ${r.buyVerdict ? `<div class="mt-1.5 pt-1.5 border-t border-gray-700 text-[11px]"><span class="text-gray-500">隔天可否買入：</span>${r.buyVerdict.light} <span class="font-semibold">${r.buyVerdict.label}</span></div>` : ''}
-                    ${r.divergenceNote ? `<div class="mt-1 text-[10px] text-amber-300/90 leading-relaxed">💡 ${r.divergenceNote}</div>` : ''}
-                </div>`).join('');
+                    ${combo ? `<div class="mt-1.5"><span class="text-[11px] font-bold ${combo.cls} rounded px-2 py-0.5">${combo.text}</span></div>` : ''}
+                    <div class="mt-1.5 pt-1.5 border-t border-gray-700 grid grid-cols-2 gap-2 text-[11px]">
+                        <div class="bg-gray-900/50 rounded px-2 py-1.5">
+                            <div class="text-gray-500 text-[10px] mb-0.5">📅 長線(週線)</div>
+                            <div class="font-semibold ${longOk ? 'text-amber-300' : 'text-gray-400'}">${longOk ? '🟢 可以買' : '🔴 不是買點'}</div>
+                        </div>
+                        <div class="bg-gray-900/50 rounded px-2 py-1.5">
+                            <div class="text-gray-500 text-[10px] mb-0.5">📊 短線(日線)</div>
+                            <div class="font-semibold">${r.buyVerdict ? `${r.buyVerdict.light} ${r.buyVerdict.label}` : '<span class="text-gray-500">資料不足</span>'}</div>
+                        </div>
+                    </div>
+                    ${r.divergenceNote ? `<div class="mt-1.5 text-[10px] text-amber-300/90 leading-relaxed">💡 ${r.divergenceNote}</div>` : ''}
+                </div>`;
+            }).join('');
             }
 
             document.querySelectorAll('.add-watch-btn').forEach(btn => {
