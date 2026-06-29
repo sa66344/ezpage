@@ -270,15 +270,16 @@
 
     <!-- 分頁籤 -->
     <div class="w-full bg-brand-card border-b border-brand-border flex shrink-0 overflow-x-auto styled-scroll text-sm font-medium z-10">
+        <div class="sticky left-0 self-stretch w-6 shrink-0 pointer-events-none z-10" style="background:linear-gradient(to left, transparent, #0f213b); margin-right:-1.5rem;"></div>
         <button class="tab-btn active flex-1 min-w-[80px] py-3 text-slate-400 flex justify-center items-center gap-1.5" data-tab="dashboard"><i data-lucide="layout-dashboard" class="w-4 h-4"></i>儀表板</button>
         <button class="tab-btn flex-1 min-w-[80px] py-3 text-slate-400 flex justify-center items-center gap-1.5" data-tab="daily"><i data-lucide="bar-chart-3" class="w-4 h-4"></i>日線</button>
-        <button class="tab-btn flex-1 min-w-[80px] py-3 text-slate-400 flex justify-center items-center gap-1.5" data-tab="weekly"><i data-lucide="calendar-range" class="w-4 h-4"></i>長線</button>
+        <button class="tab-btn flex-1 min-w-[80px] py-3 text-slate-400 flex justify-center items-center gap-1.5" data-tab="weekly"><i data-lucide="calendar-range" class="w-4 h-4"></i>週線</button>
         <button class="tab-btn flex-1 min-w-[80px] py-3 text-slate-400 flex justify-center items-center gap-1.5" data-tab="signals"><i data-lucide="pie-chart" class="w-4 h-4"></i>數據</button>
         <button class="tab-btn flex-1 min-w-[80px] py-3 text-slate-400 flex justify-center items-center gap-1.5" data-tab="scan"><i data-lucide="radar" class="w-4 h-4"></i>掃描</button>
         <button class="tab-btn flex-1 min-w-[80px] py-3 text-slate-400 flex justify-center items-center gap-1.5" data-tab="beginner"><i data-lucide="life-buoy" class="w-4 h-4"></i>新手</button>
         <button class="tab-btn flex-1 min-w-[80px] py-3 text-slate-400 flex justify-center items-center gap-1.5" data-tab="tutorial"><i data-lucide="graduation-cap" class="w-4 h-4"></i>教學</button>
         <button class="tab-btn flex-1 min-w-[80px] py-3 text-slate-400 flex justify-center items-center gap-1.5" data-tab="about"><i data-lucide="info" class="w-4 h-4"></i>關於</button>
-        <div class="sticky right-0 self-stretch w-6 shrink-0 pointer-events-none" style="background:linear-gradient(to right, transparent, #0f213b); margin-left:-1.5rem;"></div>
+        <div class="sticky right-0 self-stretch w-6 shrink-0 pointer-events-none z-10" style="background:linear-gradient(to right, transparent, #0f213b); margin-left:-1.5rem;"></div>
     </div>
 
     <div id="toast-container" class="fixed top-20 left-1/2 transform -translate-x-1/2 z-50 w-[90%] max-w-sm flex flex-col items-center"></div>
@@ -287,7 +288,8 @@
 
         <!-- 週線分頁 -->
         <div id="panel-weekly" class="absolute inset-0 hidden flex flex-col">
-            <div class="shrink-0 flex items-center gap-2 px-3 py-2 bg-brand-card border-b border-brand-border text-xs overflow-x-auto styled-scroll z-20 shadow-md">
+            <div class="shrink-0 flex items-center gap-2 px-3 py-2 bg-brand-card border-b border-brand-border text-xs overflow-x-auto styled-scroll z-20 shadow-md relative">
+                <div class="sticky left-0 self-stretch w-6 shrink-0 pointer-events-none z-10" style="background:linear-gradient(to left, transparent, #0f213b); margin-right:-1.5rem;"></div>
                 <button id="four-treasures-float-btn" class="shrink-0 flex items-center gap-1.5 bg-amber-900/30 text-amber-300 border border-amber-500/30 px-3 py-1.5 rounded-lg transition hover:bg-amber-900/50 whitespace-nowrap">
                     <i data-lucide="gem" class="w-3.5 h-3.5"></i> 長週線波段工具 <span id="four-treasures-float-badge" class="font-bold text-white bg-amber-500/40 px-1 rounded text-[10px]">--</span>
                 </button>
@@ -342,6 +344,16 @@
             </div>
 
             <div class="glass-panel rounded-xl overflow-hidden">
+                <button id="wind-index-toggle-btn" class="collapse-toggle w-full flex justify-between items-center p-4 text-left" data-target="wind-index-content">
+                    <h3 class="text-white font-bold flex items-center gap-2 text-sm"><i data-lucide="gauge" class="w-4 h-4 text-brand-cyan"></i> 🌪️ 量化風力指數(進階模型)</h3>
+                    <span class="chevron text-slate-400 text-xs">▾</span>
+                </button>
+                <div id="wind-index-content" class="hidden px-4 pb-4">
+                    <p class="text-slate-500 text-xs">點上面標題展開，會抓VIX/SPY/QQQ的歷史資料並計算Z-Score，第一次展開要花幾秒鐘。</p>
+                </div>
+            </div>
+
+            <div class="glass-panel rounded-xl overflow-hidden">
                 <button id="daily-report-toggle-btn" class="collapse-toggle w-full flex justify-between items-center p-4 text-left" data-target="daily-report-content">
                     <h3 class="text-white font-bold flex items-center gap-2 text-sm"><i data-lucide="newspaper" class="w-4 h-4 text-brand-cyan"></i> 📊 盤後速報</h3>
                     <span class="chevron text-slate-400 text-xs">▾</span>
@@ -355,6 +367,7 @@
         <div id="panel-daily" class="hidden absolute inset-0 flex flex-col">
             <!-- 日線專屬工具列 (整合按鈕) -->
             <div class="shrink-0 flex items-center gap-2 px-3 py-2 bg-brand-card border-b border-brand-border text-xs overflow-x-auto styled-scroll z-20 shadow-md">
+                <div class="sticky left-0 self-stretch w-6 shrink-0 pointer-events-none z-10" style="background:linear-gradient(to left, transparent, #0f213b); margin-right:-1.5rem;"></div>
                 <button id="bb-toggle-btn" class="bg-brand-bg hover:bg-slate-800 text-slate-300 border border-brand-border px-3 py-1.5 rounded-lg shrink-0 transition font-medium whitespace-nowrap">BB</button>
                 <div class="relative shrink-0">
                     <select id="daily-subpanel-select" class="appearance-none bg-brand-bg border border-brand-border text-slate-200 rounded-lg pl-3 pr-8 py-1.5 focus:outline-none transition font-medium cursor-pointer">
@@ -1580,6 +1593,121 @@
                 try { result[key] = await fetchUsTicker(t); } catch (e) { result[key] = null; }
             }));
             return result;
+        }
+
+        // ============ 量化風力指數模型 ============
+        // 設計依你提供的四大心法做的：
+        // ①指標互補性：VIX(情緒)+台股乖離率(趨勢)+SPY/QQQ單日漲跌(美股動能)一起看，不只看單一指標
+        // ②標準化：每個指標都先轉成Z-Score(跟自己過去250個交易日的平均/標準差比，看現在算不算歷史極端值)，
+        //   這樣不同單位(VIX是數值、乖離率跟漲跌幅是百分比)才能公平合併，不會因為單位不同而失去意義
+        // ③存股特殊性：最後對最近5天的原始分數做EMA平滑，不會因為單日盤中跳動就讓風力分數整個跳掉
+        // ④決策層級化：分數對應到微風/強風/疾風/颱風四級，每級都有明確的建議動作
+        function zscore(value, series) {
+            const n = series.length;
+            if (n < 10) return 0;
+            const mean = series.reduce((a, b) => a + b, 0) / n;
+            const variance = series.reduce((a, b) => a + (b - mean) * (b - mean), 0) / n;
+            const std = Math.sqrt(variance);
+            if (!std) return 0;
+            return (value - mean) / std;
+        }
+        async function fetchUsTickerHistory(ticker) {
+            const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?range=2y&interval=1d`;
+            const res = await corsFetch(url);
+            const json = await res.json();
+            const result = json && json.chart && json.chart.result && json.chart.result[0];
+            if (!result) throw new Error(`${ticker} 歷史資料無法取得`);
+            const timestamps = result.timestamp || [];
+            const closesRaw = (result.indicators && result.indicators.quote && result.indicators.quote[0] && result.indicators.quote[0].close) || [];
+            const out = [];
+            for (let i = 0; i < timestamps.length; i++) {
+                if (closesRaw[i] !== null && closesRaw[i] !== undefined && isFinite(closesRaw[i])) out.push(closesRaw[i]);
+            }
+            if (out.length < 60) throw new Error(`${ticker} 歷史資料筆數太少`);
+            return out;
+        }
+        const WIND_TIERS = [
+            { max: 2.5, label: '微風(平穩)', action: '正常執行定期定額，可加碼', cls: 'text-green-400', barCls: 'bg-green-400' },
+            { max: 5.0, label: '強風(警戒)', action: '暫停單筆加碼，維持定期定額', cls: 'text-yellow-300', barCls: 'bg-yellow-300' },
+            { max: 7.5, label: '疾風(減碼)', action: '啟動風險控制，賣出20%-30%', cls: 'text-amber-400', barCls: 'bg-amber-400' },
+            { max: 10, label: '颱風(恐慌)', action: '嚴格執行止損/避險，轉入防禦性資產', cls: 'text-red-400', barCls: 'bg-red-400' },
+        ];
+        async function computeWindIndex() {
+            const [vixCloses, spyCloses, qqqCloses, taiexDaily] = await Promise.all([
+                fetchUsTickerHistory('^VIX'),
+                fetchUsTickerHistory('SPY'),
+                fetchUsTickerHistory('QQQ'),
+                fetchTAIEX(60),
+            ]);
+            const spyReturns = spyCloses.slice(1).map((c, i) => (c - spyCloses[i]) / spyCloses[i] * 100);
+            const qqqReturns = qqqCloses.slice(1).map((c, i) => (c - qqqCloses[i]) / qqqCloses[i] * 100);
+            const taiexCloses = taiexDaily.map(d => d.close);
+            const ma20Series = taiexCloses.map((c, i) => sma(taiexCloses, 20, i));
+            const deviationSeries = [];
+            for (let i = 0; i < taiexCloses.length; i++) {
+                if (ma20Series[i] !== null && ma20Series[i] > 0) deviationSeries.push((ma20Series[i] - taiexCloses[i]) / ma20Series[i] * 100);
+                else deviationSeries.push(null);
+            }
+            const devValid = deviationSeries.filter(v => v !== null);
+
+            const baseN = 250;
+            const rawScores = [];
+            for (let k = 4; k >= 0; k--) {
+                const vixIdx = vixCloses.length - 1 - k;
+                const spyRetIdx = spyReturns.length - 1 - k;
+                const qqqRetIdx = qqqReturns.length - 1 - k;
+                const devIdx = devValid.length - 1 - k;
+                if (vixIdx < 10 || spyRetIdx < 10 || qqqRetIdx < 10 || devIdx < 10) continue;
+
+                const vixBase = vixCloses.slice(Math.max(0, vixIdx - baseN), vixIdx);
+                const spyRetBase = spyReturns.slice(Math.max(0, spyRetIdx - baseN), spyRetIdx).map(v => -v);
+                const qqqRetBase = qqqReturns.slice(Math.max(0, qqqRetIdx - baseN), qqqRetIdx).map(v => -v);
+                const devBase = devValid.slice(Math.max(0, devIdx - baseN), devIdx);
+
+                const zVix = zscore(vixCloses[vixIdx], vixBase);
+                const zSpy = zscore(-spyReturns[spyRetIdx], spyRetBase);
+                const zQqq = zscore(-qqqReturns[qqqRetIdx], qqqRetBase);
+                const zDev = zscore(devValid[devIdx], devBase);
+
+                const raw = 0.4 * zVix + 0.6 * ((zDev + zSpy + zQqq) / 3);
+                rawScores.push(Math.max(0, Math.min(10, ((raw + 3) / 6) * 10)));
+            }
+            if (rawScores.length === 0) throw new Error('資料不足，無法計算風力指數');
+
+            const alpha = 2 / (5 + 1);
+            let ema = rawScores[0];
+            for (let i = 1; i < rawScores.length; i++) ema = alpha * rawScores[i] + (1 - alpha) * ema;
+
+            const tier = WIND_TIERS.find(t => ema <= t.max) || WIND_TIERS[WIND_TIERS.length - 1];
+            return { score: ema, rawToday: rawScores[rawScores.length - 1], ...tier };
+        }
+        async function renderWindIndexCard() {
+            const el = document.getElementById('wind-index-content');
+            if (!el) return;
+            el.innerHTML = '<div class="ocean-loader" aria-label="計算中"></div><p class="text-gray-500 text-sm text-center mt-2">正在抓取VIX/SPY/QQQ的歷史資料並計算Z-Score，要花一點時間...</p>';
+            try {
+                const w = await computeWindIndex();
+                el.innerHTML = `
+                    <div class="text-center mb-2">
+                        <div class="text-3xl font-bold ${w.cls}">${w.score.toFixed(1)}<span class="text-sm text-slate-500">/10</span></div>
+                        <div class="text-lg font-bold ${w.cls}">${w.label}</div>
+                    </div>
+                    <div class="w-full bg-gray-800 rounded-full h-2.5 mb-3 overflow-hidden">
+                        <div class="${w.barCls} h-full transition-all duration-700" style="width:${w.score * 10}%"></div>
+                    </div>
+                    <div class="bg-brand-bg/60 border border-brand-border rounded-lg p-2.5 text-[11px] text-slate-300 mb-2">
+                        <b class="text-white">建議動作：</b>${w.action}
+                    </div>
+                    <p class="text-[10px] text-slate-500 leading-relaxed">用VIX(40%權重)+台股20日乖離率/SPY/QQQ單日漲跌幅(60%權重，三者平均)，每項都先轉成過去250個交易日的Z-Score再合併，避免不同單位直接相加；最後對近5天的分數做EMA平滑，不會因為單日盤中跳動就讓分數亂跳。這是輔助參考用的量化模型，不是精確預測，門檻也可能需要依你自己的風險偏好調整。</p>
+                    <table class="w-full text-[10px] text-slate-400 mt-2 border-t border-brand-border/50 pt-2">
+                        <tr class="text-slate-500"><td class="py-0.5">0~2.5</td><td>微風(平穩)</td><td class="text-right">可加碼</td></tr>
+                        <tr class="text-slate-500"><td class="py-0.5">2.6~5.0</td><td>強風(警戒)</td><td class="text-right">暫停加碼</td></tr>
+                        <tr class="text-slate-500"><td class="py-0.5">5.1~7.5</td><td>疾風(減碼)</td><td class="text-right">賣出20-30%</td></tr>
+                        <tr class="text-slate-500"><td class="py-0.5">7.6~10</td><td>颱風(恐慌)</td><td class="text-right">止損/防禦</td></tr>
+                    </table>`;
+            } catch (e) {
+                el.innerHTML = `<p class="text-gray-500 text-sm">風力指數計算失敗：${e.message}</p>`;
+            }
         }
 
         async function fetchTAIEXYahoo(monthsBack) {
@@ -3572,29 +3700,33 @@
             return { headline: '建議保守', cls: 'text-amber-300' };
         }
         async function renderMarketWindPanel() {
-            // 美股關鍵指標(先抓，因為台股的綜合建議要參考美股風險)
+            // 美股關鍵指標(先抓，因為台股的綜合建議要參考美股風險)，改成2x2小卡片排列
             const usEl = document.getElementById('market-wind-us');
             let us = null;
             if (usEl) {
                 try {
                     us = await fetchUsMarketSnapshot();
-                    const seg = (label, key, isVix) => {
+                    const miniCard = (label, key, isVix) => {
                         const d = us[key];
-                        if (!d) return `<div class="text-slate-500">${label}：--</div>`;
-                        const cls = isVix ? (d.price > 20 ? 'text-red-400' : 'text-green-400') : (d.chgPct >= 0 ? 'text-red-400' : 'text-green-400');
-                        return `<div class="flex justify-between"><span class="text-slate-400">${label}</span><span class="${cls} font-mono-num font-bold">${fmt(d.price, 1)}${d.chgPct !== null ? ` (${d.chgPct >= 0 ? '+' : ''}${d.chgPct.toFixed(1)}%)` : ''}</span></div>`;
+                        const cls = !d ? 'text-slate-500' : isVix ? (d.price > 20 ? 'text-red-400' : 'text-green-400') : (d.chgPct >= 0 ? 'text-red-400' : 'text-green-400');
+                        return `
+                        <div class="bg-brand-bg/70 border border-brand-border rounded-lg p-2 text-center">
+                            <div class="text-[10px] text-slate-400">${label}</div>
+                            <div class="${cls} font-mono-num font-bold text-sm">${d ? fmt(d.price, 1) : '--'}</div>
+                            <div class="${cls} font-mono-num text-[10px]">${d && d.chgPct !== null ? `${d.chgPct >= 0 ? '+' : ''}${d.chgPct.toFixed(1)}%` : ''}</div>
+                        </div>`;
                     };
                     usEl.innerHTML = `
-                        <div class="text-[10px] text-slate-400 mb-1">美股關鍵指標</div>
-                        <div class="text-[11px] space-y-1 font-mono-num">
-                            ${seg('VIX恐慌指數', 'vix', true)}
-                            ${seg('SPY標普500', 'spy', false)}
-                            ${seg('QQQ那斯達克', 'qqq', false)}
-                            ${seg('費半SOX', 'sox', false)}
+                        <div class="text-[10px] text-slate-400 mb-2">美股關鍵指標</div>
+                        <div class="grid grid-cols-2 gap-2">
+                            ${miniCard('VIX恐慌指數', 'vix', true)}
+                            ${miniCard('SPY標普500', 'spy', false)}
+                            ${miniCard('QQQ那斯達克', 'qqq', false)}
+                            ${miniCard('費半SOX', 'sox', false)}
                         </div>`;
                 } catch (e) { usEl.innerHTML = '<p class="text-slate-500 text-xs">美股資料抓取失敗</p>'; }
             }
-            // 台股環境指標：重用大盤燈號，再結合上面美股的風險訊號算出綜合建議標題
+            // 台股環境指標：把完整的大盤燈號資訊直接放在這裡，不用再點頭部小按鈕才看得到
             const twEl = document.getElementById('market-wind-tw');
             if (twEl) {
                 if (marketLightCache) {
@@ -3606,7 +3738,13 @@
                         <div class="text-[10px] text-slate-400 mb-1">台股環境指標(已結合美股風險)</div>
                         ${renderGaugeSvg(gaugeMap[m.state] ?? 50)}
                         <div class="text-lg font-bold ${combo.cls} text-center -mt-1">${combo.headline}</div>
-                        <div class="text-[11px] text-slate-400 text-center">台股本身：${labelMap[m.state]}，${m.alloc.replace('建議', '建議維持')}</div>`;
+                        <div class="text-[11px] text-slate-400 text-center mb-2">台股本身：${labelMap[m.state]}，${m.alloc.replace('建議', '建議維持')}</div>
+                        <div class="grid grid-cols-1 gap-1 text-[11px] font-mono-num bg-brand-bg/50 rounded-lg p-2 text-slate-300">
+                            <div>${m.usedProxy ? '0050(代理)' : '加權指數'}：<span class="text-white font-bold">${fmt(m.closeNow)}</span></div>
+                            <div>日20MA：<span class="text-blue-400">${fmt(m.ma20Now)}</span> ／ 日100MA：<span class="text-amber-400">${fmt(m.ma100Now)}</span></div>
+                            ${m.realtime ? `<div>即時報價：<span class="${m.realtime.prevClose !== null && m.realtime.price >= m.realtime.prevClose ? 'text-red-400' : 'text-green-400'} font-bold">${fmt(m.realtime.price)}</span>${m.realtime.updateTime ? ` <span class="text-slate-500">(${m.realtime.updateTime.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })}更新)</span>` : ''}</div>` : ''}
+                        </div>
+                        <div class="text-[10px] text-slate-500 mt-1">資料來源：${m.source}</div>`;
                 } else {
                     twEl.innerHTML = '<p class="text-slate-500 text-xs">大盤燈號尚未計算完成</p>';
                 }
@@ -4447,6 +4585,10 @@
                 const content = document.getElementById('daily-report-content');
                 // collapse-toggle的通用監聽會negate hidden，這裡用setTimeout讓那個監聽先跑完，再判斷現在是不是變成展開狀態
                 setTimeout(() => { if (!content.classList.contains('hidden')) renderDailyReport(); }, 0);
+            });
+            document.getElementById('wind-index-toggle-btn').addEventListener('click', () => {
+                const content = document.getElementById('wind-index-content');
+                setTimeout(() => { if (!content.classList.contains('hidden')) renderWindIndexCard(); }, 0);
             });
         });
     </script>
