@@ -490,6 +490,19 @@
                 <!-- 可收合區塊 -->
                 <div class="space-y-2">
                     <div class="tide-card">
+                        <button class="collapse-toggle w-full flex justify-between items-center p-4 text-left" data-target="about-section-longshort">
+                            <h3 class="text-white font-bold flex items-center gap-2"><i data-lucide="git-compare" class="w-4 h-4 text-brand-teal"></i> ⏳ 長線跟短線最大的差別</h3>
+                            <span class="chevron text-slate-400 text-xs">▾</span>
+                        </button>
+                        <div id="about-section-longshort" class="hidden px-4 pb-4 space-y-2 text-[13px]">
+                            <p>最核心的差別就是「<b class="text-white">看的K棒週期不一樣</b>」：</p>
+                            <p><b class="text-white">長線：</b>用「週K棒」（一週收一次）判斷，進場條件是看「這週」有沒有盤整突破、站上週20MA、或爆量。一週看一次就好，不用每天盯盤，停損也是用「跌破上週低點」這種比較寬鬆的方式，目標是抓大波段、減少進出次數跟手續費。</p>
+                            <p><b class="text-white">短線：</b>用「日K棒」（每天收一次）判斷，進場條件是看VCP評分（KD/MACD/RSI等技術指標濃縮成0~18分）夠不夠高、有沒有站上日20MA。因為是以天為單位判斷，需要每天關注，進出也比較頻繁，停損抓得更緊（最長抱10天、虧損15%就出場），目標是抓短期內比較強勢、會快速噴出的股票。</p>
+                            <p class="text-slate-400">簡單比喻：長線像是看「這個月趨勢往哪走」，短線像是看「這幾天有沒有要噴」。同一檔股票完全可能長線結構不錯（值得長期關注），但這幾天還沒輪到噴的時間點（短線說觀望）；也可能反過來，短線今天剛好噴了，但長線結構還沒站穩（長線不會列入買點）——這不是矛盾，只是兩個不同時間長度在各自講話。掃描結果如果出現這種分歧，畫面上會直接寫原因給你看。</p>
+                        </div>
+                    </div>
+
+                    <div class="tide-card">
                         <button class="collapse-toggle w-full flex justify-between items-center p-4 text-left" data-target="about-section-1">
                             <h3 class="text-white font-bold flex items-center gap-2"><i data-lucide="layout-grid" class="w-4 h-4 text-brand-teal"></i> 🗺️ 我的專屬功能導覽</h3>
                             <span class="chevron text-slate-400 text-xs">▾</span>
@@ -512,7 +525,7 @@
                         <div id="about-section-2" class="hidden px-4 pb-4 space-y-3 text-[13px]">
                             <p><strong class="text-white">日線 / VCP 短線策略：</strong></p>
                             <p>✅ <b class="text-white">進場條件：</b>系統採用了 Minervini SEPA 量化評分（滿分 18 分）。只要分數拿到 8 分以上的及格分，加上當天「帶量突破 10 日高點」，我就會讓系統把它抓進場！(訊號當天收盤才確認，所以實際上是隔天才真正算進場，避免回測偷看到還沒發生的價格)</p>
-                            <p>❌ <b class="text-white">出場機制：</b>買進後我會先給它 3 天的寬容期，而且必須「出量」才會確認停損，這樣才不會隔天就被主力輕易洗出場～一旦開始賺錢了，系統就會幫我切換成「跌破前一日最低價」的移動停利模式，盡最大努力把利潤留住！不過為了控制風險，只要虧損達到 15% 就強制說掰掰；而且短線不戀戰，最長我只會抱 10 天。這些都會清楚標記在日線圖上喔。</p>
+                            <p>❌ <b class="text-white">出場機制：</b>買進後我會先給它 3 天的寬容期，而且必須「出量」才會確認停損，這樣才不會隔天就被主力輕易洗出場～一旦開始賺錢了，系統就會幫我切換成「跌破前一日最低價」的移動停利模式，盡最大努力把利潤留住！不過為了控制風險，只要虧損達到 15% 就強制說掰掰。<b class="text-amber-300">「最長抱10天」這條規則只有在「已經賺錢」的情況下才會強制停利出場</b>，如果到第10天還沒賺錢，不會因為天數到了就被趕出場，還是會繼續用上面那些停損條件去判斷，這點容易被誤會，特別寫清楚。這些都會清楚標記在日線圖上喔。</p>
                             <p>🔮 <b class="text-white">「明日策略」按鈕：</b>這是我設計的輔助小幫手！它會用更簡單直覺的條件（站上日 20MA 且底下有日 100MA 撐腰保護）幫我偷偷試算現在是不是進場好時機。它會搭配 VCP 評分給我專屬的燈號建議，不過這只是個輔助參考，不能取代 VCP 評分的主要判斷喔！</p>
                             <p>🎨 <b class="text-white">日線圖的顏色小秘密：</b>綠色 ▲ = 買進 ／ 紅色 ▼ = 停損 ／ 藍色 ▼ = 停利 ／ 青色線 = 布林通道（看不順眼可以關掉） ／ 黃色量棒 = 當日爆量（超過均量 1.5 倍的乖寶寶）。</p>
                             <div class="h-px bg-brand-border my-2"></div>
@@ -589,6 +602,7 @@
                         <p class="mb-1"><b class="text-slate-200">優等生獎勵：</b>只要拿到 8 分以上，就會幫你蓋上「🎯 短線買入」的榮譽標章！（貼心提醒：雷達僅供參考，還是要自己評估喔 😉）</p>
                         <p class="mb-1"><b class="text-slate-200">嚴選活力股：</b>清單非常有個性！只會秀出「起漲」或「強勢」的活躍魚兒 🐟，平淡無亮點的就不會出來佔空間啦～</p>
                         <p><b class="text-slate-200">明日小抄：</b>每一檔股票旁邊，都會貼心附上「隔天可否買入」的判斷小建議，讓你提早做準備！🚀</p>
+                        <p class="text-slate-400 mt-2 pt-2 border-t border-brand-border/50">💡 上面的評分(X/10分)主要是看「長線」(週線)型態；「強勢」標籤跟「隔天可否買入」是看「短線」(日線)時機。兩邊有時候會不一樣(例如長線評分高、但短線寫請觀望)，這是正常的，不是衝突，只是兩個不同時間長度各自的判斷，出現分歧時下面會直接附上原因說明。</p>
                     </div>
                 </div>
 
@@ -3508,6 +3522,13 @@
             if (!benchmarkDaily) { try { benchmarkDaily = await fetchStockDataMulti('0050'); } catch (e) { benchmarkDaily = null; } }
 
             const rows = [];
+            // 長線(週線)沒給買點訊號時，用白話解釋一下原因，方便跟短線(日線)的判斷做對照
+            function explainWeeklyNoBuy(cb, nowAboveMa, prevAboveMa) {
+                if (cb.isConsolidation && !cb.breakout) return '週線還在盤整區間內，還沒帶量突破，依規則先不算買點';
+                if (!nowAboveMa) return '週收盤還在週20MA之下，長線趨勢還沒站穩';
+                if (nowAboveMa && prevAboveMa) return '已經站上週20MA一段時間了，不是「剛站上」的當下，長線評分只在剛突破/剛站上均線那一刻給分，現在錯過了那個時間點';
+                return '目前不符合長線的進場條件(盤整突破或剛站上均線)';
+            }
             for (let i = 0; i < targets.length; i++) {
                 const symbol = targets[i];
                 progress.innerText = `掃描中 ${i + 1}/${targets.length}：${stockLabel(symbol)}`;
@@ -3533,9 +3554,14 @@
                     const score = (isBuy ? 5 : 0) + (justTurning ? 2 : 0) + (isStrong ? 2 : 0) + (liquidityOk ? 1 : 0);
                     let buyVerdict = null;
                     try { buyVerdict = evaluateBuySuitability(computeDailyView(daily)); } catch (e) { /* 資料不足時跳過，不影響掃描其他項目 */ }
-                    rows.push({ symbol, close: lastClose, ma: lastMa20, diffPct, isBuy, justTurning, isStrong, liquidity, liquidityOk, score, source: dataSourceCache[symbol], buyVerdict, lastDate, alreadyCached });
+                    // 長線沒給買點訊號、但短線卻偏正面時，把兩邊的原因都整理出來，避免看起來互相矛盾卻不知道為什麼
+                    let divergenceNote = null;
+                    if (!isBuy && buyVerdict && (buyVerdict.light === '🟢' || buyVerdict.light === '🟡')) {
+                        divergenceNote = `長線：${explainWeeklyNoBuy(cb, nowAboveMa, prevAboveMa)}。短線：${buyVerdict.advice}`;
+                    }
+                    rows.push({ symbol, close: lastClose, ma: lastMa20, diffPct, isBuy, justTurning, isStrong, liquidity, liquidityOk, score, source: dataSourceCache[symbol], buyVerdict, lastDate, alreadyCached, divergenceNote });
                 } catch (e) {
-                    rows.push({ symbol, close: null, ma: null, diffPct: null, isBuy: false, justTurning: false, isStrong: false, liquidity: null, liquidityOk: false, score: -1, source: 'mock', lastDate: null, alreadyCached });
+                    rows.push({ symbol, close: null, ma: null, diffPct: null, isBuy: false, justTurning: false, isStrong: false, liquidity: null, liquidityOk: false, score: -1, source: 'mock', lastDate: null, alreadyCached, divergenceNote: null });
                 }
                 await new Promise(r => setTimeout(r, 200));
             }
@@ -3570,6 +3596,7 @@
                     </div>
                     <div class="mt-1 text-[10px] text-gray-600">資料日期：${r.lastDate || '--'}${r.alreadyCached ? '(沿用本次瀏覽已抓取的資料)' : '(本次新抓取)'}</div>
                     ${r.buyVerdict ? `<div class="mt-1.5 pt-1.5 border-t border-gray-700 text-[11px]"><span class="text-gray-500">隔天可否買入：</span>${r.buyVerdict.light} <span class="font-semibold">${r.buyVerdict.label}</span></div>` : ''}
+                    ${r.divergenceNote ? `<div class="mt-1 text-[10px] text-amber-300/90 leading-relaxed">💡 ${r.divergenceNote}</div>` : ''}
                 </div>`).join('');
             }
 
