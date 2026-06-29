@@ -156,10 +156,10 @@
                 <span id="market-light-badge-text" class="font-mono-num truncate">計算中...</span>
             </button>
             <button id="settings-open-btn" class="flex items-center justify-center gap-1 bg-brand-cyan/15 hover:bg-brand-cyan/25 text-brand-cyan border border-brand-cyan/40 rounded-lg px-2 py-2 transition shrink-0 text-[10px] font-bold tracking-wide" title="系統參數設定">
-                <i data-lucide="sliders" class="w-4 h-4"></i> SETTING
+                <i data-lucide="sliders" class="w-4 h-4"></i>
             </button>
             <button id="add-stock-toggle-btn" class="flex items-center justify-center gap-1 bg-brand-bg border border-brand-border rounded-lg px-2 py-2 text-slate-300 hover:border-brand-cyan transition shrink-0 text-[10px] font-bold tracking-wide" title="新增追蹤股票">
-                <i data-lucide="search" class="w-4 h-4"></i> SEARCH
+                <i data-lucide="search" class="w-4 h-4"></i>
             </button>
         </div>
     </header>
@@ -269,17 +269,19 @@
     </div>
 
     <!-- 分頁籤 -->
-    <div class="w-full bg-brand-card border-b border-brand-border flex shrink-0 overflow-x-auto styled-scroll text-sm font-medium z-10">
-        <div class="sticky left-0 self-stretch w-6 shrink-0 pointer-events-none z-10" style="background:linear-gradient(to left, transparent, #0f213b); margin-right:-1.5rem;"></div>
-        <button class="tab-btn active flex-1 min-w-[80px] py-3 text-slate-400 flex justify-center items-center gap-1.5" data-tab="dashboard"><i data-lucide="layout-dashboard" class="w-4 h-4"></i>儀表板</button>
-        <button class="tab-btn flex-1 min-w-[80px] py-3 text-slate-400 flex justify-center items-center gap-1.5" data-tab="daily"><i data-lucide="bar-chart-3" class="w-4 h-4"></i>日線</button>
-        <button class="tab-btn flex-1 min-w-[80px] py-3 text-slate-400 flex justify-center items-center gap-1.5" data-tab="weekly"><i data-lucide="calendar-range" class="w-4 h-4"></i>週線</button>
-        <button class="tab-btn flex-1 min-w-[80px] py-3 text-slate-400 flex justify-center items-center gap-1.5" data-tab="signals"><i data-lucide="pie-chart" class="w-4 h-4"></i>數據</button>
-        <button class="tab-btn flex-1 min-w-[80px] py-3 text-slate-400 flex justify-center items-center gap-1.5" data-tab="scan"><i data-lucide="radar" class="w-4 h-4"></i>掃描</button>
-        <button class="tab-btn flex-1 min-w-[80px] py-3 text-slate-400 flex justify-center items-center gap-1.5" data-tab="beginner"><i data-lucide="life-buoy" class="w-4 h-4"></i>新手</button>
-        <button class="tab-btn flex-1 min-w-[80px] py-3 text-slate-400 flex justify-center items-center gap-1.5" data-tab="tutorial"><i data-lucide="graduation-cap" class="w-4 h-4"></i>教學</button>
-        <button class="tab-btn flex-1 min-w-[80px] py-3 text-slate-400 flex justify-center items-center gap-1.5" data-tab="about"><i data-lucide="info" class="w-4 h-4"></i>關於</button>
-        <div class="sticky right-0 self-stretch w-6 shrink-0 pointer-events-none z-10" style="background:linear-gradient(to right, transparent, #0f213b); margin-left:-1.5rem;"></div>
+    <div class="relative w-full shrink-0 z-10">
+        <div class="w-full bg-brand-card border-b border-brand-border flex overflow-x-auto styled-scroll text-sm font-medium">
+            <button class="tab-btn active flex-1 min-w-[80px] py-3 text-slate-400 flex justify-center items-center gap-1.5" data-tab="dashboard"><i data-lucide="layout-dashboard" class="w-4 h-4"></i>儀表板</button>
+            <button class="tab-btn flex-1 min-w-[80px] py-3 text-slate-400 flex justify-center items-center gap-1.5" data-tab="daily"><i data-lucide="bar-chart-3" class="w-4 h-4"></i>日線</button>
+            <button class="tab-btn flex-1 min-w-[80px] py-3 text-slate-400 flex justify-center items-center gap-1.5" data-tab="weekly"><i data-lucide="calendar-range" class="w-4 h-4"></i>週線</button>
+            <button class="tab-btn flex-1 min-w-[80px] py-3 text-slate-400 flex justify-center items-center gap-1.5" data-tab="signals"><i data-lucide="pie-chart" class="w-4 h-4"></i>數據</button>
+            <button class="tab-btn flex-1 min-w-[80px] py-3 text-slate-400 flex justify-center items-center gap-1.5" data-tab="scan"><i data-lucide="radar" class="w-4 h-4"></i>掃描</button>
+            <button class="tab-btn flex-1 min-w-[80px] py-3 text-slate-400 flex justify-center items-center gap-1.5" data-tab="beginner"><i data-lucide="life-buoy" class="w-4 h-4"></i>新手</button>
+            <button class="tab-btn flex-1 min-w-[80px] py-3 text-slate-400 flex justify-center items-center gap-1.5" data-tab="tutorial"><i data-lucide="graduation-cap" class="w-4 h-4"></i>教學</button>
+            <button class="tab-btn flex-1 min-w-[80px] py-3 text-slate-400 flex justify-center items-center gap-1.5" data-tab="about"><i data-lucide="info" class="w-4 h-4"></i>關於</button>
+        </div>
+        <div class="absolute left-0 top-0 bottom-0 w-6 pointer-events-none" style="background:linear-gradient(to right, #0f213b, transparent);"></div>
+        <div class="absolute right-0 top-0 bottom-0 w-6 pointer-events-none" style="background:linear-gradient(to left, #0f213b, transparent);"></div>
     </div>
 
     <div id="toast-container" class="fixed top-20 left-1/2 transform -translate-x-1/2 z-50 w-[90%] max-w-sm flex flex-col items-center"></div>
@@ -288,19 +290,21 @@
 
         <!-- 週線分頁 -->
         <div id="panel-weekly" class="absolute inset-0 hidden flex flex-col">
-            <div class="shrink-0 flex items-center gap-2 px-3 py-2 bg-brand-card border-b border-brand-border text-xs overflow-x-auto styled-scroll z-20 shadow-md relative">
-                <div class="sticky left-0 self-stretch w-6 shrink-0 pointer-events-none z-10" style="background:linear-gradient(to left, transparent, #0f213b); margin-right:-1.5rem;"></div>
-                <button id="four-treasures-float-btn" class="shrink-0 flex items-center gap-1.5 bg-amber-900/30 text-amber-300 border border-amber-500/30 px-3 py-1.5 rounded-lg transition hover:bg-amber-900/50 whitespace-nowrap">
-                    <i data-lucide="gem" class="w-3.5 h-3.5"></i> 長週線波段工具 <span id="four-treasures-float-badge" class="font-bold text-white bg-amber-500/40 px-1 rounded text-[10px]">--</span>
-                </button>
-                <button id="weekly-bb-toggle-btn" class="shrink-0 bg-brand-bg hover:bg-slate-800 text-slate-300 border border-brand-border px-3 py-1.5 rounded-lg transition font-medium whitespace-nowrap">BB</button>
-                <button id="weekly-status-btn" class="shrink-0 flex items-center gap-1.5 bg-blue-900/30 text-blue-300 border border-blue-500/30 px-3 py-1.5 rounded-lg transition hover:bg-blue-900/50 whitespace-nowrap">
-                    <i data-lucide="activity" class="w-3.5 h-3.5"></i> 個股狀態 <span id="weekly-status-badge" class="font-bold"></span>
-                </button>
-                <button id="weekly-refresh-btn" class="shrink-0 flex items-center gap-1 bg-brand-card text-slate-300 border border-brand-border px-2 py-1.5 rounded-lg transition hover:bg-slate-700 ml-auto" title="如果買賣點沒顯示，按這裡手動重整圖表">
-                    <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> 重整圖表
-                </button>
-                <div class="sticky right-0 self-stretch w-6 shrink-0 pointer-events-none" style="background:linear-gradient(to right, transparent, #0f213b); margin-left:-1.5rem;"></div>
+            <div class="relative shrink-0 z-20">
+                <div class="flex items-center gap-2 px-3 py-2 bg-brand-card border-b border-brand-border text-xs overflow-x-auto styled-scroll shadow-md">
+                    <button id="four-treasures-float-btn" class="shrink-0 flex items-center gap-1.5 bg-amber-900/30 text-amber-300 border border-amber-500/30 px-3 py-1.5 rounded-lg transition hover:bg-amber-900/50 whitespace-nowrap">
+                        <i data-lucide="gem" class="w-3.5 h-3.5"></i> 長週線波段工具 <span id="four-treasures-float-badge" class="font-bold text-white bg-amber-500/40 px-1 rounded text-[10px]">--</span>
+                    </button>
+                    <button id="weekly-bb-toggle-btn" class="shrink-0 bg-brand-bg hover:bg-slate-800 text-slate-300 border border-brand-border px-3 py-1.5 rounded-lg transition font-medium whitespace-nowrap">BB</button>
+                    <button id="weekly-status-btn" class="shrink-0 flex items-center gap-1.5 bg-blue-900/30 text-blue-300 border border-blue-500/30 px-3 py-1.5 rounded-lg transition hover:bg-blue-900/50 whitespace-nowrap">
+                        <i data-lucide="activity" class="w-3.5 h-3.5"></i> 個股狀態 <span id="weekly-status-badge" class="font-bold"></span>
+                    </button>
+                    <button id="weekly-refresh-btn" class="shrink-0 flex items-center gap-1 bg-brand-card text-slate-300 border border-brand-border px-2 py-1.5 rounded-lg transition hover:bg-slate-700 ml-auto" title="如果買賣點沒顯示，按這裡手動重整圖表">
+                        <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> 重整圖表
+                    </button>
+                </div>
+                <div class="absolute left-0 top-0 bottom-0 w-6 pointer-events-none" style="background:linear-gradient(to right, #0f213b, transparent);"></div>
+                <div class="absolute right-0 top-0 bottom-0 w-6 pointer-events-none" style="background:linear-gradient(to left, #0f213b, transparent);"></div>
             </div>
             <div class="flex-1 relative min-h-0">
                 <!-- 浮動資訊面板(可收合，不占圖表空間) -->
@@ -345,11 +349,11 @@
 
             <div class="glass-panel rounded-xl overflow-hidden">
                 <button id="wind-index-toggle-btn" class="collapse-toggle w-full flex justify-between items-center p-4 text-left" data-target="wind-index-content">
-                    <h3 class="text-white font-bold flex items-center gap-2 text-sm"><i data-lucide="gauge" class="w-4 h-4 text-brand-cyan"></i> 🌪️ 量化風力指數(進階模型)</h3>
-                    <span class="chevron text-slate-400 text-xs">▾</span>
+                    <h3 class="text-white font-bold flex items-center gap-2 text-sm"><i data-lucide="gauge" class="w-4 h-4 text-brand-cyan"></i> 🌪️ 美股台股連動風力</h3>
+                    <span class="chevron text-slate-400 text-xs" style="transform:rotate(180deg)">▾</span>
                 </button>
-                <div id="wind-index-content" class="hidden px-4 pb-4">
-                    <p class="text-slate-500 text-xs">點上面標題展開，會抓VIX/SPY/QQQ的歷史資料並計算Z-Score，第一次展開要花幾秒鐘。</p>
+                <div id="wind-index-content" class="px-4 pb-4">
+                    <p class="text-slate-500 text-xs">正在抓VIX/SPY/QQQ的歷史資料並計算Z-Score，第一次載入要花幾秒鐘...</p>
                 </div>
             </div>
 
@@ -366,8 +370,8 @@
 
         <div id="panel-daily" class="hidden absolute inset-0 flex flex-col">
             <!-- 日線專屬工具列 (整合按鈕) -->
-            <div class="shrink-0 flex items-center gap-2 px-3 py-2 bg-brand-card border-b border-brand-border text-xs overflow-x-auto styled-scroll z-20 shadow-md">
-                <div class="sticky left-0 self-stretch w-6 shrink-0 pointer-events-none z-10" style="background:linear-gradient(to left, transparent, #0f213b); margin-right:-1.5rem;"></div>
+            <div class="relative shrink-0 z-20">
+                <div class="flex items-center gap-2 px-3 py-2 bg-brand-card border-b border-brand-border text-xs overflow-x-auto styled-scroll shadow-md">
                 <button id="bb-toggle-btn" class="bg-brand-bg hover:bg-slate-800 text-slate-300 border border-brand-border px-3 py-1.5 rounded-lg shrink-0 transition font-medium whitespace-nowrap">BB</button>
                 <div class="relative shrink-0">
                     <select id="daily-subpanel-select" class="appearance-none bg-brand-bg border border-brand-border text-slate-200 rounded-lg pl-3 pr-8 py-1.5 focus:outline-none transition font-medium cursor-pointer">
@@ -400,7 +404,9 @@
                 <button id="predict-btn" class="shrink-0 ml-auto flex items-center gap-1.5 bg-gradient-to-r from-brand-cyan to-brand-teal text-brand-bg font-bold px-3 py-1.5 rounded-lg shadow whitespace-nowrap active:scale-95 transition">
                     <i data-lucide="compass" class="w-4 h-4"></i> 明日策略 <span id="predict-float-badge"></span>
                 </button>
-                <div class="sticky right-0 self-stretch w-6 shrink-0 pointer-events-none" style="background:linear-gradient(to right, transparent, #0f213b); margin-left:-1.5rem;"></div>
+                </div>
+                <div class="absolute left-0 top-0 bottom-0 w-6 pointer-events-none" style="background:linear-gradient(to right, #0f213b, transparent);"></div>
+                <div class="absolute right-0 top-0 bottom-0 w-6 pointer-events-none" style="background:linear-gradient(to left, #0f213b, transparent);"></div>
             </div>
 
             <div class="flex-1 relative min-h-0">
@@ -1688,12 +1694,10 @@
             try {
                 const w = await computeWindIndex();
                 el.innerHTML = `
-                    <div class="text-center mb-2">
-                        <div class="text-3xl font-bold ${w.cls}">${w.score.toFixed(1)}<span class="text-sm text-slate-500">/10</span></div>
+                    <div class="text-center mb-1">
+                        ${renderGaugeSvg(w.score * 10)}
+                        <div class="text-2xl font-bold ${w.cls} -mt-1">${w.score.toFixed(1)}<span class="text-sm text-slate-500">/10</span></div>
                         <div class="text-lg font-bold ${w.cls}">${w.label}</div>
-                    </div>
-                    <div class="w-full bg-gray-800 rounded-full h-2.5 mb-3 overflow-hidden">
-                        <div class="${w.barCls} h-full transition-all duration-700" style="width:${w.score * 10}%"></div>
                     </div>
                     <div class="bg-brand-bg/60 border border-brand-border rounded-lg p-2.5 text-[11px] text-slate-300 mb-2">
                         <b class="text-white">建議動作：</b>${w.action}
@@ -3334,9 +3338,12 @@
             if (json.stat !== 'OK' || !Array.isArray(json.data)) throw new Error('T86 無資料(可能非交易日)');
             const fields = json.fields;
             const codeIdx = findFieldIdx(fields, ['證券代號']);
-            let foreignIdx = findFieldIdx(fields, ['外資', '買賣超']);
+            // 外資：要找「外資買賣超股數」，但要排除掉「外資自營商買賣超股數」這個子分類(也同時含有「外資」+「買賣超」)
+            let foreignIdx = findFieldIdx(fields, ['外資', '買賣超'], ['自營商']);
             let trustIdx = findFieldIdx(fields, ['投信', '買賣超']);
-            let dealerIdx = findFieldIdx(fields, ['自營商', '買賣超']);
+            // 自營商：要找「自營商買賣超股數」(合計)，但要排除掉「自營商買賣超股數(自行買賣)」「自營商買賣超股數(避險)」這兩個子分類、
+            // 以及「外資自營商買賣超股數」(這個含「自營商」三個字但其實是外資的子分類，不是自營商本身)
+            let dealerIdx = findFieldIdx(fields, ['自營商', '買賣超'], ['自行買賣', '避險', '外資']);
             let totalIdx = findFieldIdx(fields, ['三大法人', '買賣超']);
             // 安全檢查：欄位名稱有時會有「外資自營商」這種子分類造成誤判，
             // 如果任兩個指到同一個欄位，代表比對混淆了，這種情況寧可不顯示，不要顯示可能錯誤、重複的數字
@@ -3699,60 +3706,72 @@
             if (!twGood && usBad) return { headline: '內外皆弱，建議保守', cls: 'text-red-400' };
             return { headline: '建議保守', cls: 'text-amber-300' };
         }
-        async function renderMarketWindPanel() {
-            // 美股關鍵指標(先抓，因為台股的綜合建議要參考美股風險)，改成2x2小卡片排列
+        let lastUsSnapshot = null; // 快取美股資料，避免大盤燈號算完後重畫台股區塊時，重複再打一次美股API
+        function renderUsMiniCards(us) {
             const usEl = document.getElementById('market-wind-us');
-            let us = null;
-            if (usEl) {
-                try {
-                    us = await fetchUsMarketSnapshot();
-                    const miniCard = (label, key, isVix) => {
-                        const d = us[key];
-                        const cls = !d ? 'text-slate-500' : isVix ? (d.price > 20 ? 'text-red-400' : 'text-green-400') : (d.chgPct >= 0 ? 'text-red-400' : 'text-green-400');
-                        return `
-                        <div class="bg-brand-bg/70 border border-brand-border rounded-lg p-2 text-center">
-                            <div class="text-[10px] text-slate-400">${label}</div>
-                            <div class="${cls} font-mono-num font-bold text-sm">${d ? fmt(d.price, 1) : '--'}</div>
-                            <div class="${cls} font-mono-num text-[10px]">${d && d.chgPct !== null ? `${d.chgPct >= 0 ? '+' : ''}${d.chgPct.toFixed(1)}%` : ''}</div>
-                        </div>`;
-                    };
-                    usEl.innerHTML = `
-                        <div class="text-[10px] text-slate-400 mb-2">美股關鍵指標</div>
-                        <div class="grid grid-cols-2 gap-2">
-                            ${miniCard('VIX恐慌指數', 'vix', true)}
-                            ${miniCard('SPY標普500', 'spy', false)}
-                            ${miniCard('QQQ那斯達克', 'qqq', false)}
-                            ${miniCard('費半SOX', 'sox', false)}
-                        </div>`;
-                } catch (e) { usEl.innerHTML = '<p class="text-slate-500 text-xs">美股資料抓取失敗</p>'; }
-            }
-            // 台股環境指標：把完整的大盤燈號資訊直接放在這裡，不用再點頭部小按鈕才看得到
+            if (!usEl) return;
+            const miniCard = (label, key, isVix) => {
+                const d = us && us[key];
+                const cls = !d ? 'text-slate-500' : isVix ? (d.price > 20 ? 'text-red-400' : 'text-green-400') : (d.chgPct >= 0 ? 'text-red-400' : 'text-green-400');
+                return `
+                <div class="bg-brand-bg/70 border border-brand-border rounded-lg p-2 text-center">
+                    <div class="text-[10px] text-slate-400">${label}</div>
+                    <div class="${cls} font-mono-num font-bold text-sm">${d ? fmt(d.price, 1) : '--'}</div>
+                    <div class="${cls} font-mono-num text-[10px]">${d && d.chgPct !== null ? `${d.chgPct >= 0 ? '+' : ''}${d.chgPct.toFixed(1)}%` : ''}</div>
+                </div>`;
+            };
+            usEl.innerHTML = `
+                <div class="text-[10px] text-slate-400 mb-2">美股關鍵指標</div>
+                <div class="grid grid-cols-2 gap-2">
+                    ${miniCard('VIX恐慌指數', 'vix', true)}
+                    ${miniCard('SPY標普500', 'spy', false)}
+                    ${miniCard('QQQ那斯達克', 'qqq', false)}
+                    ${miniCard('費半SOX', 'sox', false)}
+                </div>`;
+        }
+        // 台股環境指標：把完整的大盤燈號資訊直接放在這裡，不用再點頭部小按鈕才看得到。
+        // 這個函式不會自己去抓美股資料，永遠用lastUsSnapshot這個共用快取，這樣大盤燈號算完後可以單獨呼叫這個函式
+        // 重新整理台股那塊，不會害美股那塊也跟著重新抓一次(避免重複打API，也避免之前那種「美股早就抓完了，
+        // 但台股那塊卡在載入中」的不同步問題)。
+        function renderTwWindBlock() {
             const twEl = document.getElementById('market-wind-tw');
-            if (twEl) {
-                if (marketLightCache) {
-                    const m = marketLightCache;
-                    const labelMap = { red: '多頭', redyellow: '多頭拉回', greenyellow: '空頭反彈', green: '空頭' };
-                    const gaugeMap = { red: 90, redyellow: 65, greenyellow: 35, green: 10 };
-                    const combo = computeCombinedHeadline(m.state, us);
-                    twEl.innerHTML = `
-                        <div class="text-[10px] text-slate-400 mb-1">台股環境指標(已結合美股風險)</div>
-                        ${renderGaugeSvg(gaugeMap[m.state] ?? 50)}
-                        <div class="text-lg font-bold ${combo.cls} text-center -mt-1">${combo.headline}</div>
-                        <div class="text-[11px] text-slate-400 text-center mb-2">台股本身：${labelMap[m.state]}，${m.alloc.replace('建議', '建議維持')}</div>
-                        <div class="grid grid-cols-1 gap-1 text-[11px] font-mono-num bg-brand-bg/50 rounded-lg p-2 text-slate-300">
-                            <div>${m.usedProxy ? '0050(代理)' : '加權指數'}：<span class="text-white font-bold">${fmt(m.closeNow)}</span></div>
-                            <div>日20MA：<span class="text-blue-400">${fmt(m.ma20Now)}</span> ／ 日100MA：<span class="text-amber-400">${fmt(m.ma100Now)}</span></div>
-                            ${m.realtime ? `<div>即時報價：<span class="${m.realtime.prevClose !== null && m.realtime.price >= m.realtime.prevClose ? 'text-red-400' : 'text-green-400'} font-bold">${fmt(m.realtime.price)}</span>${m.realtime.updateTime ? ` <span class="text-slate-500">(${m.realtime.updateTime.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })}更新)</span>` : ''}</div>` : ''}
-                        </div>
-                        <div class="text-[10px] text-slate-500 mt-1">資料來源：${m.source}</div>`;
-                } else {
-                    twEl.innerHTML = '<p class="text-slate-500 text-xs">大盤燈號尚未計算完成</p>';
-                }
+            if (!twEl) return;
+            if (marketLightCache) {
+                const m = marketLightCache;
+                const labelMap = { red: '多頭', redyellow: '多頭拉回', greenyellow: '空頭反彈', green: '空頭' };
+                const gaugeMap = { red: 90, redyellow: 65, greenyellow: 35, green: 10 };
+                const combo = computeCombinedHeadline(m.state, lastUsSnapshot);
+                twEl.innerHTML = `
+                    <div class="text-[10px] text-slate-400 mb-1">台股環境指標(已結合美股風險)</div>
+                    ${renderGaugeSvg(gaugeMap[m.state] ?? 50)}
+                    <div class="text-lg font-bold ${combo.cls} text-center -mt-1">${combo.headline}</div>
+                    <div class="text-[11px] text-slate-400 text-center mb-2">台股本身：${labelMap[m.state]}，${m.alloc.replace('建議', '建議維持')}</div>
+                    <div class="grid grid-cols-1 gap-1 text-[11px] font-mono-num bg-brand-bg/50 rounded-lg p-2 text-slate-300">
+                        <div>${m.usedProxy ? '0050(代理)' : '加權指數'}：<span class="text-white font-bold">${fmt(m.closeNow)}</span></div>
+                        <div>日20MA：<span class="text-blue-400">${fmt(m.ma20Now)}</span> ／ 日100MA：<span class="text-amber-400">${fmt(m.ma100Now)}</span></div>
+                        ${m.realtime ? `<div>即時報價：<span class="${m.realtime.prevClose !== null && m.realtime.price >= m.realtime.prevClose ? 'text-red-400' : 'text-green-400'} font-bold">${fmt(m.realtime.price)}</span>${m.realtime.updateTime ? ` <span class="text-slate-500">(${m.realtime.updateTime.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })}更新)</span>` : ''}</div>` : ''}
+                    </div>
+                    <div class="text-[10px] text-slate-500 mt-1">資料來源：${m.source}</div>`;
+            } else {
+                twEl.innerHTml === undefined; // no-op safeguard(永遠不會執行，純粹防止linter抱怨空分支)
+                twEl.innerHTML = '<p class="text-slate-500 text-xs">大盤燈號尚未計算完成</p>';
             }
         }
+        async function renderMarketWindPanel() {
+            try {
+                lastUsSnapshot = await fetchUsMarketSnapshot();
+            } catch (e) { lastUsSnapshot = null; }
+            renderUsMiniCards(lastUsSnapshot);
+            renderTwWindBlock();
+        }
 
+        let windIndexLoaded = false;
         async function renderDashboard() {
             renderMarketWindPanel();
+            if (!windIndexLoaded) {
+                windIndexLoaded = true;
+                renderWindIndexCard();
+            }
         }
 
         async function renderDispositionWarning(symbol) {
@@ -4579,16 +4598,13 @@
             renderDashboard();
             document.getElementById('dashboard-refresh-btn').addEventListener('click', async () => {
                 await loadMarketLight();
-                renderDashboard();
+                renderMarketWindPanel();
+                renderWindIndexCard();
             });
             document.getElementById('daily-report-toggle-btn').addEventListener('click', () => {
                 const content = document.getElementById('daily-report-content');
                 // collapse-toggle的通用監聽會negate hidden，這裡用setTimeout讓那個監聽先跑完，再判斷現在是不是變成展開狀態
                 setTimeout(() => { if (!content.classList.contains('hidden')) renderDailyReport(); }, 0);
-            });
-            document.getElementById('wind-index-toggle-btn').addEventListener('click', () => {
-                const content = document.getElementById('wind-index-content');
-                setTimeout(() => { if (!content.classList.contains('hidden')) renderWindIndexCard(); }, 0);
             });
         });
     </script>
