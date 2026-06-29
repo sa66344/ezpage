@@ -99,6 +99,16 @@
         /* 簽名元素：流動的潮水波光分隔線，純SVG+SMIL動畫，不用JS */
         .tide-hero-wave { width: 100%; height: 28px; margin: -2px 0 4px; }
         .tide-hero-wave svg { width: 100%; height: 100%; display: block; }
+        /* 游魚載入動畫：盤後速報產生資料比較慢時用，呼應潮汐主題 */
+        .fish-loader { position: relative; height: 36px; overflow: hidden; }
+        .fish-loader span { position: absolute; top: 50%; font-size: 22px; transform: translateY(-50%); animation: fish-swim 4.2s ease-in-out infinite; filter: drop-shadow(0 0 4px rgba(0,242,254,0.4)); }
+        @keyframes fish-swim {
+            0%   { left: -10%; transform: translateY(-50%) scaleX(1); }
+            45%  { left: 95%;  transform: translateY(-50%) scaleX(1); }
+            50%  { left: 95%;  transform: translateY(-50%) scaleX(-1); }
+            95%  { left: -10%; transform: translateY(-50%) scaleX(-1); }
+            100% { left: -10%; transform: translateY(-50%) scaleX(1); }
+        }
     </style>
 </head>
 <body class="text-slate-200 font-sans flex flex-col overflow-hidden w-full h-full">
@@ -127,9 +137,6 @@
             <div class="bg-gradient-to-br from-brand-cyan to-brand-teal p-1 rounded-lg shadow-lg shrink-0">
                 <i data-lucide="waves" class="text-brand-bg w-4 h-4"></i>
             </div>
-            <span id="online-count-badge" class="hidden items-center gap-1 bg-brand-bg border border-brand-border rounded-full px-2 py-0.5 text-[10px] text-slate-400 shrink-0">
-                <span class="w-1.5 h-1.5 rounded-full bg-green-400"></span> <span id="online-count-text">--</span>
-            </span>
         </div>
         <div class="flex items-center gap-1.5 shrink-0">
             <button id="market-light-badge" class="flex items-center gap-1 bg-brand-bg border border-brand-border rounded-lg px-2 py-1.5 text-[11px] font-bold transition hover:border-brand-cyan shrink-0 max-w-[34vw] sm:max-w-none">
@@ -313,7 +320,17 @@
                     <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> 重新整理
                 </button>
             </div>
-            <p class="text-slate-500 text-[11px] leading-relaxed">一次看完追蹤清單裡每一檔的即時價格、個股狀態、長短線買進建議跟處置股警示，不用一個一個點進去看。點卡片可以直接切換到那檔股票的日線圖。</p>
+
+            <div class="tide-card p-4">
+                <h3 class="text-white font-bold text-sm mb-3 flex items-center gap-2"><i data-lucide="wind" class="w-4 h-4 text-brand-cyan"></i> 每日股市風力圖</h3>
+                <div id="market-wind-tw" class="bg-brand-bg/60 border border-brand-cyan/30 rounded-xl p-3 mb-2"><p class="text-slate-500 text-xs">載入中...</p></div>
+                <div id="market-wind-us" class="bg-brand-bg/60 border border-brand-border rounded-xl p-3 mb-3"><p class="text-slate-500 text-xs">載入中...</p></div>
+                <div class="border-t border-brand-border/50 pt-3">
+                    <div class="text-white font-bold text-xs mb-2 flex items-center gap-1.5"><i data-lucide="trending-up" class="w-3.5 h-3.5 text-brand-cyan"></i> 法人買超排行 Top 10(全市場)</div>
+                    <div id="market-inst-top10" class="space-y-1"><p class="text-slate-500 text-xs">載入中...</p></div>
+                </div>
+                <p class="text-slate-500 text-[10px] mt-3 leading-relaxed">美股是最近一個收盤日的資料，跟台股不是同一個時間點(台股下午1:30收盤，美股要等台灣時間晚上才開盤)，僅供參考。</p>
+            </div>
 
             <div class="glass-panel rounded-xl overflow-hidden">
                 <button id="daily-report-toggle-btn" class="collapse-toggle w-full flex justify-between items-center p-4 text-left" data-target="daily-report-content">
@@ -324,8 +341,6 @@
                     <p class="text-slate-500 text-xs">點上面標題展開，會逐檔檢查追蹤清單產生報告(範圍只有追蹤清單，不是全市場)</p>
                 </div>
             </div>
-
-            <div id="dashboard-list" class="space-y-2"></div>
         </div>
 
         <div id="panel-daily" class="hidden absolute inset-0 flex flex-col">
@@ -1277,46 +1292,9 @@
             } catch (e) { console.warn('驗證登入狀態失敗', e.message); return false; }
         }
 
-        let heartbeatTimer = null, onlineCountTimer = null;
-        function startPresenceLoops() {
-            const badge = document.getElementById('online-count-badge');
-            const text = document.getElementById('online-count-text');
-            if (badge && text) { text.innerText = '連線中...'; badge.classList.remove('hidden'); badge.classList.add('flex'); }
-            sendHeartbeat();
-            fetchOnlineCount();
-            if (heartbeatTimer) clearInterval(heartbeatTimer);
-            if (onlineCountTimer) clearInterval(onlineCountTimer);
-            heartbeatTimer = setInterval(sendHeartbeat, 20000);
-            onlineCountTimer = setInterval(fetchOnlineCount, 20000);
-        }
-        function stopPresenceLoops() {
-            if (heartbeatTimer) clearInterval(heartbeatTimer);
-            if (onlineCountTimer) clearInterval(onlineCountTimer);
-            const badge = document.getElementById('online-count-badge');
-            if (badge) badge.classList.add('hidden');
-        }
-        async function sendHeartbeat() {
-            const token = getAuthToken();
-            if (!token) return;
-            try { await fetch(`${AUTH_BASE}/heartbeat`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token }) }); }
-            catch (e) { /* 心跳失敗不影響使用，安靜跳過就好 */ }
-        }
-        async function fetchOnlineCount() {
-            try {
-                const res = await fetch(`${AUTH_BASE}/online-count`);
-                const json = await res.json();
-                const badge = document.getElementById('online-count-badge');
-                const text = document.getElementById('online-count-text');
-                if (badge && text && isFinite(json.count)) {
-                    text.innerText = `在線 ${json.count} 人`;
-                    badge.classList.remove('hidden');
-                    badge.classList.add('flex');
-                }
-            } catch (e) { console.warn('在線人數抓取失敗(不影響其他功能使用)', e.message); }
-        }
         async function initAuth() {
             const ok = await verifyAuthToken();
-            if (ok) { hideLoginScreen(); startPresenceLoops(); }
+            if (ok) { hideLoginScreen(); }
             else { setAuthToken(null); showLoginScreen(); }
         }
         document.getElementById('login-form').addEventListener('submit', async (e) => {
@@ -1561,6 +1539,30 @@
         // 備援改用證交所官方的FMTQIK(每日收盤行情-大盤統計資訊)，格式跟STOCK_DAY很像(給日期會回傳整個月)。
         // 這兩個來源都只有「收盤指數」，沒有真正的開高低(指數本身就是用收盤算的)，所以open=high=low=close，
         // 對大盤燈號的MA20/MA100計算來說完全夠用。
+        // ============ 美股關鍵指標(VIX/SPY/QQQ/費半SOX) ============
+        // 用Yahoo Finance的chart API(跟抓加權指數同一套寫法)，這是「美股最近一個收盤日」的資料，
+        // 跟台股不是同一個時間點(台股下午1:30收盤，美股是台灣時間晚上才開盤、隔天清晨收盤)，這個時間差要老實講清楚。
+        async function fetchUsTicker(ticker) {
+            const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?range=5d&interval=1d`;
+            const res = await corsFetch(url);
+            const json = await res.json();
+            const result = json && json.chart && json.chart.result && json.chart.result[0];
+            if (!result || !result.meta) throw new Error(`${ticker} 無資料`);
+            const price = result.meta.regularMarketPrice;
+            const prevClose = result.meta.chartPreviousClose ?? result.meta.previousClose;
+            if (!isFinite(price)) throw new Error(`${ticker} 格式異常`);
+            const chgPct = (isFinite(prevClose) && prevClose) ? (price - prevClose) / prevClose * 100 : null;
+            return { price, chgPct };
+        }
+        async function fetchUsMarketSnapshot() {
+            const tickers = { vix: '^VIX', spy: 'SPY', qqq: 'QQQ', sox: '^SOX' };
+            const result = {};
+            await Promise.all(Object.entries(tickers).map(async ([key, t]) => {
+                try { result[key] = await fetchUsTicker(t); } catch (e) { result[key] = null; }
+            }));
+            return result;
+        }
+
         async function fetchTAIEXYahoo(monthsBack) {
             return await fetchYahooSuffix('%5ETWII', '', monthsBack);
         }
@@ -2358,6 +2360,7 @@
                 marketLightCache = null;
             }
             renderMarketLight();
+            renderMarketWindPanel();
         }
         function renderMarketLight() {
             const badgeText = document.getElementById('market-light-badge-text');
@@ -3420,7 +3423,7 @@
             try { return await fetchInstitutionalFinMind(symbol); } catch (e) { return null; }
         }
         async function generateDailyReport() {
-            const lines = { highlow: [], limit: [], instBuy: [], instSell: [], volSurge: [], disposition: [] };
+            const lines = { highlow: [], limit: [], instBuy: [], instSell: [], volSurge: [] };
             for (const symbol of watchlist) {
                 try {
                     const daily = stockCache[symbol] || await fetchStockDataMulti(symbol);
@@ -3460,10 +3463,6 @@
                         if (total > 0) lines.instBuy.push(`• ${stockLabel(symbol)}　${detail}`);
                         else if (total < 0) lines.instSell.push(`• ${stockLabel(symbol)}　${detail}`);
                     }
-
-                    // 處置股
-                    const dispo = await fetchDispositionInfo(symbol).catch(() => null);
-                    if (dispo) lines.disposition.push(`⚠️ ${stockLabel(symbol)}　第${dispo.disposition_cnt ?? '?'}次，期間至${dispo.period_end}`);
                 } catch (e) { console.warn('盤後速報處理失敗', symbol, e.message); }
             }
             return lines;
@@ -3471,7 +3470,13 @@
         async function renderDailyReport() {
             const el = document.getElementById('daily-report-content');
             if (!el) return;
-            el.innerHTML = '<p class="text-gray-500 text-sm">產生中，這要逐檔檢查追蹤清單，會花一點時間...</p>';
+            el.innerHTML = `
+                <div class="fish-loader" aria-label="產生中">
+                    <span style="left:10%; animation-delay:0s;">🐟</span>
+                    <span style="left:35%; animation-delay:-1.4s;">🐠</span>
+                    <span style="left:60%; animation-delay:-2.6s;">🐟</span>
+                </div>
+                <p class="text-gray-500 text-sm text-center mt-1">產生中，這要逐檔檢查追蹤清單，會花一點時間...</p>`;
             try {
                 const todayStr = new Date().toLocaleDateString('zh-TW', { month: '2-digit', day: '2-digit', weekday: 'short' });
                 let taiexHtml = '';
@@ -3480,114 +3485,130 @@
                     const chg = rt.prevClose !== null ? rt.price - rt.prevClose : null;
                     const pct = (chg !== null && rt.prevClose) ? (chg / rt.prevClose * 100) : null;
                     const cls = chg === null ? 'text-white' : chg >= 0 ? 'text-red-400' : 'text-green-400';
-                    taiexHtml = `<div class="${cls} font-bold">${chg >= 0 ? '🔺' : '🟢'} 加權 ${fmt(rt.price)} (${chg >= 0 ? '+' : ''}${fmt(chg)} ${chg >= 0 ? '+' : ''}${pct.toFixed(2)}%)</div>`;
+                    taiexHtml = `<div class="${cls} font-bold text-lg">${chg >= 0 ? '🔺' : '🟢'} 加權 ${fmt(rt.price)} <span class="text-sm">(${chg >= 0 ? '+' : ''}${fmt(chg)} ${chg >= 0 ? '+' : ''}${pct.toFixed(2)}%)</span></div>`;
                 } catch (e) { taiexHtml = '<div class="text-gray-500">加權指數抓取失敗</div>'; }
                 let marketInstHtml = '';
                 try {
                     const m = await fetchMarketInstitutionalSummary();
                     const seg = (label, v) => v === null ? `${label} --` : `${label} ${v >= 0 ? '+' : ''}${v.toFixed(0)}億`;
-                    marketInstHtml = `<div class="text-gray-300 text-sm">${seg('外資', m.foreignYi)} / ${seg('投信', m.trustYi)}</div>`;
-                } catch (e) { marketInstHtml = '<div class="text-gray-500 text-sm">全市場法人彙總抓取失敗</div>'; }
+                    marketInstHtml = `<div class="text-gray-300 text-sm mt-1">${seg('外資', m.foreignYi)} / ${seg('投信', m.trustYi)}</div>`;
+                } catch (e) { marketInstHtml = '<div class="text-gray-500 text-sm mt-1">全市場法人彙總抓取失敗</div>'; }
 
                 const lines = await generateDailyReport();
-                const section = (emoji, title, arr, emptyOk = true) => {
-                    if (arr.length === 0 && !emptyOk) return '';
-                    return `<div class="mt-3"><div class="text-white font-bold text-sm mb-1">${emoji} ${title}</div>${arr.length ? arr.map(l => `<div class="text-xs text-gray-300 font-mono-num">${l}</div>`).join('') : '<div class="text-xs text-gray-500">（無）</div>'}</div>`;
+                const card = (emoji, title, arr, accentCls = 'border-brand-border') => {
+                    return `
+                    <div class="bg-brand-bg/60 border ${accentCls} rounded-xl p-3">
+                        <div class="text-white font-bold text-xs mb-1.5 flex items-center gap-1.5">${emoji} ${title}</div>
+                        ${arr.length ? `<div class="space-y-1">${arr.map(l => `<div class="text-[11px] text-gray-300 font-mono-num">${l}</div>`).join('')}</div>` : '<div class="text-[11px] text-gray-500">（無）</div>'}
+                    </div>`;
                 };
                 document.getElementById('daily-report-content').innerHTML = `
                     <div class="text-slate-400 text-xs mb-2">📊 ${todayStr} 盤後速報</div>
-                    <div class="bg-gray-800 rounded-lg p-3 mb-2">
+                    <div class="bg-gradient-to-br from-brand-cyan/10 to-brand-teal/10 border border-brand-cyan/30 rounded-xl p-3 mb-3">
                         ${taiexHtml}
                         ${marketInstHtml}
                     </div>
-                    ${section('🌟', '追蹤清單：突破20日新高/新低', lines.highlow)}
-                    ${section('🟥', '漲跌停（≥9.5%）', lines.limit)}
-                    ${section('📈', '法人買超', lines.instBuy)}
-                    ${section('📉', '法人賣超', lines.instSell)}
-                    ${section('🔊', '量能 > 1.5x', lines.volSurge)}
-                    ${section('⚠️', '處置中', lines.disposition)}
+                    <div class="space-y-2">
+                        ${card('🌟', '追蹤清單：突破20日新高/新低', lines.highlow)}
+                        ${card('🟥', '漲跌停（≥9.5%）', lines.limit, lines.limit.length ? 'border-red-500/40' : 'border-brand-border')}
+                        ${card('📈', '法人買超', lines.instBuy, lines.instBuy.length ? 'border-red-500/30' : 'border-brand-border')}
+                        ${card('📉', '法人賣超', lines.instSell, lines.instSell.length ? 'border-green-500/30' : 'border-brand-border')}
+                        ${card('🔊', '量能 > 1.5x', lines.volSurge)}
+                    </div>
                     <p class="text-[10px] text-gray-500 mt-3 leading-relaxed">範圍只有你的追蹤清單，不是全市場。外資台指期未平倉、主動ETF持股變化、公告這三項沒有可靠的免費資料源，做不出來。資料可能有些微落差，僅供參考。</p>`;
             } catch (e) {
                 el.innerHTML = `<p class="text-gray-500 text-sm">盤後速報產生失敗：${e.message}</p>`;
             }
         }
 
-        async function renderDashboard() {
-            const listEl = document.getElementById('dashboard-list');
-            if (!listEl) return;
-            if (watchlist.length === 0) {
-                listEl.innerHTML = '<p class="text-gray-500 text-sm text-center py-6">追蹤清單是空的，先到上方加幾檔股票吧</p>';
-                return;
-            }
-            listEl.innerHTML = watchlist.map(symbol => `
-                <div class="dashboard-card glass-panel rounded-xl p-3 cursor-pointer active:scale-[0.99] transition" data-symbol="${symbol}">
-                    <div class="flex items-center justify-between">
-                        <span class="font-bold text-white">${stockLabel(symbol)}</span>
-                        <span class="text-xs text-gray-500">載入中...</span>
-                    </div>
-                </div>`).join('');
-            listEl.querySelectorAll('.dashboard-card').forEach(card => {
-                card.addEventListener('click', () => { loadStock(card.dataset.symbol); switchTab('daily'); });
-            });
-            watchlist.forEach(symbol => loadDashboardCard(symbol));
+        // ============ 每日股市風力圖 ============
+        function computeInstitutionalTop10() {
+            if (!institutionalCache || !institutionalCache.map) return [];
+            const entries = Object.entries(institutionalCache.map)
+                .filter(([code, v]) => v.total !== null && /^\d{4,6}$/.test(code))
+                .map(([code, v]) => ({ code, total: v.total }));
+            entries.sort((a, b) => b.total - a.total);
+            return entries.slice(0, 10);
         }
-        async function loadDashboardCard(symbol) {
-            const card = document.querySelector(`.dashboard-card[data-symbol="${symbol}"]`);
-            if (!card) return;
-            try {
-                const daily = await fetchStockDataMulti(symbol);
-                let analysis = analysisCache[symbol];
-                if (!analysis) { analysis = analyzeSymbol(daily); analysisCache[symbol] = analysis; }
-                const dv = analysis.dailyView, wv = analysis.weeklyView;
-                const light = computeStockLight(daily, dv.ind);
-                const lightMap = {
-                    red: { emoji: '📈', label: '多頭排列', cls: 'text-red-400' },
-                    green: { emoji: '📉', label: '空頭排列', cls: 'text-green-400' },
-                    redyellow: { emoji: '📉', label: '漲多拉回', cls: 'text-amber-400' },
-                    greenyellow: { emoji: '📈', label: '止跌反彈', cls: 'text-yellow-300' },
-                };
-                const lightHtml = light ? `<span class="${lightMap[light.state].cls}">${lightMap[light.state].emoji}${lightMap[light.state].label}</span>` : '<span class="text-gray-500">資料不足</span>';
-
-                let dailyVerdict = null, weeklyVerdict = null;
-                try { dailyVerdict = evaluateBuySuitability(dv); } catch (e) {}
-                try { weeklyVerdict = evaluateWeeklyBuySuitability(wv); } catch (e) {}
-
-                let rtHtml;
-                try {
-                    const rt = await fetchStockRealtime(symbol);
-                    const chg = rt.prevClose !== null ? rt.price - rt.prevClose : null;
-                    const pct = (chg !== null && rt.prevClose) ? (chg / rt.prevClose * 100) : null;
-                    const cls = chg === null ? 'text-white' : chg >= 0 ? 'text-red-400' : 'text-green-400';
-                    rtHtml = `<span class="${cls} font-mono-num font-bold">${fmt(rt.price)}</span>${chg !== null ? ` <span class="${cls} font-mono-num text-xs">${chg >= 0 ? '+' : ''}${pct.toFixed(2)}%</span>` : ''}`;
-                } catch (e) {
-                    const lastClose = daily.length ? daily[daily.length - 1].close : null;
-                    rtHtml = `<span class="text-white font-mono-num">${fmt(lastClose)}</span><span class="text-[10px] text-gray-500 ml-1">(收盤價)</span>`;
+        // 車用儀表板風格的半圓指針(像時速表)，value是0~100，越高越偏多頭(指針越偏右、越紅)
+        function renderGaugeSvg(value) {
+            const angle = -80 + (Math.max(0, Math.min(100, value)) / 100) * 160;
+            return `
+            <svg viewBox="0 0 200 112" class="w-full" style="max-height:96px">
+                <defs>
+                    <linearGradient id="gaugeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stop-color="#22c55e"/>
+                        <stop offset="50%" stop-color="#fbbf24"/>
+                        <stop offset="100%" stop-color="#ef4444"/>
+                    </linearGradient>
+                </defs>
+                <path d="M15,100 A85,85 0 0,1 185,100" fill="none" stroke="url(#gaugeGrad)" stroke-width="12" stroke-linecap="round" opacity="0.9"/>
+                <g style="transform-origin:100px 100px; transform:rotate(${angle}deg); transition: transform 1.2s cubic-bezier(.34,1.4,.64,1);">
+                    <line x1="100" y1="100" x2="100" y2="28" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+                    <polygon points="100,21 94,32 106,32" fill="#fff"/>
+                </g>
+                <circle cx="100" cy="100" r="7" fill="#fff" stroke="#061224" stroke-width="2"/>
+            </svg>`;
+        }
+        async function renderMarketWindPanel() {
+            // 台股環境指標：直接重用已經算好的大盤燈號(不用另外發請求)，改成車用儀表板風格的動畫指針
+            const twEl = document.getElementById('market-wind-tw');
+            if (twEl) {
+                if (marketLightCache) {
+                    const m = marketLightCache;
+                    const goodMap = { red: true, redyellow: true, greenyellow: false, green: false };
+                    const labelMap = { red: '多頭', redyellow: '多頭拉回', greenyellow: '空頭反彈', green: '空頭' };
+                    const gaugeMap = { red: 90, redyellow: 65, greenyellow: 35, green: 10 };
+                    const headline = goodMap[m.state] ? '適合進場' : '建議保守';
+                    const cls = goodMap[m.state] ? 'text-green-400' : 'text-amber-300';
+                    twEl.innerHTML = `
+                        <div class="text-[10px] text-slate-400 mb-1">台股環境指標</div>
+                        ${renderGaugeSvg(gaugeMap[m.state] ?? 50)}
+                        <div class="text-lg font-bold ${cls} text-center -mt-1">${headline}</div>
+                        <div class="text-[11px] text-slate-400 text-center">${labelMap[m.state]}，${m.alloc.replace('建議', '建議維持')}</div>`;
+                } else {
+                    twEl.innerHTML = '<p class="text-slate-500 text-xs">大盤燈號尚未計算完成</p>';
                 }
-
-                let dispoHtml = '';
-                try {
-                    const dispo = await fetchDispositionInfo(symbol);
-                    if (dispo) dispoHtml = `<div class="mt-1.5 text-[11px] text-red-300 bg-red-900/40 border border-red-500/40 rounded px-2 py-1">⚠️ 處置股第${dispo.disposition_cnt ?? '?'}次，期間至${dispo.period_end}</div>`;
-                } catch (e) {}
-
-                const scoreVal = dv.latestScore ? dv.latestScore.score : null;
-                card.innerHTML = `
-                    <div class="flex items-center justify-between mb-1.5">
-                        <span class="font-bold text-white">${stockLabel(symbol)}</span>
-                        ${rtHtml}
-                    </div>
-                    <div class="flex items-center gap-3 text-xs mb-1.5">
-                        <span>個股狀態：${lightHtml}</span>
-                        <span class="text-gray-500">VCP ${scoreVal ?? '--'}/18</span>
-                    </div>
-                    <div class="grid grid-cols-2 gap-2 text-[11px]">
-                        <div class="bg-gray-800 rounded px-2 py-1">${dailyVerdict ? `<span class="text-gray-500">短線：</span>${dailyVerdict.light} ${dailyVerdict.label}` : '<span class="text-gray-500">短線：資料不足</span>'}</div>
-                        <div class="bg-gray-800 rounded px-2 py-1">${weeklyVerdict ? `<span class="text-gray-500">長線：</span>${weeklyVerdict.light} ${weeklyVerdict.label}` : '<span class="text-gray-500">長線：資料不足</span>'}</div>
-                    </div>
-                    ${dispoHtml}`;
-            } catch (e) {
-                card.innerHTML = `<div class="flex items-center justify-between"><span class="font-bold text-white">${stockLabel(symbol)}</span><span class="text-xs text-red-400">資料載入失敗</span></div>`;
             }
+            // 美股關鍵指標
+            const usEl = document.getElementById('market-wind-us');
+            if (usEl) {
+                try {
+                    const us = await fetchUsMarketSnapshot();
+                    const seg = (label, key, isVix) => {
+                        const d = us[key];
+                        if (!d) return `<div class="text-slate-500">${label}：--</div>`;
+                        const cls = isVix ? (d.price > 20 ? 'text-red-400' : 'text-green-400') : (d.chgPct >= 0 ? 'text-red-400' : 'text-green-400');
+                        return `<div class="flex justify-between"><span class="text-slate-400">${label}</span><span class="${cls} font-mono-num font-bold">${fmt(d.price, 1)}${d.chgPct !== null ? ` (${d.chgPct >= 0 ? '+' : ''}${d.chgPct.toFixed(1)}%)` : ''}</span></div>`;
+                    };
+                    usEl.innerHTML = `
+                        <div class="text-[10px] text-slate-400 mb-1">美股關鍵指標</div>
+                        <div class="text-[11px] space-y-1 font-mono-num">
+                            ${seg('VIX恐慌指數', 'vix', true)}
+                            ${seg('SPY標普500', 'spy', false)}
+                            ${seg('QQQ那斯達克', 'qqq', false)}
+                            ${seg('費半SOX', 'sox', false)}
+                        </div>`;
+                } catch (e) { usEl.innerHTML = '<p class="text-slate-500 text-xs">美股資料抓取失敗</p>'; }
+            }
+            // 法人買超排行Top10(全市場，重用已經抓好的T86快取)
+            const top10El = document.getElementById('market-inst-top10');
+            if (top10El) {
+                const top10 = computeInstitutionalTop10();
+                if (top10.length === 0) {
+                    top10El.innerHTML = '<p class="text-slate-500 text-xs">全市場法人資料尚未載入完成，稍等一下或重新整理</p>';
+                } else {
+                    top10El.innerHTML = top10.map((t, idx) => `
+                        <div class="flex justify-between items-center text-xs bg-gray-800/60 rounded px-2 py-1">
+                            <span class="text-slate-300"><span class="text-slate-500 mr-1">${idx + 1}.</span>${stockLabel(t.code)}</span>
+                            <span class="text-red-400 font-mono-num font-bold">+${(t.total / 1000).toFixed(0)}張</span>
+                        </div>`).join('');
+                }
+            }
+        }
+
+        async function renderDashboard() {
+            renderMarketWindPanel();
         }
 
         async function renderDispositionWarning(symbol) {
@@ -3985,10 +4006,10 @@
             const rows = [];
             // 長線(週線)沒給買點訊號時，用白話解釋一下原因，方便跟短線(日線)的判斷做對照
             function explainWeeklyNoBuy(cb, nowAboveMa, prevAboveMa) {
-                if (cb.isConsolidation && !cb.breakout) return '週線還在盤整區間內，還沒帶量突破，依規則先不算買點';
-                if (!nowAboveMa) return '週收盤還在週20MA之下，長線趨勢還沒站穩';
-                if (nowAboveMa && prevAboveMa) return '已經站上週20MA一段時間了，不是「剛站上」的當下，長線評分只在剛突破/剛站上均線那一刻給分，現在錯過了那個時間點';
-                return '目前不符合長線的進場條件(盤整突破或剛站上均線)';
+                if (cb.isConsolidation && !cb.breakout) return '還在盤整區間，未帶量突破';
+                if (!nowAboveMa) return '週收盤在週20MA之下，趨勢未站穩';
+                if (nowAboveMa && prevAboveMa) return '已站上均線一段時間，錯過剛突破的給分時機';
+                return '不符合長線進場條件';
             }
             for (let i = 0; i < targets.length; i++) {
                 const symbol = targets[i];
@@ -4015,10 +4036,11 @@
                     const score = (isBuy ? 5 : 0) + (justTurning ? 2 : 0) + (isStrong ? 2 : 0) + (liquidityOk ? 1 : 0);
                     let buyVerdict = null;
                     try { buyVerdict = evaluateBuySuitability(computeDailyView(daily)); } catch (e) { /* 資料不足時跳過，不影響掃描其他項目 */ }
-                    // 長線沒給買點訊號、但短線卻偏正面時，把兩邊的原因都整理出來，避免看起來互相矛盾卻不知道為什麼
+                    // 長線沒給買點訊號、但短線卻偏正面時，把兩邊的原因都整理出來(各自一句話講重點)，避免看起來互相矛盾卻不知道為什麼
                     let divergenceNote = null;
                     if (!isBuy && buyVerdict && (buyVerdict.light === '🟢' || buyVerdict.light === '🟡')) {
-                        divergenceNote = `長線：${explainWeeklyNoBuy(cb, nowAboveMa, prevAboveMa)}。短線：${buyVerdict.advice}`;
+                        const shortReason = buyVerdict.advice.split('。')[0]; // 只取第一句講重點，後面的補充說明不放進來
+                        divergenceNote = { longReason: explainWeeklyNoBuy(cb, nowAboveMa, prevAboveMa), shortReason };
                     }
                     rows.push({ symbol, close: lastClose, ma: lastMa20, diffPct, isBuy, justTurning, isStrong, liquidity, liquidityOk, score, source: dataSourceCache[symbol], buyVerdict, lastDate, alreadyCached, divergenceNote });
                 } catch (e) {
@@ -4074,7 +4096,10 @@
                             <div class="font-semibold">${r.buyVerdict ? `${r.buyVerdict.light} ${r.buyVerdict.label}` : '<span class="text-gray-500">資料不足</span>'}</div>
                         </div>
                     </div>
-                    ${r.divergenceNote ? `<div class="mt-1.5 text-[10px] text-amber-300/90 leading-relaxed">💡 ${r.divergenceNote}</div>` : ''}
+                    ${r.divergenceNote ? `<div class="mt-1.5 text-[10px] text-amber-300/90 leading-relaxed space-y-0.5">
+                        <div>📅 長線：${r.divergenceNote.longReason}</div>
+                        <div>📊 短線：${r.divergenceNote.shortReason}</div>
+                    </div>` : ''}
                 </div>`;
             }).join('');
             }
@@ -4410,8 +4435,8 @@
             ensureAllStockInfo().catch(() => {});
             setTimeout(() => loadStock(watchlist[0]), 300);
             renderDashboard();
-            document.getElementById('dashboard-refresh-btn').addEventListener('click', () => {
-                watchlist.forEach(s => { delete stockCache[s]; delete analysisCache[s]; });
+            document.getElementById('dashboard-refresh-btn').addEventListener('click', async () => {
+                await loadMarketLight();
                 renderDashboard();
             });
             document.getElementById('daily-report-toggle-btn').addEventListener('click', () => {
