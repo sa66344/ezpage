@@ -2234,7 +2234,10 @@
         // 外包絡線(Envelope)演算法：找出區間最高點當起點(Point A)，向右找「最大斜率」(最平緩的那條線)當終點(Point B)，
         // 這樣畫出來的下降壓力線會像一塊木板一樣完美壓在所有K棒最高點上方，不會切割到任何一根K棒，
         // 符合「趨勢線不能壓到中間其他K棒」的技術分析鐵則(取代原本容易穿越K棒的線性回歸演算法)。
-        function detectTrendlineBreakout(highs, closes, idx, lookback = 16) {
+        // lookback加大到24週、加入「往前找次高點」的防呆機制：如果最高點剛好在上一週(代表剛創新高)，
+        // 改用前一個波段高點畫線，這樣壓力線才不會消失；而且不管有沒有達成breakout，都會回傳pA/lineValue，
+        // 確保圖表上永遠畫得出這條線。
+        function detectTrendlineBreakout(highs, closes, idx, lookback = 24) {
             const start = Math.max(0, idx - lookback);
             if (start >= idx) return { breakout: false };
 
@@ -2248,12 +2251,25 @@
                 }
             }
 
-            // 如果最高點剛好在判定日的前一天，無法畫出有效下降線
-            if (pA === -1 || pA === idx - 1) return { breakout: false };
+            // 【關鍵修正1】如果最高點剛好就在上一週，代表股價剛創近期新高。
+            // 這時我們要往前找「前一個波段高點」來畫趨勢線，否則壓力線會消失！
+            if (pA === -1 || pA === idx - 1) {
+                let secondHigh = -Infinity;
+                let pA2 = -1;
+                for (let i = start; i < idx - 1; i++) {
+                    if (highs[i] > secondHigh) {
+                        secondHigh = highs[i];
+                        pA2 = i;
+                    }
+                }
+                if (pA2 !== -1) {
+                    pA = pA2;
+                } else {
+                    return { breakout: false };
+                }
+            }
 
-            // 2. 尋找下降壓力線的終點 (Point B)
-            // 計算 A 點連到後續每一點的斜率，找出「最大斜率」(最平緩的那條線)
-            // 這樣可以保證線完全壓在所有 K 棒的上方，不會切割到任何 K 棒
+            // 2. 尋找下降壓力線的終點 (Point B)：算出外包絡線(最平緩的斜率)
             let maxSlope = -Infinity;
             let pB = -1;
             for (let i = pA + 1; i < idx; i++) {
@@ -2264,14 +2280,15 @@
                 }
             }
 
-            // 3. 檢查斜率：如果大於等於 0，代表這不是「下降」壓力線，宣告無效
-            if (maxSlope >= 0 || maxSlope === -Infinity) return { breakout: false };
+            if (maxSlope === -Infinity) return { breakout: false };
 
-            // 4. 計算這條下降壓力線延伸到今天 (idx) 時的具體數值 (y = mx + b)
+            // 3. 計算這條趨勢線延伸到本週 (idx) 的數值
             const lineAtIdx = maxSlope * (idx - pA) + highs[pA];
 
-            // 5. 條件判斷：今天的「收盤價」是否實質大於這條趨勢線的數值
-            const breakout = closes[idx] > lineAtIdx;
+            // 4. 判斷突破：收盤大於這條線，且這條線要是下降的(斜率<=0)才算有效的下降壓力線突破
+            const breakout = maxSlope <= 0 && closes[idx] > lineAtIdx;
+
+            // 【關鍵修正2】不管有沒有突破，都把座標丟出去，這樣圖表才永遠畫得出這條線！
             return { breakout, slope: maxSlope, lineValue: lineAtIdx, pA, pB };
         }
         function detectWPattern(lows, highs, closes, idx, lookback = 20) {
