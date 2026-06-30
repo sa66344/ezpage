@@ -117,8 +117,53 @@
             50%  { background-position: 60% 40%, 30% 60%, 60% 30%, 0 0; }
             100% { background-position: 0% 0%, 100% 0%, 0% 100%, 0 0; }
         }
-        .font-mono-num { font-feature-settings: "tnum"; letter-spacing: -0.02em; }
+        /* 洋流光線：大盤燈號卡片用，比 ocean-stream-box 更慢更柔，邊緣有藍綠色調緩慢流動的光暈，呼應「洋流」長線趨勢的意象 */
+        .current-flow-box { position: relative; overflow: hidden; }
+        .current-flow-box::before {
+            content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 3px;
+            background: linear-gradient(90deg, transparent, rgba(79,172,254,0.9), rgba(0,242,254,0.95), rgba(79,172,254,0.9), transparent);
+            background-size: 300% 100%;
+            animation: current-flow-move 9s ease-in-out infinite;
+        }
+        .current-flow-box::after {
+            content: ''; position: absolute; inset: 0; pointer-events: none; border-radius: inherit;
+            background: radial-gradient(ellipse 90% 60% at 50% 110%, rgba(0,242,254,0.10), transparent 70%);
+            animation: current-flow-glow 9s ease-in-out infinite;
+        }
+        @keyframes current-flow-move { 0% { background-position: 100% 0; } 50% { background-position: 0% 0; } 100% { background-position: 100% 0; } }
+        @keyframes current-flow-glow { 0%, 100% { opacity: .55; } 50% { opacity: 1; } }
+        /* 風力卡片：海面天氣感的細微抖動光點，呼應「短線陣風亂流」 */
+        .windgust-box { position: relative; overflow: hidden; }
+        .windgust-box::before {
+            content: ''; position: absolute; top: 0; left: -20%; width: 140%; height: 100%; pointer-events: none;
+            background: repeating-linear-gradient(100deg, transparent 0 18px, rgba(255,255,255,0.035) 18px 19px);
+            animation: windgust-drift 3.2s linear infinite;
+        }
+        @keyframes windgust-drift { 0% { transform: translateX(0); } 100% { transform: translateX(40px); } }
         
+        /* ============ Y2K終端機風格：今日/明日動態評估模組 ============ */
+        .y2k-box {
+            position: relative; overflow: hidden; border-radius: 10px;
+            background: linear-gradient(135deg, rgba(6,14,27,0.92), rgba(15,33,59,0.85));
+            border: 1px solid rgba(0,242,254,0.35);
+            box-shadow: 0 0 0 1px rgba(0,242,254,0.08) inset, 0 8px 20px -12px rgba(0,0,0,0.7);
+            font-family: 'SF Mono','Roboto Mono','Courier New',monospace;
+        }
+        .y2k-box::before {
+            content: ''; position: absolute; inset: 0; pointer-events: none; opacity: .5;
+            background: repeating-linear-gradient(180deg, rgba(0,242,254,0.025) 0 2px, transparent 2px 4px);
+        }
+        .y2k-header {
+            display: flex; align-items: center; justify-content: space-between; gap: 8px;
+            padding: 5px 10px; border-bottom: 1px solid rgba(0,242,254,0.25);
+            background: linear-gradient(90deg, rgba(0,242,254,0.12), transparent);
+            font-size: 10.5px; letter-spacing: .08em; color: #5cf2ff; text-shadow: 0 0 6px rgba(0,242,254,0.6);
+        }
+        .y2k-blink { animation: y2k-blink 1.4s steps(1) infinite; }
+        @keyframes y2k-blink { 50% { opacity: .25; } }
+        .y2k-body { padding: 9px 11px; font-size: 11px; line-height: 1.65; color: #cbd5e1; }
+        .y2k-body b { color: #fff; }
+
         /* Toast */
         .toast { transition: opacity 0.3s, transform 0.3s; opacity: 0; transform: translateY(-20px); pointer-events: none; }
         .toast.show { opacity: 1; transform: translateY(0); }
@@ -445,6 +490,7 @@
 
         <!-- 日線分頁 -->
         <div id="panel-dashboard" class="absolute inset-0 overflow-y-auto p-4 hide-scroll bg-brand-bg space-y-3">
+            <div id="today-tomorrow-module"></div>
             <div class="flex items-center justify-between">
                 <h2 class="text-white font-bold text-lg flex items-center gap-2"><i data-lucide="layout-dashboard" class="w-5 h-5 text-brand-cyan"></i> 我的追蹤總覽</h2>
                 <button id="dashboard-refresh-btn" class="flex items-center gap-1 bg-brand-card text-slate-300 border border-brand-border px-2.5 py-1.5 rounded-lg transition hover:bg-slate-700 text-xs">
@@ -1979,6 +2025,7 @@
             const tier = WIND_TIERS.find(t => ema <= t.max) || WIND_TIERS[WIND_TIERS.length - 1];
             return { score: ema, rawToday: rawScores[rawScores.length - 1], ...tier };
         }
+        let lastWindIndexResult = null;
         async function renderWindIndexCard() {
             const compactEl = document.getElementById('wind-index-compact-content');
             const modalEl = document.getElementById('wind-index-content');
@@ -1987,6 +2034,7 @@
             if (modalEl) modalEl.innerHTML = '<div class="ocean-loader" aria-label="計算中"></div><p class="text-gray-500 text-sm text-center mt-2">正在抓取VIX/SPY/QQQ的歷史資料並計算Z-Score，要花一點時間...</p>';
             try {
                 const w = await computeWindIndex();
+                lastWindIndexResult = w;
                 // 緊湊版：只有指針儀表+分數+建議動作，給儀表板上方一眼看到用，點下去才會看到下面完整版的詳細說明
                 if (compactEl) compactEl.innerHTML = `
                     <div class="text-center mb-1">
@@ -1999,13 +2047,17 @@
                     </div>`;
                 // 完整版：放彈窗裡，包含模型說明跟分級對照表
                 if (modalEl) modalEl.innerHTML = `
-                    <div class="text-center mb-1">
+                    <div class="windgust-box text-center mb-1 rounded-xl">
                         ${renderGaugeSvg(w.score * 10)}
                         <div class="text-2xl font-bold ${w.cls} -mt-1">${w.score.toFixed(1)}<span class="text-sm text-slate-500">/10</span></div>
                         <div class="text-lg font-bold ${w.cls}">${w.label}</div>
                     </div>
                     <div class="bg-brand-bg/60 border border-brand-border rounded-lg p-2.5 text-[11px] text-slate-300 mb-2">
                         <b class="text-white">建議動作：</b>${w.action}
+                    </div>
+                    <div class="mt-2 mb-2 rounded-xl p-3.5 bg-brand-bg/40 border border-amber-400/15 text-[12px] text-slate-300 leading-relaxed">
+                        <div class="flex items-center gap-1.5 text-white font-bold text-[13px] mb-1.5"><i data-lucide="wind" class="w-3.5 h-3.5 text-amber-300"></i> 風力：看的是「短線情緒與波動」</div>
+                        綜合VIX、SPY/QQQ單日漲跌幅，以及台股20日乖離率。這些都屬於極度敏感的數據，只要昨晚美股科技股稍微軟腳，或是VIX恐慌指數驟升，分數就會瞬間飆高。這就像海面上的「天氣」，反映的是當下突然颳起的陣風與亂流，跟洋流的長線方向是兩件事。
                     </div>
                     <p class="text-[10px] text-slate-500 leading-relaxed">用VIX(40%權重)+台股20日乖離率/SPY/QQQ單日漲跌幅(60%權重，三者平均)，每項都先轉成過去250個交易日的Z-Score再合併，避免不同單位直接相加；最後對近5天的分數做EMA平滑，不會因為單日盤中跳動就讓分數亂跳。這是輔助參考用的量化模型，不是精確預測，門檻也可能需要依你自己的風險偏好調整。</p>
                     <table class="w-full text-[10px] text-slate-400 mt-2 border-t border-brand-border/50 pt-2">
@@ -2014,9 +2066,13 @@
                         <tr class="text-slate-500"><td class="py-0.5">5.1~7.5</td><td>疾風(減碼)</td><td class="text-right">賣出20-30%</td></tr>
                         <tr class="text-slate-500"><td class="py-0.5">7.6~10</td><td>颱風(恐慌)</td><td class="text-right">止損/防禦</td></tr>
                     </table>`;
+                safeLucideIcons({ root: modalEl });
+                renderTodayTomorrowModule();
             } catch (e) {
                 if (compactEl) compactEl.innerHTML = `<p class="text-gray-500 text-xs py-2">計算失敗：${e.message}</p>`;
                 if (modalEl) modalEl.innerHTML = `<p class="text-gray-500 text-sm">風力指數計算失敗：${e.message}</p>`;
+                lastWindIndexResult = null;
+                renderTodayTomorrowModule();
             }
         }
 
@@ -2808,6 +2864,7 @@
                 badge.className = 'flex items-center gap-1 bg-brand-bg border border-brand-border rounded-lg px-2 py-1.5 text-xs font-bold transition hover:border-brand-cyan shrink-0 text-slate-500';
                 detail.innerHTML = '<p class="text-gray-500 text-sm">大盤燈號計算失敗，可能是加權指數資料暫時抓不到，點下方按鈕重試。</p><button id="market-light-retry" class="mt-3 w-full bg-brand-border hover:bg-slate-700 text-white px-3 py-2 rounded-lg text-sm font-semibold transition">重新計算</button>';
                 document.getElementById('market-light-retry').addEventListener('click', () => { loadMarketLight(); });
+                renderTodayTomorrowModule();
                 return;
             }
             const map = {
@@ -2835,7 +2892,7 @@
                 </div>`;
             })() : '<div class="mt-2 pt-2 border-t border-white/10 text-xs text-slate-500">即時報價暫時抓不到，只能看下面的收盤計算基準</div>';
             detail.innerHTML = `
-                <div class="rounded-xl p-4 border ${m.cls} bg-brand-card/60">
+                <div class="current-flow-box rounded-xl p-4 border ${m.cls} bg-brand-card/60">
                     <div class="text-2xl font-bold mb-1">${m.emoji} ${m.label}</div>
                     <div class="text-sm text-slate-200 mb-3">${m.alloc}</div>
                     <div class="grid grid-cols-1 gap-1.5 text-xs font-mono-num bg-brand-bg/60 rounded-lg p-2.5 text-slate-300">
@@ -2847,10 +2904,70 @@
                     <div class="mt-1.5 text-[10px] text-slate-500">資料來源：${marketLightCache.source}</div>
                     ${proxyWarn}
                 </div>
+                <div class="mt-3 rounded-xl p-3.5 bg-brand-bg/40 border border-brand-cyan/15 text-[12px] text-slate-300 leading-relaxed">
+                    <div class="flex items-center gap-1.5 text-white font-bold text-[13px] mb-1.5"><i data-lucide="waves" class="w-3.5 h-3.5 text-brand-cyan"></i> 洋流：看的是「長線趨勢」</div>
+                    採用日20MA和日100MA均線進行判斷。均線作為落後且平滑的指標，能過濾雜訊，精準反映過去一個月到半年的宏觀大方向。目前加權指數的位階，代表整體大環境、資金面與基本面的健康狀態。這就像深海的「洋流」，方向一旦確立就會穩定向前，不會因為單日的小波動而輕易改變。
+                </div>
                 <p class="text-slate-500 text-[11px] mt-3 leading-relaxed">用加權指數的日20MA、日100MA交叉位置代表大盤多空位階：同在均線上方=多頭、同在下方=空頭，介於中間的「拉回/反彈」是過渡狀態，建議成數是依邏輯內插的參考值，不是精確公式。燈號的多空判斷固定用「收盤計算基準」算MA，不會因為盤中即時報價跳動而一直變來變去；即時報價只是讓你看一下現在這一刻大概在哪裡，純參考用。</p>
                 <button id="market-light-retry" class="mt-3 w-full bg-brand-border hover:bg-slate-700 text-white px-3 py-2 rounded-lg text-sm font-semibold transition flex items-center justify-center gap-1.5"><i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> 重新計算</button>`;
             safeLucideIcons({ root: detail });
             document.getElementById('market-light-retry').addEventListener('click', () => { loadMarketLight(); });
+            renderTodayTomorrowModule();
+        }
+
+        // ============ 今日/明日動態評估模組(Y2K終端機風格)：大盤燈號 x 風力分數 交叉組合，輸出對應操作策略 ============
+        function renderTodayTomorrowModule() {
+            const el = document.getElementById('today-tomorrow-module');
+            if (!el) return;
+            if (!marketLightCache || !lastWindIndexResult) {
+                el.innerHTML = `
+                <div class="y2k-box">
+                    <div class="y2k-header"><span>【今日/明日動態評估模組】</span><span class="y2k-blink">●</span></div>
+                    <div class="y2k-body text-slate-500">資料計算中，洋流與風力數據齊備後會自動顯示策略...</div>
+                </div>`;
+                return;
+            }
+            const lightState = marketLightCache.state; // red / redyellow / green / greenyellow
+            const wind = lastWindIndexResult.score; // 0~10
+            const isBull = lightState === 'red';
+            const isTransition = lightState === 'redyellow' || lightState === 'greenyellow';
+            const isBear = lightState === 'green';
+
+            let title, body;
+            if (isBull && wind <= 2.5) {
+                title = '長線洋流穩健・海面天氣晴朗';
+                body = `<b>今日策略：</b>適合動用保留資金，針對核心資產於例行扣款外逢低加碼。<br><b>明日觀察：</b>持續鎖定上午07:00美股收盤數據，若風力維持低水位，多頭慣性將延續。`;
+            } else if (isBull && wind <= 5.0) {
+                title = '長線洋流穩健・但海面風浪逐漸增強';
+                body = `<b>今日策略：</b>核心部位按兵不動，暫停一切手動加碼，保留現金。<br><b>明日觀察：</b>嚴格鎖定明日上午07:00美股結算分數，觀察強風是否減弱，再決定是否釋放資金。`;
+            } else if (isBull && wind <= 7.5) {
+                title = '長線洋流依然向前・但短線遭遇美股劇烈亂流';
+                body = `<b>今日策略：</b>核心存股部位勿恐慌清倉，但短線波段部位建議果斷減碼20-30%提高現金水位。<br><b>明日觀察：</b>觀察明日上午07:00美股能否止跌。台股開盤後，進一步鎖定下午17:00盤後籌碼結算，確認長線洋流(雙均線)是否遭到破壞。`;
+            } else if (isBull) {
+                title = '極端氣候出現・全球市場陷入恐慌';
+                body = `<b>今日策略：</b>全面啟動防禦機制，短線部位嚴格執行止損，嚴禁任何接刀或摸底行為。<br><b>明日觀察：</b>靜待每日上午07:00恐慌指數(VIX)降溫，在風暴過去前，保持最高現金比率。`;
+            } else if (isTransition && wind <= 5.0) {
+                title = '短線動能轉弱・長線支撐測試中(洋流進入紊亂緩衝區)';
+                body = `<b>今日策略：</b>核心資產之定期定額維持紀律扣款。手動資金退場觀望，嚴禁提早盲目摸底。<br><b>明日觀察：</b>每日下午17:00鎖定台股盤後均線位置，觀察加權指數是否在100MA(長線海床)附近獲得實質支撐，屆時再評估小額分批試單。`;
+            } else if (isTransition) {
+                title = '趨勢混沌且遭遇海外強烈氣旋・大盤破底風險極高';
+                body = `<b>今日策略：</b>全面保守觀望，短線部位應果斷降低水位，保留最大現金流。<br><b>明日觀察：</b>雙重鎖定上午07:00美股跌勢是否止穩、以及下午17:00台股收盤是否跌破100MA。在雙重訊號明朗前，絕不輕舉妄動。`;
+            } else {
+                // 大盤燈號空頭(綠燈)時的保守保底策略(原文案未涵蓋此情境，依同一套邏輯內插)
+                title = isBear && wind <= 5.0 ? '長線洋流偏空・短線風浪尚可控' : '長線洋流偏空・短線風浪亦不平靜';
+                body = `<b>今日策略：</b>整體位階偏空，手動加碼一律暫停，僅維持極小比例定期定額紀律扣款，現金為王。<br><b>明日觀察：</b>持續鎖定上午07:00美股動向、下午17:00台股收盤位階，等待長線洋流(雙均線)由空翻多的訊號出現再轉趨積極。`;
+            }
+            el.innerHTML = `
+            <div class="y2k-box">
+                <div class="y2k-header">
+                    <span>【今日/明日動態評估模組】</span>
+                    <span class="flex items-center gap-1"><span class="y2k-blink">●</span>07:00／17:00</span>
+                </div>
+                <div class="y2k-body">
+                    <div class="text-white font-bold mb-1">${title}</div>
+                    <div>${body}</div>
+                </div>
+            </div>`;
         }
 
         // ============ 個股燈號(套用跟大盤燈號同一套公式，但用這檔股票自己的日20/100MA) ============
