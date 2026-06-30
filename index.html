@@ -482,6 +482,7 @@
             <button class="tab-btn flex-1 min-w-[80px] py-3 text-slate-400 flex justify-center items-center gap-1.5" data-tab="weekly"><i data-lucide="calendar-range" class="w-4 h-4"></i>週線</button>
             <button class="tab-btn flex-1 min-w-[80px] py-3 text-slate-400 flex justify-center items-center gap-1.5" data-tab="signals"><i data-lucide="pie-chart" class="w-4 h-4"></i>數據</button>
             <button class="tab-btn flex-1 min-w-[80px] py-3 text-slate-400 flex justify-center items-center gap-1.5" data-tab="scan"><i data-lucide="radar" class="w-4 h-4"></i>掃描</button>
+            <button class="tab-btn flex-1 min-w-[80px] py-3 text-slate-400 flex justify-center items-center gap-1.5" data-tab="findstock"><i data-lucide="search" class="w-4 h-4"></i>找股</button>
             <button class="tab-btn flex-1 min-w-[80px] py-3 text-slate-400 flex justify-center items-center gap-1.5" data-tab="beginner"><i data-lucide="life-buoy" class="w-4 h-4"></i>新手</button>
             <button class="tab-btn flex-1 min-w-[80px] py-3 text-slate-400 flex justify-center items-center gap-1.5" data-tab="tutorial"><i data-lucide="graduation-cap" class="w-4 h-4"></i>教學</button>
             <button class="tab-btn flex-1 min-w-[80px] py-3 text-slate-400 flex justify-center items-center gap-1.5" data-tab="about"><i data-lucide="info" class="w-4 h-4"></i>關於</button>
@@ -552,7 +553,7 @@
                             </div>
                         </div>
                         <div>
-                            <div class="text-white font-bold text-[13px] mb-1.5 flex items-center gap-1.5"><i data-lucide="wind" class="w-3.5 h-3.5 text-amber-300"></i> 什麼是連動風力？</div>
+                            <div class="text-white font-bold text-[13px] mb-1.5 flex items-center gap-1.5"><i data-lucide="wind" class="w-3.5 h-3.5 text-amber-300"></i> 什麼是美股連動風力？</div>
                             <p class="mb-1.5">針對台股高度依賴外資的「淺碟市場」特性，所量身打造的風險預警指標。</p>
                             <div class="grid gap-1.5">
                                 <div class="flex items-start gap-1.5"><span class="geo-dot mt-1.5"></span><span><b class="text-white">運算核心：</b>VIX恐慌指數(40%) + SPY/QQQ漲跌幅與乖離率(60%)。</span></div>
@@ -569,16 +570,6 @@
                     <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> 重新整理
                 </button>
             </div>
-
-            <button id="wind-index-compact-btn" class="tide-card p-3 text-left active:scale-[0.99] transition flex flex-col w-full">
-                <div class="flex items-center justify-between mb-1">
-                    <h3 class="text-white font-bold text-xs flex items-center gap-1"><i data-lucide="gauge" class="w-3.5 h-3.5 text-brand-cyan"></i> 連動風力</h3>
-                    <span class="text-[9px] text-brand-cyan flex items-center">詳情<i data-lucide="chevron-right" class="w-3 h-3"></i></span>
-                </div>
-                <div id="wind-index-compact-content" class="flex-1">
-                    <p class="text-slate-500 text-[10px] py-2">計算中...</p>
-                </div>
-            </button>
 
             <div>
                 <div class="text-white font-bold text-xs flex items-center gap-1 mb-1.5"><i data-lucide="trending-up" class="w-3.5 h-3.5 text-brand-cyan"></i> 美股關鍵指標</div>
@@ -612,7 +603,7 @@
         <div id="wind-index-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-brand-bg/80 backdrop-blur-sm">
             <div class="bg-brand-card border border-brand-border rounded-2xl w-full max-w-sm max-h-[85vh] overflow-y-auto">
                 <div class="flex items-center justify-between p-4 border-b border-brand-border sticky top-0 bg-brand-card z-10">
-                    <h3 class="text-white font-bold flex items-center gap-2"><i data-lucide="gauge" class="w-5 h-5 text-brand-cyan"></i> 美股台股連動風力</h3>
+                    <h3 class="text-white font-bold flex items-center gap-2"><i data-lucide="gauge" class="w-5 h-5 text-brand-cyan"></i> 美股連動風力</h3>
                     <button id="wind-index-modal-close" class="text-slate-400 hover:text-white p-1"><i data-lucide="x" class="w-5 h-5"></i></button>
                 </div>
                 <div id="wind-index-content" class="p-4">
@@ -1106,6 +1097,19 @@
                 </div>
 
                 <div id="scan-list" class="space-y-3 pb-8 mt-2"></div>
+            </div>
+        </div>
+
+        <!-- 找股分頁：用代號或名稱搜尋，快速跳到日線/週線或加入追蹤 -->
+        <div id="panel-findstock" class="absolute inset-0 hidden overflow-y-auto p-4 hide-scroll bg-brand-bg">
+            <div class="max-w-3xl mx-auto space-y-3">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="search" class="w-5 h-5 text-brand-cyan shrink-0"></i>
+                    <input id="findstock-input" type="text" inputmode="search" placeholder="輸入股票代號或名稱，例如 2330 或 台積電"
+                        class="flex-1 bg-brand-card border border-brand-border text-white px-3 py-2.5 rounded-xl text-sm focus:outline-none focus:border-brand-cyan">
+                </div>
+                <p class="text-slate-500 text-[11px]">搜尋範圍是系統已知的股票代號與名稱清單，找到後可以直接加入追蹤，或跳去看日線/週線圖。</p>
+                <div id="findstock-list" class="space-y-1.5 pb-8"></div>
             </div>
         </div>
 
@@ -2049,22 +2053,15 @@
             { max: 10, label: '颱風(恐慌)', action: '嚴格執行止損/避險，轉入防禦性資產', cls: 'text-red-400', barCls: 'bg-red-400' },
         ];
         async function computeWindIndex() {
-            const [vixCloses, spyCloses, qqqCloses, taiexDaily] = await Promise.all([
+            const [vixCloses, spyCloses, qqqCloses, soxCloses] = await Promise.all([
                 fetchUsTickerHistory('^VIX'),
                 fetchUsTickerHistory('SPY'),
                 fetchUsTickerHistory('QQQ'),
-                fetchTAIEX(15), // 注意：這個參數是「月數」不是「天數」！15個月約有250+個交易日，剛好夠Z-Score的250日基準期用，不需要也不應該抓5年(之前誤填60造成抓取超慢甚至卡住)
+                fetchUsTickerHistory('^SOX'),
             ]);
             const spyReturns = spyCloses.slice(1).map((c, i) => (c - spyCloses[i]) / spyCloses[i] * 100);
             const qqqReturns = qqqCloses.slice(1).map((c, i) => (c - qqqCloses[i]) / qqqCloses[i] * 100);
-            const taiexCloses = taiexDaily.map(d => d.close);
-            const ma20Series = taiexCloses.map((c, i) => sma(taiexCloses, 20, i));
-            const deviationSeries = [];
-            for (let i = 0; i < taiexCloses.length; i++) {
-                if (ma20Series[i] !== null && ma20Series[i] > 0) deviationSeries.push((ma20Series[i] - taiexCloses[i]) / ma20Series[i] * 100);
-                else deviationSeries.push(null);
-            }
-            const devValid = deviationSeries.filter(v => v !== null);
+            const soxReturns = soxCloses.slice(1).map((c, i) => (c - soxCloses[i]) / soxCloses[i] * 100);
 
             const baseN = 250;
             const rawScores = [];
@@ -2072,20 +2069,21 @@
                 const vixIdx = vixCloses.length - 1 - k;
                 const spyRetIdx = spyReturns.length - 1 - k;
                 const qqqRetIdx = qqqReturns.length - 1 - k;
-                const devIdx = devValid.length - 1 - k;
-                if (vixIdx < 10 || spyRetIdx < 10 || qqqRetIdx < 10 || devIdx < 10) continue;
+                const soxRetIdx = soxReturns.length - 1 - k;
+                if (vixIdx < 10 || spyRetIdx < 10 || qqqRetIdx < 10 || soxRetIdx < 10) continue;
 
                 const vixBase = vixCloses.slice(Math.max(0, vixIdx - baseN), vixIdx);
                 const spyRetBase = spyReturns.slice(Math.max(0, spyRetIdx - baseN), spyRetIdx).map(v => -v);
                 const qqqRetBase = qqqReturns.slice(Math.max(0, qqqRetIdx - baseN), qqqRetIdx).map(v => -v);
-                const devBase = devValid.slice(Math.max(0, devIdx - baseN), devIdx);
+                const soxRetBase = soxReturns.slice(Math.max(0, soxRetIdx - baseN), soxRetIdx).map(v => -v);
 
                 const zVix = zscore(vixCloses[vixIdx], vixBase);
                 const zSpy = zscore(-spyReturns[spyRetIdx], spyRetBase);
                 const zQqq = zscore(-qqqReturns[qqqRetIdx], qqqRetBase);
-                const zDev = zscore(devValid[devIdx], devBase);
+                const zSox = zscore(-soxReturns[soxRetIdx], soxRetBase);
 
-                const raw = 0.4 * zVix + 0.6 * ((zDev + zSpy + zQqq) / 3);
+                // 非對稱權重：VIX(40%) + 美股指數單日漲跌幅，依台股產業結構配重 SOX費半(30%)+QQQ那斯達克(20%)+SPY標普500(10%)
+                const raw = 0.40 * zVix + 0.30 * zSox + 0.20 * zQqq + 0.10 * zSpy;
                 rawScores.push(Math.max(0, Math.min(10, ((raw + 3) / 6) * 10)));
             }
             if (rawScores.length === 0) throw new Error('資料不足，無法計算風力指數');
@@ -2107,12 +2105,13 @@
             try {
                 const w = await computeWindIndex();
                 lastWindIndexResult = w;
+                const tierColor = windTierColor(w.score);
                 // 緊湊版：只有指針儀表+分數+建議動作，給儀表板上方一眼看到用，點下去才會看到下面完整版的詳細說明
                 if (compactEl) compactEl.innerHTML = `
                     <div class="text-center mb-1">
                         ${renderGaugeSvg(w.score * 10)}
-                        <div class="text-2xl font-bold ${w.cls} -mt-1">${w.score.toFixed(1)}<span class="text-sm text-slate-500">/10</span></div>
-                        <div class="text-base font-bold ${w.cls}">${w.label}</div>
+                        <div class="text-2xl font-bold font-mono-num -mt-1" style="color:${tierColor};text-shadow:0 0 10px ${tierColor}">${w.score.toFixed(1)}<span class="text-sm text-slate-500">/10</span></div>
+                        <div class="text-base font-bold font-mono-num" style="color:${tierColor};text-shadow:0 0 8px ${tierColor}">${w.label}</div>
                     </div>
                     <div class="bg-brand-bg/60 border border-brand-border rounded-lg p-2 text-[11px] text-slate-300">
                         <b class="text-white">建議動作：</b>${w.action}
@@ -2121,8 +2120,8 @@
                 if (modalEl) modalEl.innerHTML = `
                     <div class="windgust-box text-center mb-1 rounded-xl">
                         ${renderGaugeSvg(w.score * 10)}
-                        <div class="text-2xl font-bold ${w.cls} -mt-1">${w.score.toFixed(1)}<span class="text-sm text-slate-500">/10</span></div>
-                        <div class="text-lg font-bold ${w.cls}">${w.label}</div>
+                        <div class="text-2xl font-bold font-mono-num -mt-1" style="color:${tierColor};text-shadow:0 0 10px ${tierColor}">${w.score.toFixed(1)}<span class="text-sm text-slate-500">/10</span></div>
+                        <div class="text-lg font-bold font-mono-num" style="color:${tierColor};text-shadow:0 0 8px ${tierColor}">${w.label}</div>
                     </div>
                     <div class="bg-brand-bg/60 border border-brand-border rounded-lg p-2.5 text-[11px] text-slate-300 mb-2">
                         <b class="text-white">建議動作：</b>${w.action}
@@ -2131,7 +2130,7 @@
                         <div class="flex items-center gap-1.5 text-white font-bold text-[13px] mb-1.5"><i data-lucide="wind" class="w-3.5 h-3.5 text-amber-300"></i> 風力：看的是「短線情緒與波動」</div>
                         綜合VIX、SPY/QQQ單日漲跌幅，以及台股20日乖離率。這些都屬於極度敏感的數據，只要昨晚美股科技股稍微軟腳，或是VIX恐慌指數驟升，分數就會瞬間飆高。這就像海面上的「天氣」，反映的是當下突然颳起的陣風與亂流，跟洋流的長線方向是兩件事。
                     </div>
-                    <p class="text-[10px] text-slate-500 leading-relaxed">用VIX(40%權重)+台股20日乖離率/SPY/QQQ單日漲跌幅(60%權重，三者平均)，每項都先轉成過去250個交易日的Z-Score再合併，避免不同單位直接相加；最後對近5天的分數做EMA平滑，不會因為單日盤中跳動就讓分數亂跳。這是輔助參考用的量化模型，不是精確預測，門檻也可能需要依你自己的風險偏好調整。</p>
+                    <p class="text-[10px] text-slate-500 leading-relaxed font-mono-num">運算邏輯：採用 VIX (40% 權重) ＋ 美股指數單日漲跌幅 (60% 權重)。為精準對齊台股產業結構，美股漲跌幅採非對稱權重：SOX 費半 (30%) + QQQ 那斯達克 (20%) + SPY 標普500 (10%)。每項數據皆轉換為近250日Z-Score合併，並對近5日分數進行EMA平滑處理，過濾單日極端雜訊。此為輔助決策模型，非絕對預測。</p>
                     <table class="w-full text-[10px] text-slate-400 mt-2 border-t border-brand-border/50 pt-2">
                         <tr class="text-slate-500"><td class="py-0.5">0~2.5</td><td>微風(平穩)</td><td class="text-right">可加碼</td></tr>
                         <tr class="text-slate-500"><td class="py-0.5">2.6~5.0</td><td>強風(警戒)</td><td class="text-right">暫停加碼</td></tr>
@@ -2139,11 +2138,13 @@
                         <tr class="text-slate-500"><td class="py-0.5">7.6~10</td><td>颱風(恐慌)</td><td class="text-right">止損/防禦</td></tr>
                     </table>`;
                 safeLucideIcons({ root: modalEl });
+                renderUsMiniCards(lastUsSnapshot);
                 renderTodayTomorrowModule();
             } catch (e) {
                 if (compactEl) compactEl.innerHTML = `<p class="text-gray-500 text-xs py-2">計算失敗：${e.message}</p>`;
                 if (modalEl) modalEl.innerHTML = `<p class="text-gray-500 text-sm">風力指數計算失敗：${e.message}</p>`;
                 lastWindIndexResult = null;
+                renderUsMiniCards(lastUsSnapshot);
                 renderTodayTomorrowModule();
             }
         }
@@ -4284,23 +4285,50 @@
 
         // ============ 每日股市風力圖 ============
         // 車用儀表板風格的半圓指針(像時速表)，value是0~100，越高越偏多頭(指針越偏右、越紅)
-        function renderGaugeSvg(value) {
+        // 風力分數(0~10)對應的霓虹級距色，給儀表刻度/指針/文字發光統一使用
+        function windTierColor(score10) {
+            if (score10 <= 2.5) return '#22f2c0'; // 螢光青綠
+            if (score10 <= 5.0) return '#fde047'; // 警戒黃
+            if (score10 <= 7.5) return '#fb923c'; // 疾風橘紅
+            return '#ff3b3b'; // 恐慌螢光紅
+        }
+        // Y2K數位氣象雷達風格儀表：半圓拆解成一格一格的數位斷點刻度，雷射光束指針，空心發光樞紐
+        function renderGaugeSvg(value, opts) {
+            const compact = opts && opts.compact;
+            const score10 = Math.max(0, Math.min(10, value / 10));
             const angle = -80 + (Math.max(0, Math.min(100, value)) / 100) * 160;
+            const rad = (deg) => (deg - 90) * Math.PI / 180;
+            const N = compact ? 16 : 26;
+            const cx = 100, cy = 100, rOuter = 86, rInner = compact ? 72 : 74;
+            let ticks = '';
+            for (let i = 0; i < N; i++) {
+                const t = i / (N - 1);
+                const tickAngle = -80 + t * 160;
+                const tickValue = t * 10;
+                const color = windTierColor(tickValue);
+                const lit = tickValue <= score10;
+                const a = rad(tickAngle);
+                const x1 = cx + rInner * Math.sin(a), y1 = cy - rInner * Math.cos(a);
+                const x2 = cx + rOuter * Math.sin(a), y2 = cy - rOuter * Math.cos(a);
+                ticks += `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="${color}" stroke-width="${compact ? 3 : 4}" stroke-linecap="round" opacity="${lit ? 0.95 : 0.16}" style="${lit ? `filter:drop-shadow(0 0 3px ${color})` : ''}"/>`;
+            }
+            const pointerColor = windTierColor(score10);
+            const pa = rad(angle);
+            const pr = compact ? 56 : 62;
+            const px = cx + pr * Math.sin(pa), py = cy - pr * Math.cos(pa);
+            const backdropId = `gaugeBackdrop${compact ? 'C' : 'F'}`;
             return `
-            <svg viewBox="0 0 200 112" class="w-full" style="max-height:96px">
+            <svg viewBox="0 0 200 ${compact ? 100 : 112}" class="w-full" style="max-height:${compact ? 72 : 96}px">
                 <defs>
-                    <linearGradient id="gaugeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                        <stop offset="0%" stop-color="#22c55e"/>
-                        <stop offset="50%" stop-color="#fbbf24"/>
-                        <stop offset="100%" stop-color="#ef4444"/>
-                    </linearGradient>
+                    <radialGradient id="${backdropId}" cx="50%" cy="100%" r="75%">
+                        <stop offset="0%" stop-color="rgba(0,242,254,0.10)"/>
+                        <stop offset="100%" stop-color="rgba(0,242,254,0)"/>
+                    </radialGradient>
                 </defs>
-                <path d="M15,100 A85,85 0 0,1 185,100" fill="none" stroke="url(#gaugeGrad)" stroke-width="12" stroke-linecap="round" opacity="0.9"/>
-                <g class="gauge-needle" style="--gauge-angle:${angle}deg; transform-origin:100px 100px; transform:rotate(${angle}deg);">
-                    <line x1="100" y1="100" x2="100" y2="28" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
-                    <polygon points="100,21 94,32 106,32" fill="#fff"/>
-                </g>
-                <circle cx="100" cy="100" r="7" fill="#fff" stroke="#061224" stroke-width="2" class="gauge-pulse-dot"/>
+                <path d="M10,100 A90,90 0 0,1 190,100 L190,${compact ? 100 : 112} L10,${compact ? 100 : 112} Z" fill="url(#${backdropId})"/>
+                ${ticks}
+                <line x1="${cx}" y1="${cy}" x2="${px.toFixed(1)}" y2="${py.toFixed(1)}" stroke="${pointerColor}" stroke-width="2" stroke-linecap="round" style="filter:drop-shadow(0 0 5px ${pointerColor}) drop-shadow(0 0 2px ${pointerColor})"/>
+                <circle cx="${cx}" cy="${cy}" r="${compact ? 6 : 8}" fill="rgba(255,255,255,0.06)" stroke="${pointerColor}" stroke-width="2" style="filter:drop-shadow(0 0 4px ${pointerColor})"/>
             </svg>`;
         }
         let lastUsSnapshot = null; // 快取美股資料，避免大盤燈號算完後重畫台股區塊時，重複再打一次美股API
@@ -4351,9 +4379,33 @@
                     </div>
                 </div>`;
             };
-            usEl.innerHTML = `${dataBlock('sox')}${dataBlock('qqq')}${dataBlock('spy')}${dataBlock('vix')}`;
+            usEl.innerHTML = `${dataBlock('sox')}${dataBlock('qqq')}${dataBlock('spy')}${windGaugeBlock()}${dataBlock('vix')}`;
             updateVixThermometer(us && us.vix ? us.vix.price : null);
             safeLucideIcons({ root: usEl });
+            const windBtn = document.getElementById('wind-index-compact-btn');
+            if (windBtn) windBtn.addEventListener('click', () => {
+                document.getElementById('wind-index-modal').classList.remove('hidden');
+            });
+        }
+        // 美股風力動態監測：嵌入指標網格的精簡卡片版本，只留標題＋指針＋分數＋級距文字，詳細說明收進「詳情」彈窗
+        function windGaugeBlock() {
+            const w = lastWindIndexResult;
+            const scoreText = w ? w.score.toFixed(1) : '--';
+            const tierLabel = w ? w.label : '計算中...';
+            const color = w ? windTierColor(w.score) : '#64748b';
+            const gaugeHtml = renderGaugeSvg(w ? w.score * 10 : 0, { compact: true });
+            return `
+            <button id="wind-index-compact-btn" class="usic-card text-left" style="justify-content:flex-start; gap:2px;">
+                <div class="flex items-center justify-between">
+                    <div class="usic-title" style="font-size:10px; line-height:1.2;">美股風力動態監測</div>
+                    <span class="text-[9px] text-brand-cyan flex items-center gap-0.5 shrink-0">詳情<i data-lucide="chevron-right" class="w-2.5 h-2.5"></i></span>
+                </div>
+                <div style="margin:-2px 0">${gaugeHtml}</div>
+                <div class="text-center" style="margin-top:-10px">
+                    <span class="font-mono-num font-bold text-sm" style="color:${color};text-shadow:0 0 6px ${color}">${scoreText}</span><span class="text-slate-500 text-[9px]">/10</span>
+                    <div class="font-mono-num text-[10px] font-bold" style="color:${color}">${tierLabel}</div>
+                </div>
+            </button>`;
         }
         // VIX動態流體溫度計：<20冰藍/青綠，20~30橘黃警戒，>30螢光紅恐慌；液面高度依VIX數值對應0~40的範圍縮放
         function updateVixThermometer(vix) {
@@ -4632,6 +4684,54 @@
 
 
         // ============ 追蹤清單 ============
+        // ============ 找股：用代號或名稱搜尋系統已知股票清單 ============
+        function renderFindStockResults(query) {
+            const list = document.getElementById('findstock-list');
+            if (!list) return;
+            const q = (query || '').trim().toUpperCase();
+            const pool = { ...STOCK_NAMES, ...(allStockInfoMap || {}), ...getUserNames() };
+            let codes = Object.keys(pool);
+            if (q) {
+                codes = codes.filter(code => code.toUpperCase().includes(q) || (pool[code] && pool[code].includes(query.trim())));
+            }
+            codes.sort();
+            if (!q) {
+                list.innerHTML = '<p class="text-slate-500 text-sm text-center py-8">輸入代號或名稱開始搜尋。</p>';
+                return;
+            }
+            if (codes.length === 0) {
+                list.innerHTML = '<p class="text-slate-500 text-sm text-center py-8">找不到符合的股票，換個關鍵字試試。</p>';
+                return;
+            }
+            const shown = codes.slice(0, 60);
+            list.innerHTML = shown.map(code => `
+                <div class="neon-glass-card p-2.5 flex items-center justify-between gap-2">
+                    <div class="min-w-0">
+                        <div class="text-white font-bold text-sm truncate">${stockLabel(code)}</div>
+                    </div>
+                    <div class="flex items-center gap-1.5 shrink-0">
+                        <button class="findstock-view-btn bg-brand-card hover:bg-slate-700 border border-brand-border text-slate-200 text-[11px] px-2 py-1.5 rounded-lg" data-symbol="${code}">看圖表</button>
+                        ${!watchlist.includes(code) ? `<button class="findstock-add-btn bg-blue-600 hover:bg-blue-700 text-white text-[11px] px-2 py-1.5 rounded-lg" data-symbol="${code}">+追蹤</button>` : '<span class="text-[10px] text-gray-600 px-1">已追蹤</span>'}
+                    </div>
+                </div>`).join('');
+            if (codes.length > shown.length) {
+                list.innerHTML += `<p class="text-slate-500 text-[11px] text-center pt-2">結果太多，只顯示前${shown.length}筆，再打精確一點的關鍵字。</p>`;
+            }
+            document.querySelectorAll('.findstock-add-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const sym = btn.getAttribute('data-symbol');
+                    if (!watchlist.includes(sym)) { watchlist.unshift(sym); renderWatchlist(); showToast(`已加入追蹤 ${stockLabel(sym)}`, 'success'); }
+                    btn.outerHTML = '<span class="text-[10px] text-gray-600 px-1">已追蹤</span>';
+                });
+            });
+            document.querySelectorAll('.findstock-view-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const sym = btn.getAttribute('data-symbol');
+                    loadStock(sym);
+                    switchTab('daily');
+                });
+            });
+        }
         function renderWatchlist() {
             saveJSON('trend_watchlist', watchlist);
             const select = document.getElementById('watchlist-select');
@@ -4673,6 +4773,7 @@
             if (tabName === 'beginner') renderRookieWatchlist();
             if (tabName === 'scan') renderSectorRotation();
             if (tabName === 'dashboard') renderDashboard();
+            if (tabName === 'findstock') renderFindStockResults('');
             requestAnimationFrame(() => {
                 syncChartSize(weeklyChart, document.getElementById('weekly-chart-container'));
                 syncChartSize(dailyChart, document.getElementById('daily-chart-container'));
@@ -5291,9 +5392,6 @@
                 content.classList.remove('hidden'); // 重新整理時順便展開，確保看得到剛抓到的最新結果
                 renderDailyReport();
             });
-            document.getElementById('wind-index-compact-btn').addEventListener('click', () => {
-                document.getElementById('wind-index-modal').classList.remove('hidden');
-            });
             document.getElementById('wind-index-modal-close').addEventListener('click', () => {
                 document.getElementById('wind-index-modal').classList.add('hidden');
             });
@@ -5306,6 +5404,8 @@
             document.getElementById('today-tomorrow-info-modal').addEventListener('click', (e) => {
                 if (e.target.id === 'today-tomorrow-info-modal') document.getElementById('today-tomorrow-info-modal').classList.add('hidden');
             });
+            const findstockInput = document.getElementById('findstock-input');
+            if (findstockInput) findstockInput.addEventListener('input', () => renderFindStockResults(findstockInput.value));
         });
     </script>
 </body>
