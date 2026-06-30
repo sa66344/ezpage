@@ -167,6 +167,54 @@
         /* 簽名元素：流動的潮水波光分隔線，純SVG+SMIL動畫，不用JS */
         .tide-hero-wave { width: 100%; height: 28px; margin: -2px 0 4px; }
         .tide-hero-wave svg { width: 100%; height: 100%; display: block; }
+        /* ============ 玻璃霓虹卡片：掃描結果個股清單／盤後速報共用 ============ */
+        .neon-glass-card {
+            position: relative; overflow: hidden; border-radius: 14px;
+            background: linear-gradient(160deg, rgba(15,33,59,0.55), rgba(6,14,27,0.65));
+            backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+            border: 1px solid transparent;
+            background-clip: padding-box;
+            box-shadow: 0 8px 24px -14px rgba(0,0,0,0.7);
+            transition: box-shadow .3s ease, transform .3s ease;
+        }
+        .neon-glass-card::before {
+            content: ''; position: absolute; inset: 0; border-radius: inherit; padding: 1px;
+            background: linear-gradient(135deg, rgba(192,205,220,0.55), rgba(0,242,254,0.55) 35%, rgba(167,139,250,0.5) 70%, rgba(192,205,220,0.4));
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor; mask-composite: exclude;
+            pointer-events: none; opacity: .65;
+        }
+        .neon-glass-card::after {
+            content: ''; position: absolute; top: -40%; left: -10%; width: 60%; height: 60%;
+            background: radial-gradient(circle, rgba(0,242,254,0.10), transparent 70%); pointer-events: none;
+        }
+        .neon-glass-card--alert::before { background: linear-gradient(135deg, rgba(251,191,36,0.7), rgba(251,191,36,0.15) 50%, rgba(251,191,36,0.5)); opacity: .85; }
+        /* 霓虹幾何小點，取代emoji項目符號 */
+        .geo-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;
+            background: radial-gradient(circle at 35% 35%, #b3fbff, #00f2fe 60%, #0891b2);
+            box-shadow: 0 0 5px 1.5px rgba(0,242,254,0.6); }
+        .geo-dot--up { background: radial-gradient(circle at 35% 35%, #ffd9da, #ff4d4f 60%, #b91c1c); box-shadow: 0 0 5px 1.5px rgba(255,77,79,0.6); }
+        .geo-dot--down { background: radial-gradient(circle at 35% 35%, #c8ffe0, #00e676 60%, #047857); box-shadow: 0 0 5px 1.5px rgba(0,230,118,0.55); }
+        /* 霓虹發光膠囊狀態標籤，取代色塊emoji標籤 */
+        .neon-pill {
+            display: inline-flex; align-items: center; gap: 4px; font-size: 10px; font-weight: 700;
+            padding: 2px 8px; border-radius: 999px; letter-spacing: .02em;
+            border: 1px solid currentColor; background: rgba(255,255,255,0.04);
+            text-shadow: 0 0 6px currentColor;
+        }
+        .neon-pill--cyan { color: #5cf2ff; box-shadow: 0 0 8px -1px rgba(0,242,254,0.5) inset; }
+        .neon-pill--amber { color: #fcd34d; box-shadow: 0 0 8px -1px rgba(252,211,77,0.5) inset; }
+        .neon-pill--violet { color: #c4b5fd; box-shadow: 0 0 8px -1px rgba(196,181,253,0.5) inset; }
+        .neon-pill--rose { color: #fda4af; box-shadow: 0 0 8px -1px rgba(253,164,175,0.5) inset; }
+        /* 篩選/排序控制列按鈕 */
+        .filter-chip {
+            font-size: 11px; padding: 5px 10px; border-radius: 999px; border: 1px solid rgba(0,242,254,0.25);
+            color: #94a3b8; background: rgba(15,33,59,0.5); transition: all .2s ease; white-space: nowrap;
+        }
+        .filter-chip.active { color: #061224; background: linear-gradient(90deg,#00f2fe,#4facfe); border-color: transparent; font-weight: 700; box-shadow: 0 0 10px -1px rgba(0,242,254,0.6); }
+        /* 清單卡片切換時的平滑轉場 */
+        #scan-list .scan-card-anim { transition: opacity .25s ease, transform .25s ease; }
+        #scan-list .scan-card-hidden { opacity: 0; transform: scale(0.97); height: 0; margin: 0; padding: 0; overflow: hidden; }
         /* 光線洋流載入動畫：盤後速報產生資料比較慢時用，慢慢流動的光，比游魚版本更柔和緩慢 */
         .ocean-loader { position: relative; height: 40px; overflow: hidden; border-radius: 10px; background: rgba(0, 242, 254, 0.04); border: 1px solid rgba(0, 242, 254, 0.12); }
         .ocean-loader::before {
@@ -358,15 +406,15 @@
         <div id="panel-weekly" class="absolute inset-0 hidden flex flex-col">
             <div id="weekly-toolbar-wrapper" class="relative shrink-0 z-20">
                 <div id="weekly-toolbar-scroller" class="flex items-center gap-2 px-3 py-2 bg-brand-card border-b border-brand-border text-xs overflow-x-auto styled-scroll shadow-md">
+                    <button id="weekly-refresh-btn" class="shrink-0 flex items-center gap-1 bg-brand-card text-slate-300 border border-brand-border px-2 py-1.5 rounded-lg transition hover:bg-slate-700" title="如果買賣點沒顯示，按這裡手動重整">
+                        <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> 重整
+                    </button>
                     <button id="four-treasures-float-btn" class="shrink-0 flex items-center gap-1.5 bg-amber-900/30 text-amber-300 border border-amber-500/30 px-3 py-1.5 rounded-lg transition hover:bg-amber-900/50 whitespace-nowrap">
                         <i data-lucide="gem" class="w-3.5 h-3.5"></i> 長週線波段工具 <span id="four-treasures-float-badge" class="font-bold text-white bg-amber-500/40 px-1 rounded text-[10px]">--</span>
                     </button>
                     <button id="weekly-bb-toggle-btn" class="shrink-0 bg-brand-bg hover:bg-slate-800 text-slate-300 border border-brand-border px-3 py-1.5 rounded-lg transition font-medium whitespace-nowrap">BB</button>
                     <button id="weekly-status-btn" class="shrink-0 flex items-center gap-1.5 bg-blue-900/30 text-blue-300 border border-blue-500/30 px-3 py-1.5 rounded-lg transition hover:bg-blue-900/50 whitespace-nowrap">
                         <i data-lucide="activity" class="w-3.5 h-3.5"></i> 個股狀態 <span id="weekly-status-badge" class="font-bold"></span>
-                    </button>
-                    <button id="weekly-refresh-btn" class="shrink-0 flex items-center gap-1 bg-brand-card text-slate-300 border border-brand-border px-2 py-1.5 rounded-lg transition hover:bg-slate-700 ml-auto" title="如果買賣點沒顯示，按這裡手動重整">
-                        <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> 重整
                     </button>
                 </div>
             </div>
@@ -424,7 +472,7 @@
             <div class="glass-panel rounded-xl overflow-hidden">
                 <div class="w-full flex justify-between items-center p-4">
                     <button id="daily-report-toggle-btn" class="collapse-toggle flex-1 flex items-center gap-2 text-left" data-target="daily-report-content">
-                        <h3 class="text-white font-bold flex items-center gap-2 text-sm"><i data-lucide="newspaper" class="w-4 h-4 text-brand-cyan"></i> 📊 盤後速報</h3>
+                        <h3 class="text-white font-bold flex items-center gap-2 text-sm"><i data-lucide="newspaper" class="w-4 h-4 text-brand-cyan"></i> 盤後速報</h3>
                     </button>
                     <div class="flex items-center gap-2 shrink-0">
                         <button id="daily-report-refresh-btn" class="flex items-center gap-1 bg-brand-bg text-slate-300 border border-brand-border px-2 py-1 rounded-lg transition hover:bg-slate-700 text-[11px]" title="重新整理盤後速報">
@@ -446,7 +494,7 @@
         <div id="wind-index-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-brand-bg/80 backdrop-blur-sm">
             <div class="bg-brand-card border border-brand-border rounded-2xl w-full max-w-sm max-h-[85vh] overflow-y-auto">
                 <div class="flex items-center justify-between p-4 border-b border-brand-border sticky top-0 bg-brand-card z-10">
-                    <h3 class="text-white font-bold flex items-center gap-2"><i data-lucide="gauge" class="w-5 h-5 text-brand-cyan"></i> 🌪️ 美股台股連動風力</h3>
+                    <h3 class="text-white font-bold flex items-center gap-2"><i data-lucide="gauge" class="w-5 h-5 text-brand-cyan"></i> 美股台股連動風力</h3>
                     <button id="wind-index-modal-close" class="text-slate-400 hover:text-white p-1"><i data-lucide="x" class="w-5 h-5"></i></button>
                 </div>
                 <div id="wind-index-content" class="p-4">
@@ -459,6 +507,9 @@
             <!-- 日線專屬工具列 (整合按鈕) -->
             <div id="daily-toolbar-wrapper" class="relative shrink-0 z-20">
                 <div id="daily-toolbar-scroller" class="flex items-center gap-2 px-3 py-2 bg-brand-card border-b border-brand-border text-xs overflow-x-auto styled-scroll shadow-md">
+                <button id="daily-refresh-btn" class="shrink-0 flex items-center gap-1 bg-brand-card text-slate-300 border border-brand-border px-2 py-1.5 rounded-lg transition hover:bg-slate-700" title="如果買賣點沒顯示，按這裡手動重整">
+                    <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> 重整
+                </button>
                 <button id="bb-toggle-btn" class="bg-brand-bg hover:bg-slate-800 text-slate-300 border border-brand-border px-3 py-1.5 rounded-lg shrink-0 transition font-medium whitespace-nowrap">BB</button>
                 <!-- 明日策略：放到VCP評分前面 -->
                 <button id="predict-btn" class="shrink-0 flex items-center gap-1.5 bg-gradient-to-r from-brand-cyan to-brand-teal text-brand-bg font-bold px-3 py-1.5 rounded-lg shadow whitespace-nowrap active:scale-95 transition">
@@ -472,9 +523,6 @@
                 </button>
                 <button id="intraday-btn" class="shrink-0 flex items-center gap-1.5 bg-pink-900/30 text-pink-300 border border-pink-500/30 px-3 py-1.5 rounded-lg transition hover:bg-pink-900/50 whitespace-nowrap">
                     <i data-lucide="radio" class="w-3.5 h-3.5"></i> 盤中
-                </button>
-                <button id="daily-refresh-btn" class="shrink-0 flex items-center gap-1 bg-brand-card text-slate-300 border border-brand-border px-2 py-1.5 rounded-lg transition hover:bg-slate-700" title="如果買賣點沒顯示，按這裡手動重整">
-                    <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> 重整
                 </button>
 
                 <div class="h-4 w-px bg-brand-border mx-1 shrink-0"></div>
@@ -928,6 +976,17 @@
                     </div>
                 </div>
                 
+                <div id="scan-filter-bar" class="hidden flex flex-wrap items-center gap-1.5 -mb-1">
+                    <span class="text-[10px] text-slate-500 mr-0.5">篩選</span>
+                    <button class="filter-chip active" data-filter="all">顯示全部</button>
+                    <button class="filter-chip" data-filter="short">僅短線可買</button>
+                    <button class="filter-chip" data-filter="long">僅長線可買</button>
+                    <span class="text-[10px] text-slate-500 ml-2 mr-0.5">排序</span>
+                    <button class="filter-chip active" data-sort="score">評分高到低</button>
+                    <button class="filter-chip" data-sort="price-desc">股價由高至低</button>
+                    <button class="filter-chip" data-sort="price-asc">股價由低至高</button>
+                </div>
+
                 <div id="scan-list" class="space-y-3 pb-8 mt-2"></div>
             </div>
         </div>
@@ -960,6 +1019,20 @@
                 <section class="glass-panel rounded-xl p-4">
                     <h3 class="text-brand-cyan font-bold mb-1 flex items-center gap-2 text-sm"><i data-lucide="bell" class="w-4 h-4"></i> 持股提醒清單</h3>
                     <p class="text-slate-500 text-[11px] mb-3">買進後把這筆加進來，之後每次打開App，系統會自動比對現價，告訴你有沒有碰到該停利/停損/緊急停利/緊急停損的價位。資料只存在這台裝置裡。</p>
+
+                    <div class="bg-brand-bg/60 rounded-lg p-3 mb-3">
+                        <div class="flex items-center justify-between">
+                            <div class="flex-1 mr-2">
+                                <div class="text-white text-sm font-semibold flex items-center gap-1.5"><i data-lucide="bell-ring" class="w-3.5 h-3.5 text-brand-cyan"></i> 下午7點持股提醒通知</div>
+                                <p class="text-slate-500 text-[10px] mt-1 leading-relaxed">開啟後，下午7點前後只要打開過這個App(背景分頁也算)，就會跳出通知總結持股清單目前的狀態。<b class="text-amber-300">手機完全沒打開App的話通知不會出現</b>，這是瀏覽器網頁的限制，不是真正的系統推播。</p>
+                            </div>
+                            <button id="rookie-notify-toggle-btn" class="shrink-0 w-12 h-7 rounded-full bg-brand-border relative transition" data-on="false">
+                                <span class="absolute top-1 left-1 w-5 h-5 rounded-full bg-slate-400 transition-transform"></span>
+                            </button>
+                        </div>
+                        <p id="rookie-notify-status" class="text-[10px] mt-2 hidden"></p>
+                    </div>
+
                     <button id="rookie-add-toggle-btn" class="w-full bg-brand-card hover:bg-slate-700 border border-brand-border text-slate-300 rounded-lg py-2.5 text-sm font-semibold flex items-center justify-center gap-2 transition mb-3">
                         <i data-lucide="plus-circle" class="w-4 h-4"></i> 新增一筆持股提醒
                     </button>
@@ -2221,74 +2294,16 @@
 
         // ============ 週線策略(進出場主邏輯) ============
         // ============ 長週線波段工具評分(長線週K) ============
-        // 參考的四個觀察條件：①站上週20MA ②突破趨勢線 ③W型態完成 ④盤整/底部位階成交量爆量
-        // ②③④原本是用肉眼目視判斷，以下是量化代理規則，可能跟你肉眼判斷有落差，歡迎之後微調：
-        // ②趨勢線：抓近16週的局部高點做線性回歸，若回歸線向下(壓力線)且目前收盤價突破回歸線視為突破
-        // ③W型態：近20週內找兩個相近的低點(誤差5%內)，且目前收盤價突破兩低點間最高點(頸線)
-        // ④爆量：目前週量 > 近20週均量×1.5，且目前收盤價接近近20週低點(15%內，代表仍在底部/盤整區附近)
-        function findSwingHighs(highs, start, end) {
-            const out = [];
-            for (let i = start + 1; i < end; i++) {
-                if (highs[i] > highs[i - 1] && highs[i] > highs[i + 1]) out.push({ x: i, y: highs[i] });
-            }
-            return out;
-        }
+        // 參考的三個觀察條件：①站上週20MA ②W型態完成 ③盤整/底部位階成交量爆量
+        // ②③原本是用肉眼目視判斷，以下是量化代理規則，可能跟你肉眼判斷有落差，歡迎之後微調：
+        // ②W型態：近20週內找兩個相近的低點(誤差5%內)，且目前收盤價突破兩低點間最高點(頸線)
+        // ③爆量：目前週量 > 近20週均量×1.5，且目前收盤價接近近20週低點(15%內，代表仍在底部/盤整區附近)
         function findSwingLows(lows, start, end) {
             const out = [];
             for (let i = start + 1; i < end; i++) {
                 if (lows[i] < lows[i - 1] && lows[i] < lows[i + 1]) out.push({ x: i, y: lows[i] });
             }
             return out;
-        }
-        // 外包絡線(Envelope)演算法：找出區間最高點當起點(Point A)，向右找「最大斜率」(最平緩的那條線)當終點(Point B)，
-        // 這樣畫出來的下降壓力線會像一塊木板一樣完美壓在所有K棒最高點上方，不會切割到任何一根K棒，
-        // 符合「趨勢線不能壓到中間其他K棒」的技術分析鐵則(取代原本容易穿越K棒的線性回歸演算法)。
-        // lookback延長到104週(兩年)，確保能找到較久以前的絕對高點；最高點剛好在上週(沒有下降空間)或算出來的
-        // 斜率為正時，強制壓平為斜率0的「橫切線」(水平線)，確保一定畫得出線、且絕對不會壓到多根K棒。
-        function detectTrendlineBreakout(highs, closes, idx, lookback = 104) {
-            const start = Math.max(0, idx - lookback);
-            if (start >= idx) return { breakout: false };
-
-            // 1. 尋找區間內的絕對最高點作為起點 (Point A)
-            let maxHigh = -Infinity;
-            let pA = -1;
-            for (let i = start; i < idx; i++) {
-                if (highs[i] > maxHigh) {
-                    maxHigh = highs[i];
-                    pA = i;
-                }
-            }
-
-            if (pA === -1) return { breakout: false };
-
-            // 2. 計算下降壓力線的斜率
-            let maxSlope = -Infinity;
-
-            if (pA === idx - 1) {
-                // 如果最高點就是上一週，代表沒有空間畫下降趨勢，自動轉為「橫切線」(水平線)
-                maxSlope = 0;
-            } else {
-                // 尋找外包絡線最大斜率 (最平緩的那條)，保證不切到中間任何 K 棒
-                for (let i = pA + 1; i < idx; i++) {
-                    const slope = (highs[i] - highs[pA]) / (i - pA);
-                    if (slope > maxSlope) {
-                        maxSlope = slope;
-                    }
-                }
-            }
-
-            // 防呆機制：若為正數或算不出斜率，一律強制壓平為橫切線 (Slope = 0)
-            if (maxSlope === -Infinity || maxSlope > 0) {
-                maxSlope = 0;
-            }
-
-            // 3. 計算這條趨勢線延伸到本週 (idx) 的數值
-            const lineAtIdx = maxSlope * (idx - pA) + highs[pA];
-
-            // 4. 判斷突破：當週收盤價實質大於這條線
-            const breakout = closes[idx] > lineAtIdx;
-
-            return { breakout, slope: maxSlope, lineValue: lineAtIdx, pA, startVal: highs[pA] };
         }
         function detectWPattern(lows, highs, closes, idx, lookback = 20) {
             const start = idx - lookback;
@@ -2321,11 +2336,10 @@
             if (idx < 0 || wMa20[idx] === null) return null;
             const highs = weeks.map(w => w.high), lows = weeks.map(w => w.low), closes = weeks.map(w => w.close), vols = weeks.map(w => w.volume);
             const aboveMa = lows[idx] >= wMa20[idx]; // 整根K棒(含最低價)都在均線之上，才算「站上」
-            const trendline = detectTrendlineBreakout(highs, closes, idx);
             const wPattern = detectWPattern(lows, highs, closes, idx);
             const volSurge = detectVolumeSurgeAtBase(vols, closes, lows, idx);
-            const count = [aboveMa, trendline.breakout, wPattern.completed, volSurge.surge].filter(Boolean).length;
-            return { aboveMa, trendline, wPattern, volSurge, count, time: weeks[idx].time };
+            const count = [aboveMa, wPattern.completed, volSurge.surge].filter(Boolean).length;
+            return { aboveMa, wPattern, volSurge, count, time: weeks[idx].time };
         }
 
         // 盤整(矩形)偵測：近N週的振幅夠窄就視為盤整區，本週收盤帶量突破盤整區上緣＝買進訊號
@@ -3012,7 +3026,6 @@
             const markers = [...wv.buyMarkers, ...wv.sellMarkers].sort((a, b) => a.time.localeCompare(b.time));
             wCandlestick.setMarkers(markers);
             renderWPatternDrawing(wv);
-            renderTrendlineDrawing(wv);
             renderConsolidationBoxes(wv);
             const visibleWeeks = 110; // 預設只顯示近2年左右，避免5年K棒擠在一起標記互相重疊；可用手指縮放看更久的歷史
             if (wv.weeks.length > visibleWeeks) {
@@ -3060,7 +3073,6 @@
 
         // ============ W型態視覺化繪製(週線圖) ============
         let wPatternSeries = null;
-        let trendlineSeries = null;
         function renderWPatternDrawing(wv) {
             if (wPatternSeries) { try { weeklyChart.removeSeries(wPatternSeries); } catch (e) {} wPatternSeries = null; }
             const wp = wv.recentWPattern;
@@ -3080,34 +3092,6 @@
             wPatternSeries.setMarkers([
                 { time: weeks[low1.x].time, position: 'belowBar', color: '#22d3ee', shape: 'circle', text: 'W' },
                 { time: weeks[low2.x].time, position: 'belowBar', color: '#22d3ee', shape: 'circle', text: 'W' }
-            ]);
-        }
-
-        // ============ 趨勢線(外包絡線)視覺化繪製(週線圖)：對應「②突破趨勢線」買點 ============
-        // 之前detectTrendlineBreakout這個函式只用來在「長週線波段工具」面板裡顯示文字版的勾選結果，
-        // 從來沒有真的畫在圖上，這次補上：用Point A(區間最高點)畫出實際的下降壓力線/橫切線，
-        // 線會一路延伸到目前這週的位置，方便肉眼確認價格有沒有真的站上這條線。依斜率動態給色：
-        // 斜率為0(水平橫切線)用黃色，小於0(下降壓力線)用綠色。
-        function renderTrendlineDrawing(wv) {
-            if (trendlineSeries) { try { weeklyChart.removeSeries(trendlineSeries); } catch (e) {} trendlineSeries = null; }
-            const tl = wv.fourTreasures && wv.fourTreasures.trendline;
-            if (!tl || tl.pA === undefined || tl.pA === -1 || tl.lineValue === undefined) return;
-
-            const weeks = wv.weeks;
-            const idx = weeks.length - 1;
-
-            // 依照斜率動態決定顏色：斜率為 0 (水平橫切線) 用黃色，小於 0 (下降壓力線) 用綠色
-            const lineColor = tl.slope === 0 ? '#facc15' : '#22c55e';
-
-            trendlineSeries = weeklyChart.addLineSeries({ color: lineColor, lineWidth: 2, lineStyle: 0, crosshairMarkerVisible: false, priceLineVisible: false, lastValueVisible: false });
-
-            trendlineSeries.setData([
-                { time: weeks[tl.pA].time, value: tl.startVal },
-                { time: weeks[idx].time, value: tl.lineValue }
-            ]);
-
-            trendlineSeries.setMarkers([
-                { time: weeks[tl.pA].time, position: 'aboveBar', color: lineColor, shape: 'arrowDown', text: 'A' },
             ]);
         }
 
@@ -3207,13 +3191,13 @@
                 advice = '個股條件雖然符合，但日線均線還不是多頭排列(日20MA未在日100MA之上)，短期動能還沒明確強過長期，先觀望比較保守。';
             } else if (ft.count >= 3) {
                 light = '🟢'; label = '可以買';
-                advice = `本週符合${ft.count}/4項長線條件，且站上週20MA，加上大盤多頭、個股日均線多頭排列，趨勢結構較完整。`;
+                advice = `本週符合${ft.count}/3項長線條件，且站上週20MA，加上大盤多頭、個股日均線多頭排列，趨勢結構較完整。`;
             } else if (ft.count >= 2) {
                 light = '🟡'; label = '可以少量買';
-                advice = `本週符合${ft.count}/4項條件，站上週20MA，大盤跟均線結構都OK，但條件還不算齊全，建議小量或繼續觀察，不要重倉。`;
+                advice = `本週符合${ft.count}/3項條件，站上週20MA，大盤跟均線結構都OK，但條件還不算齊全，建議小量或繼續觀察，不要重倉。`;
             } else {
                 light = '🔴'; label = '不能買';
-                advice = `本週只符合${ft.count}/4項條件，站上均線但結構條件不足，暫不建議進場。`;
+                advice = `本週只符合${ft.count}/3項條件，站上均線但結構條件不足，暫不建議進場。`;
             }
             if (wv.openPosition) {
                 advice += `(備註：系統模擬從${wv.openPosition.entryTime}開始已經是持倉中，進場價${fmt(wv.openPosition.entryPrice)}，這跟上面燈號是兩套獨立判斷；如果你還沒買，這不是叫你買的訊號。)`;
@@ -3228,19 +3212,18 @@
             const badge = document.getElementById('four-treasures-float-badge');
             if (!wv || !wv.fourTreasures) { panel.innerHTML = ''; if (badge) badge.textContent = '--'; return; }
             const ft = wv.fourTreasures;
-            if (badge) badge.innerHTML = `${ft.count}/4`;
+            if (badge) badge.innerHTML = `${ft.count}/3`;
             const tierStyle = ft.count >= 3 ? 'border-amber-400 bg-amber-900/20' : ft.count >= 2 ? 'border-blue-400 bg-blue-900/20' : 'border-gray-600';
             const rows = [
                 ['① 整根K棒站上週20MA', ft.aboveMa],
-                ['② 突破趨勢線(外包絡線)', ft.trendline.breakout],
-                ['③ W型態完成', ft.wPattern.completed],
-                ['④ 底部位階爆量', ft.volSurge.surge],
+                ['② W型態完成', ft.wPattern.completed],
+                ['③ 底部位階爆量', ft.volSurge.surge],
             ];
             const v = evaluateWeeklyBuySuitability(wv, symbol);
             panel.innerHTML = `
                 <div class="bg-gray-800 border ${tierStyle} rounded p-2.5">
                     <div class="flex justify-between items-center mb-1.5">
-                        <span class="text-xl font-bold text-white">${ft.count}<span class="text-xs text-gray-400">/4 項工具(${ft.time}這週)</span></span>
+                        <span class="text-xl font-bold text-white">${ft.count}<span class="text-xs text-gray-400">/3 項指標(${ft.time}這週)</span></span>
                         <span class="text-xs text-right text-gray-200">${ft.count >= 3 ? '🌟 符合多項條件，值得關注' : ft.count >= 2 ? '👀 部分符合，持續觀察' : '一般，未明顯符合'}</span>
                     </div>
                     <div class="grid grid-cols-2 gap-0.5 text-[11px] mb-2">
@@ -3250,7 +3233,7 @@
                         <div class="text-lg font-bold mb-0.5">${v.light} ${v.label}</div>
                         <div class="text-[11px] text-gray-300">${v.advice}</div>
                     </div>
-                    <div class="mt-1.5 text-[11px] text-gray-500">②③④是用程式量化規則去近似判斷型態，跟肉眼判斷可能會有落差，僅供參考</div>
+                    <div class="mt-1.5 text-[11px] text-gray-500">②③是用程式量化規則去近似判斷型態，跟肉眼判斷可能會有落差，僅供參考</div>
                 </div>`;
         }
 
@@ -3564,6 +3547,90 @@
                 }
             });
         }
+
+        // ============ 下午7點持股提醒通知 ============
+        // 老實的技術限制：瀏覽器的Notification API只能在「網頁/App還開著」(包括背景分頁)時運作，
+        // 沒辦法做到手機完全關閉App還跳通知，那需要架設後端伺服器搭配Web Push主動推播，是完全不同等級的工程。
+        // 這裡做的是「只要使用者下午7點前後有打開過App，就自動檢查並跳通知」的務實版本。
+        const NOTIFY_HOUR = 19; // 下午7點
+        function isRookieNotifyEnabled() { try { return localStorage.getItem('trend_rookie_notify') === '1'; } catch (e) { return false; } }
+        function setRookieNotifyEnabled(v) { try { localStorage.setItem('trend_rookie_notify', v ? '1' : '0'); } catch (e) {} }
+        function updateNotifyToggleUI() {
+            const btn = document.getElementById('rookie-notify-toggle-btn');
+            const statusEl = document.getElementById('rookie-notify-status');
+            if (!btn) return;
+            const on = isRookieNotifyEnabled();
+            btn.dataset.on = on ? 'true' : 'false';
+            btn.classList.toggle('bg-brand-cyan', on);
+            btn.classList.toggle('bg-brand-border', !on);
+            const dot = btn.querySelector('span');
+            if (dot) dot.style.transform = on ? 'translateX(20px)' : 'translateX(0)';
+            if (statusEl) {
+                if (on && typeof Notification !== 'undefined' && Notification.permission === 'denied') {
+                    statusEl.textContent = '⚠️ 瀏覽器的通知權限被擋住了，要到手機的「設定」裡，把這個網站的通知權限打開才會生效。';
+                    statusEl.classList.remove('hidden');
+                } else if (on) {
+                    statusEl.textContent = `✅ 已開啟，下午${NOTIFY_HOUR}點前後打開App就會跳出提醒(App要在前景或背景分頁開著才有效)`;
+                    statusEl.classList.remove('hidden');
+                } else {
+                    statusEl.classList.add('hidden');
+                }
+            }
+        }
+        document.getElementById('rookie-notify-toggle-btn').addEventListener('click', async () => {
+            const willEnable = !isRookieNotifyEnabled();
+            if (willEnable) {
+                if (typeof Notification === 'undefined') {
+                    showToast('這個瀏覽器不支援通知功能', 'error');
+                    return;
+                }
+                let perm = Notification.permission;
+                if (perm === 'default') perm = await Notification.requestPermission();
+                if (perm !== 'granted') {
+                    showToast('沒有取得通知權限，無法開啟提醒', 'error');
+                    updateNotifyToggleUI();
+                    return;
+                }
+            }
+            setRookieNotifyEnabled(willEnable);
+            updateNotifyToggleUI();
+            showToast(willEnable ? '已開啟下午7點持股提醒' : '已關閉持股提醒通知', 'success');
+        });
+        function getLastNotifyDateStr() { try { return localStorage.getItem('trend_rookie_notify_last_date') || ''; } catch (e) { return ''; } }
+        function setLastNotifyDateStr(s) { try { localStorage.setItem('trend_rookie_notify_last_date', s); } catch (e) {} }
+        async function checkAndSendRookieNotification() {
+            if (!isRookieNotifyEnabled()) return;
+            if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
+            if (rookieWatchlist.length === 0) return;
+            const now = new Date();
+            const todayStr = now.toISOString().split('T')[0];
+            if (now.getHours() < NOTIFY_HOUR) return; // 還沒到下午7點
+            if (getLastNotifyDateStr() === todayStr) return; // 今天已經通知過了，避免每分鐘檢查就重複跳出
+            // 逐筆比對現價，組成通知內容(只列出比較需要注意的：已達停利/停損/緊急線的)
+            const lines = [];
+            for (const item of rookieWatchlist) {
+                try {
+                    const daily = stockCache[item.symbol] || await fetchStockDataMulti(item.symbol);
+                    const lastClose = daily[daily.length - 1].close;
+                    const pnlPct = (lastClose - item.entryPrice) / item.entryPrice * 100;
+                    let tag = null;
+                    if (pnlPct >= item.etp) tag = '🚀緊急停利';
+                    else if (pnlPct <= -item.esl) tag = '🚨緊急停損';
+                    else if (pnlPct >= item.tp) tag = '🎯停利';
+                    else if (pnlPct <= -item.sl) tag = '🛑停損';
+                    if (tag) lines.push(`${stockLabel(item.symbol)} ${tag}(${pnlPct >= 0 ? '+' : ''}${pnlPct.toFixed(1)}%)`);
+                } catch (e) { /* 單檔查詢失敗就跳過，不影響其他檔的通知 */ }
+            }
+            const title = lines.length > 0 ? `⚠️ 持股提醒：${lines.length}檔觸及停利/停損線` : '📋 持股提醒清單目前都正常持有中';
+            const body = lines.length > 0 ? lines.join('\n') : `追蹤中的${rookieWatchlist.length}檔都還沒碰到設定的停利/停損價位`;
+            try {
+                new Notification(title, { body, icon: 'data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2024%2024%22%3E%3Ccircle%20cx%3D%2212%22%20cy%3D%2212%22%20r%3D%2212%22%20fill%3D%22%2300f2fe%22/%3E%3C/svg%3E' });
+            } catch (e) { console.warn('通知發送失敗', e.message); }
+            setLastNotifyDateStr(todayStr);
+        }
+        updateNotifyToggleUI();
+        checkAndSendRookieNotification();
+        setInterval(checkAndSendRookieNotification, 60000); // 每分鐘檢查一次，App開著(含背景分頁)跨過下午7點時就會自動跳通知
 
         document.getElementById('rookie-check-btn').addEventListener('click', handleRookieCheck);
         document.getElementById('rookie-add-toggle-btn').addEventListener('click', () => {
@@ -3912,12 +3979,12 @@
                     const last20 = daily.slice(n - 21, n - 1);
                     const high20 = Math.max(...last20.map(d => d.high));
                     const low20 = Math.min(...last20.map(d => d.low));
-                    if (today.close > high20) lines.highlow.push(`🌟 ${stockLabel(symbol)}　收 ${fmt(today.close)}（突破20日新高 ${fmt(high20)}）`);
-                    else if (today.close < low20) lines.highlow.push(`💀 ${stockLabel(symbol)}　收 ${fmt(today.close)}（突破20日新低 ${fmt(low20)}）`);
+                    if (today.close > high20) lines.highlow.push(`<span class="text-red-400 font-bold">${stockLabel(symbol)}</span>　收 ${fmt(today.close)}（突破20日新高 ${fmt(high20)}）`);
+                    else if (today.close < low20) lines.highlow.push(`<span class="text-green-400 font-bold">${stockLabel(symbol)}</span>　收 ${fmt(today.close)}（突破20日新低 ${fmt(low20)}）`);
 
                     // 漲跌停(±9.5%以上)
                     if (chgPct !== null && Math.abs(chgPct) >= 9.5) {
-                        lines.limit.push(`${chgPct >= 0 ? '🔺' : '🟢'} ${stockLabel(symbol)}　收 ${fmt(today.close)} (${chgPct >= 0 ? '+' : ''}${chgPct.toFixed(1)}%)`);
+                        lines.limit.push(`<span class="${chgPct >= 0 ? 'text-red-400' : 'text-green-400'} font-bold">${stockLabel(symbol)}</span>　收 ${fmt(today.close)} (${chgPct >= 0 ? '+' : ''}${chgPct.toFixed(1)}%)`);
                     }
 
                     // 量能>1.5倍(跟近20日均量比)
@@ -3925,7 +3992,7 @@
                     const todayVolLots = today.volume / 1000;
                     if (avgVol20 && avgVol20 > 0) {
                         const ratio = todayVolLots / avgVol20;
-                        if (ratio >= 1.5) lines.volSurge.push(`• ${stockLabel(symbol)}　${ratio.toFixed(2)}x`);
+                        if (ratio >= 1.5) lines.volSurge.push(`${stockLabel(symbol)}　${ratio.toFixed(2)}x`);
                     }
 
                     // 法人買賣超
@@ -3943,7 +4010,7 @@
                         };
                         const detail = `外${seg(f)} 投${seg(t)} 自${seg(d)}`;
                         const rowCls = isBuy ? 'text-red-300 font-bold' : 'text-green-300';
-                        const line = `• <span class="${rowCls}">${stockLabel(symbol)}</span>　${detail}`;
+                        const line = `<span class="${rowCls}">${stockLabel(symbol)}</span>　${detail}`;
                         if (isBuy) lines.instBuy.push(line);
                         else if (total < 0) lines.instSell.push(line);
                     }
@@ -3965,7 +4032,10 @@
                     const chg = rt.prevClose !== null ? rt.price - rt.prevClose : null;
                     const pct = (chg !== null && rt.prevClose) ? (chg / rt.prevClose * 100) : null;
                     const cls = chg === null ? 'text-white' : chg >= 0 ? 'text-red-400' : 'text-green-400';
-                    taiexHtml = `<div class="${cls} font-bold text-lg">${chg >= 0 ? '🔺' : '🟢'} 加權 ${fmt(rt.price)} <span class="text-sm">(${chg >= 0 ? '+' : ''}${fmt(chg)} ${chg >= 0 ? '+' : ''}${pct.toFixed(2)}%)</span></div>`;
+                    const arrowSvg = chg >= 0
+                        ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="display:inline-block;vertical-align:-1px"><path d="M12 19V5M5 12l7-7 7 7"/></svg>'
+                        : '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="display:inline-block;vertical-align:-1px"><path d="M12 5v14M5 12l7 7 7-7"/></svg>';
+                    taiexHtml = `<div class="${cls} font-bold text-lg" style="text-shadow:0 0 10px currentColor">${arrowSvg} 加權 ${fmt(rt.price)} <span class="text-sm">(${chg >= 0 ? '+' : ''}${fmt(chg)} ${chg >= 0 ? '+' : ''}${pct.toFixed(2)}%)</span></div>`;
                 } catch (e) { taiexHtml = '<div class="text-gray-500">加權指數抓取失敗</div>'; }
                 let marketInstHtml = '';
                 try {
@@ -3975,27 +4045,29 @@
                 } catch (e) { marketInstHtml = '<div class="text-gray-500 text-sm mt-1">全市場法人彙總抓取失敗</div>'; }
 
                 const lines = await generateDailyReport();
-                const card = (emoji, title, arr, accentCls = 'border-brand-border') => {
+                const card = (icon, title, arr, variant = '') => {
                     return `
-                    <div class="bg-brand-bg/60 border ${accentCls} rounded-xl p-3">
-                        <div class="text-white font-bold text-xs mb-1.5 flex items-center gap-1.5">${emoji} ${title}</div>
-                        ${arr.length ? `<div class="space-y-1">${arr.map(l => `<div class="text-[11px] text-gray-300 font-mono-num">${l}</div>`).join('')}</div>` : '<div class="text-[11px] text-gray-500">（無）</div>'}
+                    <div class="neon-glass-card ${variant === 'alert' ? 'neon-glass-card--alert' : ''} p-3">
+                        <div class="text-white font-bold text-xs mb-1.5 flex items-center gap-1.5" style="letter-spacing:.02em">${icon} ${title}</div>
+                        ${arr.length ? `<div class="space-y-1">${arr.map(l => `<div class="text-[11px] text-gray-300 font-mono-num flex items-start gap-1.5"><span class="geo-dot mt-1"></span><span>${l}</span></div>`).join('')}</div>` : '<div class="text-[11px] text-gray-500 pl-3">（無）</div>'}
                     </div>`;
                 };
+                const icoSvg = (name) => `<i data-lucide="${name}" class="w-3.5 h-3.5 text-brand-cyan"></i>`;
                 document.getElementById('daily-report-content').innerHTML = `
-                    <div class="text-slate-400 text-xs mb-2">📊 ${todayStr} 盤後速報</div>
-                    <div class="ocean-stream-box bg-gradient-to-br from-brand-cyan/10 to-brand-teal/10 border border-brand-cyan/30 rounded-xl p-3 mb-3">
+                    <div class="text-slate-400 text-xs mb-2 flex items-center gap-1.5">${icoSvg('newspaper')} ${todayStr} 盤後速報</div>
+                    <div class="ocean-stream-box neon-glass-card p-3 mb-3">
                         ${taiexHtml}
                         ${marketInstHtml}
                     </div>
                     <div class="space-y-2">
-                        ${card('🌟', '追蹤清單：突破20日新高/新低', lines.highlow)}
-                        ${card('🟥', '漲跌停（≥9.5%）', lines.limit, lines.limit.length ? 'border-red-500/40' : 'border-brand-border')}
-                        ${card('📈', '法人買超', lines.instBuy, lines.instBuy.length ? 'border-red-500/30' : 'border-brand-border')}
-                        ${card('📉', '法人賣超', lines.instSell, lines.instSell.length ? 'border-green-500/30' : 'border-brand-border')}
-                        ${card('🔊', '量能 > 1.5x', lines.volSurge)}
+                        ${card(icoSvg('crown'), '追蹤清單：突破20日新高/新低', lines.highlow)}
+                        ${card(icoSvg('zap'), '漲跌停（≥9.5%）', lines.limit, lines.limit.length ? 'alert' : '')}
+                        ${card(icoSvg('trending-up'), '法人買超', lines.instBuy)}
+                        ${card(icoSvg('trending-down'), '法人賣超', lines.instSell)}
+                        ${card(icoSvg('volume-2'), '量能 > 1.5x', lines.volSurge)}
                     </div>
                     <p class="text-[10px] text-gray-500 mt-3 leading-relaxed">範圍只有你的追蹤清單，不是全市場。外資台指期未平倉、主動ETF持股變化、公告這三項沒有可靠的免費資料源，做不出來。資料可能有些微落差，僅供參考。</p>`;
+                safeLucideIcons();
             } catch (e) {
                 el.innerHTML = `<p class="text-gray-500 text-sm">盤後速報產生失敗：${e.message}</p>`;
             }
@@ -4513,54 +4585,13 @@
             rows.forEach(r => { if (r.lastDate) dateCounts[r.lastDate] = (dateCounts[r.lastDate] || 0) + 1; });
             const mostCommonDate = Object.keys(dateCounts).sort((a, b) => dateCounts[b] - dateCounts[a])[0] || null;
             const freshCount = rows.filter(r => !r.alreadyCached).length;
-            const dataTimeNote = `<div class="text-center text-[11px] text-slate-500 mb-2">📅 資料日期：${mostCommonDate || '--'}(多數股票)｜掃描完成時間：${scanFinishedAt}｜本次新抓取${freshCount}/${rows.length}檔(其餘是本次瀏覽時已經抓過、重複使用記憶體裡的資料，不會每次都重新打API)</div>`;
+            const dataTimeNote = `<div class="text-center text-[11px] text-slate-500 mb-2">資料日期：${mostCommonDate || '--'}(多數股票)｜掃描完成時間：${scanFinishedAt}｜本次新抓取${freshCount}/${rows.length}檔(其餘是本次瀏覽時已經抓過、重複使用記憶體裡的資料，不會每次都重新打API)</div>`;
 
-            if (visibleRows.length === 0) {
-                list.innerHTML = dataTimeNote + '<p class="text-gray-500 text-sm text-center py-6">這次掃描沒有「起漲」或「強勢」的股票，目前市場可能比較平淡，可以晚點再掃一次。</p>';
-            } else {
-            list.innerHTML = dataTimeNote + visibleRows.map(r => {
-                const longOk = r.isBuy;
-                const shortOk = !!(r.buyVerdict && (r.buyVerdict.light === '🟢' || r.buyVerdict.light === '🟡'));
-                let combo = null;
-                if (longOk && shortOk) combo = { text: '✨ 長短線都可以買', cls: 'bg-amber-400 text-gray-900' };
-                else if (longOk) combo = { text: '📅 長線可以買', cls: 'bg-blue-400 text-gray-900' };
-                else if (shortOk) combo = { text: '📊 短線可以買', cls: 'bg-sky-400 text-gray-900' };
-                return `
-                <div class="bg-gray-800 rounded p-2.5 ${r.isBuy ? 'border border-amber-500' : ''}">
-                    <div class="flex justify-between items-center flex-wrap gap-1">
-                        <div class="flex items-center gap-1.5 flex-wrap">
-                            ${r.isBuy ? '<i data-lucide="bell" class="w-4 h-4 text-amber-400"></i>' : ''}
-                            <span class="font-bold text-white">${stockLabel(r.symbol)}</span>
-                            <span class="text-[10px] ${r.score >= 8 ? 'text-amber-300 font-bold' : 'text-gray-500'}">${r.score}/10${r.score >= 8 ? ' 🎯短線買入' : ''}</span>
-                            ${r.justTurning ? '<span class="text-[10px] bg-lime-400 text-gray-900 rounded px-1">起漲</span>' : ''}
-                            ${r.isStrong ? '<span class="text-[10px] bg-sky-400 text-gray-900 rounded px-1">強勢</span>' : ''}
-                            ${r.liquidity !== null && !r.liquidityOk ? '<span class="text-[10px] text-red-400">量&lt;1000張</span>' : ''}
-                            ${r.source === 'mock' ? '<span class="text-red-500 text-[10px]">模擬</span>' : ''}
-                        </div>
-                        <div class="text-right text-xs text-gray-400 flex items-center gap-2">
-                            <span>${r.close === null ? '無資料' : `${fmt(r.close)} ／ 週20MA${fmt(r.ma)} ／ <span class="${r.isBuy ? 'text-amber-400' : ''}">${r.diffPct >= 0 ? '+' : ''}${fmt(r.diffPct)}%</span>`}</span>
-                            ${!watchlist.includes(r.symbol) ? `<button class="add-watch-btn bg-blue-600 hover:bg-blue-700 text-white text-[10px] px-1.5 py-1 rounded" data-symbol="${r.symbol}">➕追蹤</button>` : '<span class="text-[10px] text-gray-600">已追蹤</span>'}
-                        </div>
-                    </div>
-                    <div class="mt-1 text-[10px] text-gray-600">資料日期：${r.lastDate || '--'}${r.alreadyCached ? '(沿用本次瀏覽已抓取的資料)' : '(本次新抓取)'}</div>
-                    ${combo ? `<div class="mt-1.5"><span class="text-[11px] font-bold ${combo.cls} rounded px-2 py-0.5">${combo.text}</span></div>` : ''}
-                    <div class="mt-1.5 pt-1.5 border-t border-gray-700 grid grid-cols-2 gap-2 text-[11px]">
-                        <div class="bg-gray-900/50 rounded px-2 py-1.5">
-                            <div class="text-gray-500 text-[10px] mb-0.5">📅 長線(週線)</div>
-                            <div class="font-semibold ${longOk ? 'text-amber-300' : 'text-gray-400'}">${longOk ? '🟢 可以買' : '🔴 不是買點'}</div>
-                        </div>
-                        <div class="bg-gray-900/50 rounded px-2 py-1.5">
-                            <div class="text-gray-500 text-[10px] mb-0.5">📊 短線(日線)</div>
-                            <div class="font-semibold">${r.buyVerdict ? `${r.buyVerdict.light} ${r.buyVerdict.label}` : '<span class="text-gray-500">資料不足</span>'}</div>
-                        </div>
-                    </div>
-                    ${r.divergenceNote ? `<div class="mt-1.5 text-[10px] text-amber-300/90 leading-relaxed space-y-0.5">
-                        <div>📅 長線：${r.divergenceNote.longReason}</div>
-                        <div>📊 短線：${r.divergenceNote.shortReason}</div>
-                    </div>` : ''}
-                </div>`;
-            }).join('');
-            }
+            lastScanVisibleRows = visibleRows;
+            lastScanDataTimeNote = dataTimeNote;
+            const filterBar = document.getElementById('scan-filter-bar');
+            if (filterBar) filterBar.classList.toggle('hidden', visibleRows.length === 0);
+            renderScanCards();
 
             document.querySelectorAll('.add-watch-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
@@ -4576,6 +4607,102 @@
             safeLucideIcons();
             if (scanScope === 'master') renderSectorRotation();
         }
+
+        // ============ 掃描結果卡片：玻璃霓虹樣式 + 篩選/排序（資料來源是 lastScanVisibleRows，重新排序篩選不必重新掃描） ============
+        let lastScanVisibleRows = [];
+        let lastScanDataTimeNote = '';
+        let scanFilterMode = 'all';
+        let scanSortMode = 'score';
+        function buildScanCard(r) {
+            const longOk = r.isBuy;
+            const shortOk = !!(r.buyVerdict && (r.buyVerdict.light === '🟢' || r.buyVerdict.light === '🟡'));
+            let combo = null;
+            if (longOk && shortOk) combo = { text: '長短線都可以買', cls: 'neon-pill--amber' };
+            else if (longOk) combo = { text: '長線可以買', cls: 'neon-pill--cyan' };
+            else if (shortOk) combo = { text: '短線可以買', cls: 'neon-pill--violet' };
+            return `
+            <div class="neon-glass-card scan-card-anim ${r.isBuy ? 'neon-glass-card--alert' : ''} p-2.5" data-symbol="${r.symbol}" data-long="${longOk}" data-short="${shortOk}" data-price="${r.close ?? -1}">
+                <div class="flex justify-between items-center flex-wrap gap-1">
+                    <div class="flex items-center gap-1.5 flex-wrap">
+                        ${r.isBuy ? '<i data-lucide="bell" class="w-4 h-4 text-amber-400"></i>' : ''}
+                        <span class="font-bold text-white">${stockLabel(r.symbol)}</span>
+                        <span class="text-[10px] ${r.score >= 8 ? 'text-amber-300 font-bold' : 'text-gray-500'}" style="${r.score >= 8 ? 'text-shadow:0 0 6px rgba(252,211,77,0.7)' : ''}">${r.score}/10${r.score >= 8 ? ' 短線買入' : ''}</span>
+                        ${r.justTurning ? '<span class="neon-pill neon-pill--cyan">起漲</span>' : ''}
+                        ${r.isStrong ? '<span class="neon-pill neon-pill--violet">強勢</span>' : ''}
+                        ${r.liquidity !== null && !r.liquidityOk ? '<span class="text-[10px] text-red-400">量&lt;1000張</span>' : ''}
+                        ${r.source === 'mock' ? '<span class="text-red-500 text-[10px]">模擬</span>' : ''}
+                    </div>
+                    <div class="text-right text-xs text-gray-400 flex items-center gap-2">
+                        <span>${r.close === null ? '無資料' : `${fmt(r.close)} ／ 週20MA${fmt(r.ma)} ／ <span class="${r.isBuy ? 'text-amber-400' : ''}">${r.diffPct >= 0 ? '+' : ''}${fmt(r.diffPct)}%</span>`}</span>
+                        ${!watchlist.includes(r.symbol) ? `<button class="add-watch-btn bg-blue-600 hover:bg-blue-700 text-white text-[10px] px-1.5 py-1 rounded" data-symbol="${r.symbol}">+追蹤</button>` : '<span class="text-[10px] text-gray-600">已追蹤</span>'}
+                    </div>
+                </div>
+                <div class="mt-1 text-[10px] text-gray-600">資料日期：${r.lastDate || '--'}${r.alreadyCached ? '(沿用本次瀏覽已抓取的資料)' : '(本次新抓取)'}</div>
+                ${combo ? `<div class="mt-1.5"><span class="neon-pill ${combo.cls}">${combo.text}</span></div>` : ''}
+                <div class="mt-1.5 pt-1.5 border-t border-white/10 grid grid-cols-2 gap-2 text-[11px]">
+                    <div class="bg-black/20 rounded px-2 py-1.5">
+                        <div class="text-gray-500 text-[10px] mb-0.5 flex items-center gap-1"><span class="geo-dot"></span>長線(週線)</div>
+                        <div class="font-semibold ${longOk ? 'text-amber-300' : 'text-gray-400'}">${longOk ? '可以買' : '不是買點'}</div>
+                    </div>
+                    <div class="bg-black/20 rounded px-2 py-1.5">
+                        <div class="text-gray-500 text-[10px] mb-0.5 flex items-center gap-1"><span class="geo-dot"></span>短線(日線)</div>
+                        <div class="font-semibold">${r.buyVerdict ? `${r.buyVerdict.label}` : '<span class="text-gray-500">資料不足</span>'}</div>
+                    </div>
+                </div>
+                ${r.divergenceNote ? `<div class="mt-1.5 text-[10px] text-amber-300/90 leading-relaxed space-y-0.5">
+                    <div class="flex items-start gap-1"><span class="geo-dot mt-1"></span>長線：${r.divergenceNote.longReason}</div>
+                    <div class="flex items-start gap-1"><span class="geo-dot mt-1"></span>短線：${r.divergenceNote.shortReason}</div>
+                </div>` : ''}
+            </div>`;
+        }
+        function renderScanCards() {
+            const list = document.getElementById('scan-list');
+            if (!list) return;
+            let rows = lastScanVisibleRows.slice();
+            if (scanFilterMode === 'short') rows = rows.filter(r => r.buyVerdict && (r.buyVerdict.light === '🟢' || r.buyVerdict.light === '🟡'));
+            else if (scanFilterMode === 'long') rows = rows.filter(r => r.isBuy);
+            if (scanSortMode === 'price-desc') rows.sort((a, b) => (b.close ?? -1) - (a.close ?? -1));
+            else if (scanSortMode === 'price-asc') rows.sort((a, b) => (a.close ?? Infinity) - (b.close ?? Infinity));
+            else rows.sort((a, b) => (b.score - a.score) || ((a.diffPct ?? 999) - (b.diffPct ?? 999)));
+
+            if (lastScanVisibleRows.length === 0) {
+                list.innerHTML = lastScanDataTimeNote + '<p class="text-gray-500 text-sm text-center py-6">這次掃描沒有「起漲」或「強勢」的股票，目前市場可能比較平淡，可以晚點再掃一次。</p>';
+                return;
+            }
+            if (rows.length === 0) {
+                list.innerHTML = lastScanDataTimeNote + '<p class="text-gray-500 text-sm text-center py-6">這個篩選條件下目前沒有符合的股票。</p>';
+                return;
+            }
+            list.style.opacity = '0';
+            list.innerHTML = lastScanDataTimeNote + rows.map(buildScanCard).join('');
+            requestAnimationFrame(() => { list.style.transition = 'opacity .25s ease'; list.style.opacity = '1'; });
+            document.querySelectorAll('.add-watch-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const sym = btn.getAttribute('data-symbol');
+                    if (!watchlist.includes(sym)) { watchlist.unshift(sym); renderWatchlist(); showToast(`已加入追蹤 ${stockLabel(sym)}`, 'success'); }
+                    btn.outerHTML = '<span class="text-[10px] text-gray-600">已追蹤</span>';
+                });
+            });
+            safeLucideIcons();
+        }
+        document.addEventListener('DOMContentLoaded', () => {
+            const filterBar = document.getElementById('scan-filter-bar');
+            if (!filterBar) return;
+            filterBar.addEventListener('click', (e) => {
+                const btn = e.target.closest('.filter-chip');
+                if (!btn) return;
+                if (btn.dataset.filter) {
+                    filterBar.querySelectorAll('[data-filter]').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    scanFilterMode = btn.dataset.filter;
+                } else if (btn.dataset.sort) {
+                    filterBar.querySelectorAll('[data-sort]').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    scanSortMode = btn.dataset.sort;
+                }
+                renderScanCards();
+            });
+        });
 
         // ============ 事件綁定 ============
         document.getElementById('add-stock-form').addEventListener('submit', (e) => {
@@ -4858,7 +4985,7 @@
         document.getElementById('clear-storage-btn').addEventListener('click', () => {
             const ok = confirm('確定要清除手機裡存的所有App資料嗎？\n\n會清掉：追蹤清單、自訂股票名稱、參數設定、新手模式持股提醒清單、全市場代碼名稱快取。\n\n這個動作沒辦法復原，清除後會自動重新整理頁面。');
             if (!ok) return;
-            const keysToRemove = ['trend_watchlist', 'trend_settings', 'trend_user_names', 'trend_rookie_watchlist', 'trend_all_stock_info', 'trend_all_stock_info_ts'];
+            const keysToRemove = ['trend_watchlist', 'trend_settings', 'trend_user_names', 'trend_rookie_watchlist', 'trend_all_stock_info', 'trend_all_stock_info_ts', 'trend_rookie_notify', 'trend_rookie_notify_last_date'];
             keysToRemove.forEach(k => { try { localStorage.removeItem(k); } catch (e) { console.warn('清除失敗', k, e); } });
             showToast('已清除，正在重新整理...', 'success');
             setTimeout(() => location.reload(), 800);
