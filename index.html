@@ -79,16 +79,24 @@
         .info-subcard-body { color: #cbd5e1; font-size: 13px; line-height: 1.6; position: relative; z-index: 1; }
         .info-heading-lg { font-size: 17px; font-weight: 800; color: #fff; letter-spacing: 0.02em; }
         .info-heading-md { font-size: 14px; font-weight: 700; color: #e2e8f0; display: flex; align-items: center; gap: 6px; }
-        /* 儀表指針：在實際讀數附近小幅度呼吸式擺動，看起來更有生命感，不會誤導實際數值(只擺動±2.5度) */
-        .gauge-needle { animation: gauge-breathe 2.2s ease-in-out infinite; transform-origin: 100px 100px; }
-        @keyframes gauge-breathe {
-            0%, 100% { transform: rotate(calc(var(--gauge-angle) - 8deg)); }
-            50% { transform: rotate(calc(var(--gauge-angle) + 8deg)); }
+        /* 儀表指針：用 CSS 變數 --gauge-angle 控制旋轉角度，搭配 transition 做「擺動滑行」過場(數值變化時)，
+           並用 gauge-needle-enter 關鍵影格做入場動畫(從最左側0分、帶彈性阻尼地滑入目前數值)。
+           transform-origin 對齊圓弧底部中心(圓心)，確保指針以正確樞紐左右擺動。 */
+        .gauge-needle {
+            transform-origin: 100px 100px;
+            transform: rotate(var(--gauge-angle, -85deg));
+            transition: transform 1.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+            animation: gauge-needle-enter 1.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
         }
-        .gauge-pulse-dot { animation: gauge-pulse 1.8s ease-in-out infinite; }
-        @keyframes gauge-pulse {
-            0%, 100% { filter: drop-shadow(0 0 0px rgba(0,242,254,0.6)); }
-            50% { filter: drop-shadow(0 0 4px rgba(0,242,254,0.9)); }
+        @keyframes gauge-needle-enter {
+            from { transform: rotate(var(--gauge-start-angle, -85deg)); }
+            to   { transform: rotate(var(--gauge-angle, -85deg)); }
+        }
+        /* 指針樞紐：呼吸發光效果，發光顏色隨分數級距(windTierColor)自動變換 */
+        .gauge-pivot { animation: gauge-pivot-pulse 1.8s ease-in-out infinite; }
+        @keyframes gauge-pivot-pulse {
+            0%, 100% { filter: drop-shadow(0 0 1px var(--gauge-pivot-color, #00f2fe)); }
+            50% { filter: drop-shadow(0 0 6px var(--gauge-pivot-color, #00f2fe)); }
         }
         /* 水流光線特效框：給盤後速報的加權指數摘要框用，一道光緩緩掃過邊框 */
         .ocean-stream-box { position: relative; overflow: hidden; }
@@ -4334,17 +4342,23 @@
             return '#ff3b3b'; // 恐慌螢光紅
         }
         // Y2K數位氣象雷達風格儀表：半圓拆解成一格一格的數位斷點刻度，雷射光束指針，空心發光樞紐
+        // 指針改用「固定指向正上方的線段 + CSS rotate(--gauge-angle)」繪製，transform-origin設在樞紐(圓心)，
+        // 這樣才能交給CSS transition/animation做平滑過場，而不是每次重新計算端點座標、瞬間跳轉。
         function renderGaugeSvg(value, opts) {
             const compact = opts && opts.compact;
             const score10 = Math.max(0, Math.min(10, value / 10));
-            const angle = -80 + (Math.max(0, Math.min(100, value)) / 100) * 160;
+            // 半圓儀表板角度映射：0~100 對應 5°~175°（170度總擺幅，5分剛好=90度正上方）。
+            // 舊版用 -80~80 的範圍，沒有對齊圓弧的「正上方=90度」基準，導致分數<5時指針/刻度算出來的座標
+            // 會落在SVG可視區域(viewBox高度)底部之外，被裁切到完全看不見——這裡改成以90度為中心對稱展開，
+            // 確保0~10分全範圍內的端點都落在可視區域內。
+            const angle = 5 + (Math.max(0, Math.min(100, value)) / 100) * 170;
             const rad = (deg) => (deg - 90) * Math.PI / 180;
             const N = compact ? 16 : 26;
             const cx = 100, cy = 100, rOuter = 86, rInner = compact ? 72 : 74;
             let ticks = '';
             for (let i = 0; i < N; i++) {
                 const t = i / (N - 1);
-                const tickAngle = -80 + t * 160;
+                const tickAngle = 5 + t * 170;
                 const tickValue = t * 10;
                 const color = windTierColor(tickValue);
                 const lit = tickValue <= score10;
@@ -4354,9 +4368,12 @@
                 ticks += `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="${color}" stroke-width="${compact ? 3 : 4}" stroke-linecap="round" opacity="${lit ? 0.95 : 0.16}" style="${lit ? `filter:drop-shadow(0 0 3px ${color})` : ''}"/>`;
             }
             const pointerColor = windTierColor(score10);
-            const pa = rad(angle);
             const pr = compact ? 56 : 62;
-            const px = cx + pr * Math.sin(pa), py = cy - pr * Math.cos(pa);
+            // 指針旋轉角度(CSS rotate用)：指針線段畫成「正上方」基準(角度=90°時方向)，再用 rotate(theta) 轉到目標角度。
+            // 推導：rad(deg)=(deg-90)時，deg=90對應方向向量(0,-1)即正上方；把基準向量(0,-1)用SVG rotate(theta)
+            // 轉出來會得到(sinθ,-cosθ)，要等於目標方向(sin(rad(deg)),-cos(rad(deg)))，故 theta = rad(deg)的角度值 = deg-90。
+            const theta = (angle - 90).toFixed(2);
+            const theta0 = (5 - 90).toFixed(2); // 數值=0時的角度，入場動畫從這裡彈性滑入目前數值
             const backdropId = `gaugeBackdrop${compact ? 'C' : 'F'}`;
             return `
             <svg viewBox="0 0 200 ${compact ? 100 : 112}" class="w-full" style="max-height:${compact ? 72 : 96}px">
@@ -4368,10 +4385,34 @@
                 </defs>
                 <path d="M10,100 A90,90 0 0,1 190,100 L190,${compact ? 100 : 112} L10,${compact ? 100 : 112} Z" fill="url(#${backdropId})"/>
                 ${ticks}
-                <line x1="${cx}" y1="${cy}" x2="${px.toFixed(1)}" y2="${py.toFixed(1)}" stroke="${pointerColor}" stroke-width="2" stroke-linecap="round" style="filter:drop-shadow(0 0 5px ${pointerColor}) drop-shadow(0 0 2px ${pointerColor})"/>
-                <circle cx="${cx}" cy="${cy}" r="${compact ? 6 : 8}" fill="rgba(255,255,255,0.06)" stroke="${pointerColor}" stroke-width="2" style="filter:drop-shadow(0 0 4px ${pointerColor})"/>
+                <g class="gauge-needle" style="--gauge-angle:${theta}deg;--gauge-start-angle:${theta0}deg;">
+                    <line x1="${cx}" y1="${cy}" x2="${cx}" y2="${cy - pr}" stroke="${pointerColor}" stroke-width="${compact ? 3 : 3.5}" stroke-linecap="round" style="filter:drop-shadow(0 0 5px ${pointerColor}) drop-shadow(0 0 2px ${pointerColor})"/>
+                    <line x1="${cx}" y1="${cy}" x2="${cx}" y2="${cy + 9}" stroke="${pointerColor}" stroke-width="${compact ? 3 : 3.5}" stroke-linecap="round" opacity="0.5"/>
+                </g>
+                <circle class="gauge-pivot" cx="${cx}" cy="${cy}" r="${compact ? 6 : 8}" fill="rgba(255,255,255,0.08)" stroke="${pointerColor}" stroke-width="2" style="--gauge-pivot-color:${pointerColor}"/>
             </svg>`;
         }
+        // 指針懸停互動：滑鼠移到風力卡片上時，指針以目前角度為中心做一次小幅度(±2.5度)平滑擺動，
+        // 沿用上面同一條 transition(1.5s cubic-bezier)，不額外開CSS動畫，避免和入場動畫互相打架。
+        function triggerGaugeHoverWobble(card) {
+            const needle = card.querySelector('.gauge-needle');
+            if (!needle || needle.dataset.wobbling === '1') return;
+            const baseAngle = needle.style.getPropertyValue('--gauge-angle');
+            if (!baseAngle) return;
+            needle.dataset.wobbling = '1';
+            needle.style.setProperty('--gauge-angle', `calc(${baseAngle} - 2.5deg)`);
+            setTimeout(() => {
+                needle.style.setProperty('--gauge-angle', `calc(${baseAngle} + 2.5deg)`);
+                setTimeout(() => {
+                    needle.style.setProperty('--gauge-angle', baseAngle);
+                    needle.dataset.wobbling = '0';
+                }, 700);
+            }, 700);
+        }
+        document.addEventListener('mouseover', (e) => {
+            const card = e.target.closest('#wind-index-compact-btn, .windgust-box');
+            if (card) triggerGaugeHoverWobble(card);
+        });
         let lastUsSnapshot = null; // 快取美股資料，避免大盤燈號算完後重畫台股區塊時，重複再打一次美股API
         const US_INDICATOR_META = {
             sox: { title: 'SOX 費半指數', sub: '台股的生命線', icon: 'cpu' },
