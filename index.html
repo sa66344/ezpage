@@ -2231,21 +2231,48 @@
             }
             return out;
         }
+        // 外包絡線(Envelope)演算法：找出區間最高點當起點(Point A)，向右找「最大斜率」(最平緩的那條線)當終點(Point B)，
+        // 這樣畫出來的下降壓力線會像一塊木板一樣完美壓在所有K棒最高點上方，不會切割到任何一根K棒，
+        // 符合「趨勢線不能壓到中間其他K棒」的技術分析鐵則(取代原本容易穿越K棒的線性回歸演算法)。
         function detectTrendlineBreakout(highs, closes, idx, lookback = 16) {
-            const start = idx - lookback;
-            if (start < 0) return { breakout: false };
-            const swings = findSwingHighs(highs, start, idx);
-            if (swings.length < 2) return { breakout: false };
-            const n = swings.length;
-            const sumX = swings.reduce((s, p) => s + p.x, 0), sumY = swings.reduce((s, p) => s + p.y, 0);
-            const sumXY = swings.reduce((s, p) => s + p.x * p.y, 0), sumXX = swings.reduce((s, p) => s + p.x * p.x, 0);
-            const denom = (n * sumXX - sumX * sumX);
-            if (denom === 0) return { breakout: false };
-            const a = (n * sumXY - sumX * sumY) / denom;
-            const b = (sumY - a * sumX) / n;
-            const lineAtIdx = a * idx + b;
-            const breakout = a < 0 && closes[idx] > lineAtIdx;
-            return { breakout, slope: a, lineValue: lineAtIdx };
+            const start = Math.max(0, idx - lookback);
+            if (start >= idx) return { breakout: false };
+
+            // 1. 尋找區間內的絕對最高點作為起點 (Point A)
+            let maxHigh = -Infinity;
+            let pA = -1;
+            for (let i = start; i < idx; i++) {
+                if (highs[i] > maxHigh) {
+                    maxHigh = highs[i];
+                    pA = i;
+                }
+            }
+
+            // 如果最高點剛好在判定日的前一天，無法畫出有效下降線
+            if (pA === -1 || pA === idx - 1) return { breakout: false };
+
+            // 2. 尋找下降壓力線的終點 (Point B)
+            // 計算 A 點連到後續每一點的斜率，找出「最大斜率」(最平緩的那條線)
+            // 這樣可以保證線完全壓在所有 K 棒的上方，不會切割到任何 K 棒
+            let maxSlope = -Infinity;
+            let pB = -1;
+            for (let i = pA + 1; i < idx; i++) {
+                const slope = (highs[i] - highs[pA]) / (i - pA);
+                if (slope > maxSlope) {
+                    maxSlope = slope;
+                    pB = i;
+                }
+            }
+
+            // 3. 檢查斜率：如果大於等於 0，代表這不是「下降」壓力線，宣告無效
+            if (maxSlope >= 0 || maxSlope === -Infinity) return { breakout: false };
+
+            // 4. 計算這條下降壓力線延伸到今天 (idx) 時的具體數值 (y = mx + b)
+            const lineAtIdx = maxSlope * (idx - pA) + highs[pA];
+
+            // 5. 條件判斷：今天的「收盤價」是否實質大於這條趨勢線的數值
+            const breakout = closes[idx] > lineAtIdx;
+            return { breakout, slope: maxSlope, lineValue: lineAtIdx, pA, pB };
         }
         function detectWPattern(lows, highs, closes, idx, lookback = 20) {
             const start = idx - lookback;
@@ -3159,7 +3186,7 @@
             const tierStyle = ft.count >= 3 ? 'border-amber-400 bg-amber-900/20' : ft.count >= 2 ? 'border-blue-400 bg-blue-900/20' : 'border-gray-600';
             const rows = [
                 ['① 整根K棒站上週20MA', ft.aboveMa],
-                ['② 突破趨勢線(回歸線近似)', ft.trendline.breakout],
+                ['② 突破趨勢線(外包絡線)', ft.trendline.breakout],
                 ['③ W型態完成', ft.wPattern.completed],
                 ['④ 底部位階爆量', ft.volSurge.surge],
             ];
