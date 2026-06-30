@@ -422,10 +422,19 @@
             </div>
 
             <div class="glass-panel rounded-xl overflow-hidden">
-                <button id="daily-report-toggle-btn" class="collapse-toggle w-full flex justify-between items-center p-4 text-left" data-target="daily-report-content">
-                    <h3 class="text-white font-bold flex items-center gap-2 text-sm"><i data-lucide="newspaper" class="w-4 h-4 text-brand-cyan"></i> 📊 盤後速報</h3>
-                    <span class="chevron text-slate-400 text-xs" style="transform:rotate(180deg)">▾</span>
-                </button>
+                <div class="w-full flex justify-between items-center p-4">
+                    <button id="daily-report-toggle-btn" class="collapse-toggle flex-1 flex items-center gap-2 text-left" data-target="daily-report-content">
+                        <h3 class="text-white font-bold flex items-center gap-2 text-sm"><i data-lucide="newspaper" class="w-4 h-4 text-brand-cyan"></i> 📊 盤後速報</h3>
+                    </button>
+                    <div class="flex items-center gap-2 shrink-0">
+                        <button id="daily-report-refresh-btn" class="flex items-center gap-1 bg-brand-bg text-slate-300 border border-brand-border px-2 py-1 rounded-lg transition hover:bg-slate-700 text-[11px]" title="重新整理盤後速報">
+                            <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+                        </button>
+                        <button id="daily-report-toggle-chevron-btn" class="collapse-toggle p-1" data-target="daily-report-content">
+                            <span class="chevron text-slate-400 text-xs" style="transform:rotate(180deg)">▾</span>
+                        </button>
+                    </div>
+                </div>
                 <div id="daily-report-content" class="px-4 pb-4">
                     <p class="text-slate-500 text-xs">正在產生盤後速報，會逐檔檢查追蹤清單(範圍只有追蹤清單，不是全市場)...</p>
                 </div>
@@ -2234,42 +2243,32 @@
         // 外包絡線(Envelope)演算法：找出區間最高點當起點(Point A)，向右找「最大斜率」(最平緩的那條線)當終點(Point B)，
         // 這樣畫出來的下降壓力線會像一塊木板一樣完美壓在所有K棒最高點上方，不會切割到任何一根K棒，
         // 符合「趨勢線不能壓到中間其他K棒」的技術分析鐵則(取代原本容易穿越K棒的線性回歸演算法)。
-        // lookback加大到24週、加入「往前找次高點」的防呆機制：如果最高點剛好在上一週(代表剛創新高)，
-        // 改用前一個波段高點畫線，這樣壓力線才不會消失；而且不管有沒有達成breakout，都會回傳pA/lineValue，
-        // 確保圖表上永遠畫得出這條線。
-        function detectTrendlineBreakout(highs, closes, idx, lookback = 24) {
-            const start = Math.max(0, idx - lookback);
-            if (start >= idx) return { breakout: false };
-
-            // 1. 尋找區間內的絕對最高點作為起點 (Point A)
-            let maxHigh = -Infinity;
-            let pA = -1;
-            for (let i = start; i < idx; i++) {
-                if (highs[i] > maxHigh) {
-                    maxHigh = highs[i];
-                    pA = i;
+        // Point A的搜尋範圍依講義調整為「1年以上、不超過2年」的高點(週線52~104週前)：太近期的高點時間意義還不夠，
+        // 太久遠的高點參考價值遞減；高點對高點、從上往下切，且整段線都不能切到任何一根K棒之間。
+        function detectTrendlineBreakout(highs, closes, idx, lookback = 104) {
+            const ONE_YEAR = 52, TWO_YEAR = 104;
+            const searchStart = Math.max(0, idx - TWO_YEAR);
+            const searchEnd = idx - ONE_YEAR; // 不含此週，Point A必須比這個還早(至少1年前)
+            let pA = -1, maxHigh = -Infinity;
+            if (searchEnd > searchStart) {
+                for (let i = searchStart; i < searchEnd; i++) {
+                    if (highs[i] > maxHigh) { maxHigh = highs[i]; pA = i; }
                 }
             }
-
-            // 【關鍵修正1】如果最高點剛好就在上一週，代表股價剛創近期新高。
-            // 這時我們要往前找「前一個波段高點」來畫趨勢線，否則壓力線會消失！
-            if (pA === -1 || pA === idx - 1) {
-                let secondHigh = -Infinity;
-                let pA2 = -1;
-                for (let i = start; i < idx - 1; i++) {
-                    if (highs[i] > secondHigh) {
-                        secondHigh = highs[i];
-                        pA2 = i;
-                    }
+            // 資料不夠久(例如新上市股票還不到1年)，找不到符合「1年以上」門檻的高點，
+            // 退回用比較寬鬆的「近期最高點」當Point A(至少要比上週早，不然畫不出有意義的線)，
+            // 避免新股完全沒有趨勢線可看。
+            if (pA === -1) {
+                const fallbackStart = Math.max(0, idx - lookback);
+                for (let i = fallbackStart; i < idx - 1; i++) {
+                    if (highs[i] > maxHigh) { maxHigh = highs[i]; pA = i; }
                 }
-                if (pA2 !== -1) {
-                    pA = pA2;
-                } else {
-                    return { breakout: false };
-                }
+                if (pA === -1) return { breakout: false };
             }
 
-            // 2. 尋找下降壓力線的終點 (Point B)：算出外包絡線(最平緩的斜率)
+            // 尋找下降壓力線的終點 (Point B)：算出外包絡線(最平緩的斜率)，
+            // 計算 A 點連到後續每一點的斜率，找出「最大斜率」(最平緩的那條線)，
+            // 這樣可以保證線完全壓在所有 K 棒的上方，不會切割到任何 K 棒
             let maxSlope = -Infinity;
             let pB = -1;
             for (let i = pA + 1; i < idx; i++) {
@@ -2282,13 +2281,13 @@
 
             if (maxSlope === -Infinity) return { breakout: false };
 
-            // 3. 計算這條趨勢線延伸到本週 (idx) 的數值
+            // 計算這條趨勢線延伸到本週 (idx) 的數值
             const lineAtIdx = maxSlope * (idx - pA) + highs[pA];
 
-            // 4. 判斷突破：收盤大於這條線，且這條線要是下降的(斜率<=0)才算有效的下降壓力線突破
+            // 判斷突破：收盤大於這條線，且這條線要是下降的(斜率<=0，高點對高點從上往下切)才算有效的下降壓力線突破
             const breakout = maxSlope <= 0 && closes[idx] > lineAtIdx;
 
-            // 【關鍵修正2】不管有沒有突破，都把座標丟出去，這樣圖表才永遠畫得出這條線！
+            // 不管有沒有突破，都把座標丟出去，這樣圖表才永遠畫得出這條線
             return { breakout, slope: maxSlope, lineValue: lineAtIdx, pA, pB };
         }
         function detectWPattern(lows, highs, closes, idx, lookback = 20) {
@@ -4899,6 +4898,12 @@
                 const content = document.getElementById('daily-report-content');
                 // collapse-toggle的通用監聽會negate hidden，這裡用setTimeout讓那個監聽先跑完，再判斷現在是不是變成展開狀態
                 setTimeout(() => { if (!content.classList.contains('hidden')) renderDailyReport(); }, 0);
+            });
+            document.getElementById('daily-report-refresh-btn').addEventListener('click', (e) => {
+                e.stopPropagation(); // 避免事件冒泡觸發旁邊的收合按鈕
+                const content = document.getElementById('daily-report-content');
+                content.classList.remove('hidden'); // 重新整理時順便展開，確保看得到剛抓到的最新結果
+                renderDailyReport();
             });
             document.getElementById('wind-index-compact-btn').addEventListener('click', () => {
                 document.getElementById('wind-index-modal').classList.remove('hidden');
