@@ -79,6 +79,29 @@
         .info-subcard-body { color: #cbd5e1; font-size: 13px; line-height: 1.6; position: relative; z-index: 1; }
         .info-heading-lg { font-size: 17px; font-weight: 800; color: #fff; letter-spacing: 0.02em; }
         .info-heading-md { font-size: 14px; font-weight: 700; color: #e2e8f0; display: flex; align-items: center; gap: 6px; }
+        /* 儀表指針：在實際讀數附近小幅度呼吸式擺動，看起來更有生命感，不會誤導實際數值(只擺動±2.5度) */
+        .gauge-needle { animation: gauge-breathe 3.4s ease-in-out infinite; transform-origin: 100px 100px; }
+        @keyframes gauge-breathe {
+            0%, 100% { transform: rotate(calc(var(--gauge-angle) - 2.5deg)); }
+            50% { transform: rotate(calc(var(--gauge-angle) + 2.5deg)); }
+        }
+        .gauge-pulse-dot { animation: gauge-pulse 1.8s ease-in-out infinite; }
+        @keyframes gauge-pulse {
+            0%, 100% { filter: drop-shadow(0 0 0px rgba(0,242,254,0.6)); }
+            50% { filter: drop-shadow(0 0 4px rgba(0,242,254,0.9)); }
+        }
+        /* 水流光線特效框：給盤後速報的加權指數摘要框用，一道光緩緩掃過邊框 */
+        .ocean-stream-box { position: relative; overflow: hidden; }
+        .ocean-stream-box::after {
+            content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+            background: linear-gradient(120deg, transparent 30%, rgba(0,242,254,0.18) 48%, rgba(125,249,255,0.32) 50%, rgba(0,242,254,0.18) 52%, transparent 70%);
+            background-size: 250% 250%;
+            animation: ocean-stream-move 5s linear infinite;
+        }
+        @keyframes ocean-stream-move {
+            0% { background-position: 120% 0%; }
+            100% { background-position: -20% 0%; }
+        }
         .font-mono-num { font-feature-settings: "tnum"; letter-spacing: -0.02em; }
         
         /* Toast */
@@ -377,22 +400,22 @@
             </div>
 
             <div class="glass-panel rounded-xl overflow-hidden">
+                <button id="daily-report-toggle-btn" class="collapse-toggle w-full flex justify-between items-center p-4 text-left" data-target="daily-report-content">
+                    <h3 class="text-white font-bold flex items-center gap-2 text-sm"><i data-lucide="newspaper" class="w-4 h-4 text-brand-cyan"></i> 📊 盤後速報</h3>
+                    <span class="chevron text-slate-400 text-xs" style="transform:rotate(180deg)">▾</span>
+                </button>
+                <div id="daily-report-content" class="px-4 pb-4">
+                    <p class="text-slate-500 text-xs">正在產生盤後速報，會逐檔檢查追蹤清單(範圍只有追蹤清單，不是全市場)...</p>
+                </div>
+            </div>
+
+            <div class="glass-panel rounded-xl overflow-hidden">
                 <button id="wind-index-toggle-btn" class="collapse-toggle w-full flex justify-between items-center p-4 text-left" data-target="wind-index-content">
                     <h3 class="text-white font-bold flex items-center gap-2 text-sm"><i data-lucide="gauge" class="w-4 h-4 text-brand-cyan"></i> 🌪️ 美股台股連動風力</h3>
                     <span class="chevron text-slate-400 text-xs" style="transform:rotate(180deg)">▾</span>
                 </button>
                 <div id="wind-index-content" class="px-4 pb-4">
                     <p class="text-slate-500 text-xs">正在抓VIX/SPY/QQQ的歷史資料並計算Z-Score，第一次載入要花幾秒鐘...</p>
-                </div>
-            </div>
-
-            <div class="glass-panel rounded-xl overflow-hidden">
-                <button id="daily-report-toggle-btn" class="collapse-toggle w-full flex justify-between items-center p-4 text-left" data-target="daily-report-content">
-                    <h3 class="text-white font-bold flex items-center gap-2 text-sm"><i data-lucide="newspaper" class="w-4 h-4 text-brand-cyan"></i> 📊 盤後速報</h3>
-                    <span class="chevron text-slate-400 text-xs">▾</span>
-                </button>
-                <div id="daily-report-content" class="hidden px-4 pb-4">
-                    <p class="text-slate-500 text-xs">點上面標題展開，會逐檔檢查追蹤清單產生報告(範圍只有追蹤清單，不是全市場)</p>
                 </div>
             </div>
         </div>
@@ -2660,6 +2683,8 @@
                     state, closeNow, ma20Now, ma100Now,
                     usedProxy,
                     source: usedProxy ? `0050(代理)・${dataSourceCache['0050']}` : taiexSourceLabel,
+                    // 存近60筆收盤價/MA20/MA100，給「台股環境指標」卡片裡的簡易線圖用(看長短線)
+                    sparkClose: closes.slice(-60), sparkMa20: ma20.slice(-60), sparkMa100: ma100.slice(-60),
                 };
                 try {
                     marketLightCache.realtime = await fetchTaiexRealtime();
@@ -2692,7 +2717,7 @@
                 greenyellow: { emoji: '🟡', label: '空頭反彈', shortAlloc: '試單2成', alloc: '建議僅試單約2成(內插值)', cls: 'text-yellow-300 border-yellow-500/40' },
             };
             const m = map[marketLightCache.state];
-            badgeText.innerHTML = `${m.emoji}${m.label}`;
+            badgeText.innerHTML = `${m.emoji}${m.label} <span class="opacity-80">(${m.shortAlloc})</span>`;
             badge.className = `flex items-center gap-1 bg-brand-bg border rounded-lg px-2 py-1.5 text-xs font-bold transition hover:border-brand-cyan shrink-0 ${m.cls}`;
             const proxyWarn = marketLightCache.usedProxy ? `<div class="mt-2 text-amber-400 text-xs">⚠️ 加權指數資料來源暫時都抓不到，這次先用0050股價代理計算，跟實際加權指數可能會有些落差</div>` : '';
             const rt = marketLightCache.realtime;
@@ -3831,7 +3856,7 @@
                 };
                 document.getElementById('daily-report-content').innerHTML = `
                     <div class="text-slate-400 text-xs mb-2">📊 ${todayStr} 盤後速報</div>
-                    <div class="bg-gradient-to-br from-brand-cyan/10 to-brand-teal/10 border border-brand-cyan/30 rounded-xl p-3 mb-3">
+                    <div class="ocean-stream-box bg-gradient-to-br from-brand-cyan/10 to-brand-teal/10 border border-brand-cyan/30 rounded-xl p-3 mb-3">
                         ${taiexHtml}
                         ${marketInstHtml}
                     </div>
@@ -3862,11 +3887,11 @@
                     </linearGradient>
                 </defs>
                 <path d="M15,100 A85,85 0 0,1 185,100" fill="none" stroke="url(#gaugeGrad)" stroke-width="12" stroke-linecap="round" opacity="0.9"/>
-                <g style="transform-origin:100px 100px; transform:rotate(${angle}deg); transition: transform 1.2s cubic-bezier(.34,1.4,.64,1);">
+                <g class="gauge-needle" style="--gauge-angle:${angle}deg; transform-origin:100px 100px; transform:rotate(${angle}deg);">
                     <line x1="100" y1="100" x2="100" y2="28" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
                     <polygon points="100,21 94,32 106,32" fill="#fff"/>
                 </g>
-                <circle cx="100" cy="100" r="7" fill="#fff" stroke="#061224" stroke-width="2"/>
+                <circle cx="100" cy="100" r="7" fill="#fff" stroke="#061224" stroke-width="2" class="gauge-pulse-dot"/>
             </svg>`;
         }
         // 結合台股自己的多空狀態跟美股風險訊號，算出一個綜合的進場建議標題
@@ -3917,11 +3942,25 @@
                 const labelMap = { red: '多頭', redyellow: '多頭拉回', greenyellow: '空頭反彈', green: '空頭' };
                 const gaugeMap = { red: 90, redyellow: 65, greenyellow: 35, green: 10 };
                 const combo = computeCombinedHeadline(m.state, lastUsSnapshot);
+                const sparkHtml = (m.sparkClose && m.sparkClose.length >= 10) ? `
+                    <div class="mb-2">
+                        ${renderMultiSparklineSvg([
+                            { values: m.sparkClose, color: '#e2e8f0', width: 1.6 },
+                            { values: m.sparkMa20, color: '#60a5fa', width: 1.3 },
+                            { values: m.sparkMa100, color: '#fbbf24', width: 1.3, dash: '3,2' },
+                        ])}
+                        <div class="flex items-center gap-3 text-[9px] text-slate-400 mt-0.5">
+                            <span class="flex items-center gap-1"><span class="w-2 h-0.5 bg-slate-200 inline-block"></span>加權指數</span>
+                            <span class="flex items-center gap-1"><span class="w-2 h-0.5 bg-blue-400 inline-block"></span>日20MA(短)</span>
+                            <span class="flex items-center gap-1"><span class="w-2 h-0.5 bg-amber-400 inline-block"></span>日100MA(長)</span>
+                        </div>
+                    </div>` : '';
                 twEl.innerHTML = `
                     <div class="text-[10px] text-slate-400 mb-1">台股環境指標(已結合美股風險)</div>
                     ${renderGaugeSvg(gaugeMap[m.state] ?? 50)}
                     <div class="text-lg font-bold ${combo.cls} text-center -mt-1">${combo.headline}</div>
                     <div class="text-[11px] text-slate-400 text-center mb-2">台股本身：${labelMap[m.state]}，${m.alloc.replace('建議', '建議維持')}</div>
+                    ${sparkHtml}
                     <div class="grid grid-cols-1 gap-1 text-[11px] font-mono-num bg-brand-bg/50 rounded-lg p-2 text-slate-300">
                         <div>${m.usedProxy ? '0050(代理)' : '加權指數'}：<span class="text-white font-bold">${fmt(m.closeNow)}</span></div>
                         <div>日20MA：<span class="text-blue-400">${fmt(m.ma20Now)}</span> ／ 日100MA：<span class="text-amber-400">${fmt(m.ma100Now)}</span></div>
@@ -3929,7 +3968,7 @@
                     </div>
                     <div class="text-[10px] text-slate-500 mt-1">資料來源：${m.source}</div>`;
             } else {
-                twEl.innerHTml === undefined; // no-op safeguard(永遠不會執行，純粹防止linter抱怨空分支)
+                console.warn('renderTwWindBlock: marketLightCache 還是 null，顯示「尚未計算完成」');
                 twEl.innerHTML = '<p class="text-slate-500 text-xs">大盤燈號尚未計算完成</p>';
             }
         }
@@ -3944,8 +3983,13 @@
         }
 
         let windIndexLoaded = false;
+        let dailyReportLoaded = false;
         async function renderDashboard() {
             renderMarketWindPanel();
+            if (!dailyReportLoaded) {
+                dailyReportLoaded = true;
+                renderDailyReport();
+            }
             if (!windIndexLoaded) {
                 windIndexLoaded = true;
                 renderWindIndexCard();
@@ -4065,6 +4109,22 @@
             return Math.round(subs.reduce((a, b) => a + b, 0) / subs.length);
         }
         // 簡易Sparkline產生器：純SVG折線，不用額外的圖表套件
+        // 多線版Sparkline：同時畫多條序列(共用同一個Y軸刻度，方便比較相對位置)，用來顯示台股「長短線」的相對關係
+        function renderMultiSparklineSvg(series, width = 280, height = 46) {
+            // series: [{ values: number[], color: string, dash?: string }]
+            const allValues = series.flatMap(s => s.values).filter(v => v !== null && isFinite(v));
+            if (allValues.length < 2) return '';
+            const min = Math.min(...allValues), max = Math.max(...allValues);
+            const range = (max - min) || 1;
+            const toPoints = values => values.map((v, i) => {
+                if (v === null || !isFinite(v)) return null;
+                const x = (i / (values.length - 1)) * width;
+                const y = height - ((v - min) / range) * (height - 6) - 3;
+                return `${x.toFixed(1)},${y.toFixed(1)}`;
+            }).filter(Boolean).join(' ');
+            const lines = series.map(s => `<polyline points="${toPoints(s.values)}" fill="none" stroke="${s.color}" stroke-width="${s.width || 1.4}" stroke-dasharray="${s.dash || ''}" stroke-linejoin="round" stroke-linecap="round" />`).join('');
+            return `<svg viewBox="0 0 ${width} ${height}" class="w-full" style="height:${height}px" preserveAspectRatio="none">${lines}</svg>`;
+        }
         function renderSparklineSvg(values, width = 280, height = 40) {
             if (!values || values.length < 2) return '';
             const min = Math.min(...values), max = Math.max(...values);
