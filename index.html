@@ -2748,6 +2748,16 @@
             }
             renderMarketLight();
             renderMarketWindPanel();
+            // 保險機制：不管前面是什麼原因造成的race condition，2秒後再檢查一次頭部燈號文字
+            // 跟「台股環境指標」卡片是否一致，如果矛盾(頭部已經有資料、但下面還卡在尚未計算完成)，
+            // 強制重新渲染一次台股環境指標卡片，確保最終畫面一定是正確的。
+            setTimeout(() => {
+                const twEl = document.getElementById('market-wind-tw');
+                if (marketLightCache && twEl && twEl.textContent.includes('尚未計算完成')) {
+                    console.warn('偵測到台股環境指標跟頭部燈號狀態矛盾，強制重新渲染修正');
+                    renderTwWindBlock();
+                }
+            }, 2000);
         }
         function renderMarketLight() {
             const badgeText = document.getElementById('market-light-badge-text');
