@@ -2243,52 +2243,52 @@
         // 外包絡線(Envelope)演算法：找出區間最高點當起點(Point A)，向右找「最大斜率」(最平緩的那條線)當終點(Point B)，
         // 這樣畫出來的下降壓力線會像一塊木板一樣完美壓在所有K棒最高點上方，不會切割到任何一根K棒，
         // 符合「趨勢線不能壓到中間其他K棒」的技術分析鐵則(取代原本容易穿越K棒的線性回歸演算法)。
-        // Point A的搜尋範圍依講義調整為「1年以上、不超過2年」的高點(週線52~104週前)：太近期的高點時間意義還不夠，
-        // 太久遠的高點參考價值遞減；高點對高點、從上往下切，且整段線都不能切到任何一根K棒之間。
+        // lookback延長到104週(兩年)，確保能找到較久以前的絕對高點；最高點剛好在上週(沒有下降空間)或算出來的
+        // 斜率為正時，強制壓平為斜率0的「橫切線」(水平線)，確保一定畫得出線、且絕對不會壓到多根K棒。
         function detectTrendlineBreakout(highs, closes, idx, lookback = 104) {
-            const ONE_YEAR = 52, TWO_YEAR = 104;
-            const searchStart = Math.max(0, idx - TWO_YEAR);
-            const searchEnd = idx - ONE_YEAR; // 不含此週，Point A必須比這個還早(至少1年前)
-            let pA = -1, maxHigh = -Infinity;
-            if (searchEnd > searchStart) {
-                for (let i = searchStart; i < searchEnd; i++) {
-                    if (highs[i] > maxHigh) { maxHigh = highs[i]; pA = i; }
+            const start = Math.max(0, idx - lookback);
+            if (start >= idx) return { breakout: false };
+
+            // 1. 尋找區間內的絕對最高點作為起點 (Point A)
+            let maxHigh = -Infinity;
+            let pA = -1;
+            for (let i = start; i < idx; i++) {
+                if (highs[i] > maxHigh) {
+                    maxHigh = highs[i];
+                    pA = i;
                 }
-            }
-            // 資料不夠久(例如新上市股票還不到1年)，找不到符合「1年以上」門檻的高點，
-            // 退回用比較寬鬆的「近期最高點」當Point A(至少要比上週早，不然畫不出有意義的線)，
-            // 避免新股完全沒有趨勢線可看。
-            if (pA === -1) {
-                const fallbackStart = Math.max(0, idx - lookback);
-                for (let i = fallbackStart; i < idx - 1; i++) {
-                    if (highs[i] > maxHigh) { maxHigh = highs[i]; pA = i; }
-                }
-                if (pA === -1) return { breakout: false };
             }
 
-            // 尋找下降壓力線的終點 (Point B)：算出外包絡線(最平緩的斜率)，
-            // 計算 A 點連到後續每一點的斜率，找出「最大斜率」(最平緩的那條線)，
-            // 這樣可以保證線完全壓在所有 K 棒的上方，不會切割到任何 K 棒
+            if (pA === -1) return { breakout: false };
+
+            // 2. 計算下降壓力線的斜率
             let maxSlope = -Infinity;
-            let pB = -1;
-            for (let i = pA + 1; i < idx; i++) {
-                const slope = (highs[i] - highs[pA]) / (i - pA);
-                if (slope > maxSlope) {
-                    maxSlope = slope;
-                    pB = i;
+
+            if (pA === idx - 1) {
+                // 如果最高點就是上一週，代表沒有空間畫下降趨勢，自動轉為「橫切線」(水平線)
+                maxSlope = 0;
+            } else {
+                // 尋找外包絡線最大斜率 (最平緩的那條)，保證不切到中間任何 K 棒
+                for (let i = pA + 1; i < idx; i++) {
+                    const slope = (highs[i] - highs[pA]) / (i - pA);
+                    if (slope > maxSlope) {
+                        maxSlope = slope;
+                    }
                 }
             }
 
-            if (maxSlope === -Infinity) return { breakout: false };
+            // 防呆機制：若為正數或算不出斜率，一律強制壓平為橫切線 (Slope = 0)
+            if (maxSlope === -Infinity || maxSlope > 0) {
+                maxSlope = 0;
+            }
 
-            // 計算這條趨勢線延伸到本週 (idx) 的數值
+            // 3. 計算這條趨勢線延伸到本週 (idx) 的數值
             const lineAtIdx = maxSlope * (idx - pA) + highs[pA];
 
-            // 判斷突破：收盤大於這條線，且這條線要是下降的(斜率<=0，高點對高點從上往下切)才算有效的下降壓力線突破
-            const breakout = maxSlope <= 0 && closes[idx] > lineAtIdx;
+            // 4. 判斷突破：當週收盤價實質大於這條線
+            const breakout = closes[idx] > lineAtIdx;
 
-            // 不管有沒有突破，都把座標丟出去，這樣圖表才永遠畫得出這條線
-            return { breakout, slope: maxSlope, lineValue: lineAtIdx, pA, pB };
+            return { breakout, slope: maxSlope, lineValue: lineAtIdx, pA, startVal: highs[pA] };
         }
         function detectWPattern(lows, highs, closes, idx, lookback = 20) {
             const start = idx - lookback;
@@ -3085,22 +3085,29 @@
 
         // ============ 趨勢線(外包絡線)視覺化繪製(週線圖)：對應「②突破趨勢線」買點 ============
         // 之前detectTrendlineBreakout這個函式只用來在「長週線波段工具」面板裡顯示文字版的勾選結果，
-        // 從來沒有真的畫在圖上，這次補上：用Point A(區間最高點)、Point B(最大斜率對應點)畫出實際的下降壓力線，
-        // 線會一路延伸到目前這週的位置，方便肉眼確認價格有沒有真的站上這條線。
+        // 從來沒有真的畫在圖上，這次補上：用Point A(區間最高點)畫出實際的下降壓力線/橫切線，
+        // 線會一路延伸到目前這週的位置，方便肉眼確認價格有沒有真的站上這條線。依斜率動態給色：
+        // 斜率為0(水平橫切線)用黃色，小於0(下降壓力線)用綠色。
         function renderTrendlineDrawing(wv) {
             if (trendlineSeries) { try { weeklyChart.removeSeries(trendlineSeries); } catch (e) {} trendlineSeries = null; }
             const tl = wv.fourTreasures && wv.fourTreasures.trendline;
             if (!tl || tl.pA === undefined || tl.pA === -1 || tl.lineValue === undefined) return;
+
             const weeks = wv.weeks;
             const idx = weeks.length - 1;
-            const highs = weeks.map(w => w.high);
-            trendlineSeries = weeklyChart.addLineSeries({ color: '#fb923c', lineWidth: 2, lineStyle: 2, crosshairMarkerVisible: false, priceLineVisible: false, lastValueVisible: false });
+
+            // 依照斜率動態決定顏色：斜率為 0 (水平橫切線) 用黃色，小於 0 (下降壓力線) 用綠色
+            const lineColor = tl.slope === 0 ? '#facc15' : '#22c55e';
+
+            trendlineSeries = weeklyChart.addLineSeries({ color: lineColor, lineWidth: 2, lineStyle: 0, crosshairMarkerVisible: false, priceLineVisible: false, lastValueVisible: false });
+
             trendlineSeries.setData([
-                { time: weeks[tl.pA].time, value: highs[tl.pA] },
+                { time: weeks[tl.pA].time, value: tl.startVal },
                 { time: weeks[idx].time, value: tl.lineValue }
             ]);
+
             trendlineSeries.setMarkers([
-                { time: weeks[tl.pA].time, position: 'aboveBar', color: '#fb923c', shape: 'circle', text: 'A' },
+                { time: weeks[tl.pA].time, position: 'aboveBar', color: lineColor, shape: 'arrowDown', text: 'A' },
             ]);
         }
 
