@@ -183,6 +183,13 @@
         .usic-chg--up { color: #ff6b6e; text-shadow: 0 0 7px rgba(255,77,79,0.65); }
         .usic-chg--down { color: #2dffa0; text-shadow: 0 0 7px rgba(0,230,118,0.6); }
         .usic-card--vix { grid-column: 1 / -1; flex-direction: row; align-items: center; gap: 12px; }
+        .usic-info-btn {
+            position: absolute; top: 6px; right: 6px; width: 16px; height: 16px; z-index: 2;
+            display: flex; align-items: center; justify-content: center; padding: 0;
+            border-radius: 50%; color: #64748b; background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.12); transition: color .15s, border-color .15s, background .15s;
+        }
+        .usic-info-btn:active, .usic-info-btn:hover { color: #00f2fe; border-color: rgba(0,242,254,0.4); background: rgba(0,242,254,0.1); }
         .vix-tube-wrap { display: flex; align-items: center; gap: 12px; flex: 1; }
         .vix-tube {
             position: relative; width: 20px; height: 56px; border-radius: 10px; flex-shrink: 0;
@@ -609,6 +616,17 @@
                 <div id="wind-index-content" class="p-4">
                     <p class="text-slate-500 text-xs">正在抓VIX/SPY/QQQ的歷史資料並計算Z-Score，第一次載入要花幾秒鐘...</p>
                 </div>
+            </div>
+        </div>
+
+        <!-- 美股關鍵指標教學彈窗：點各指標卡片右上角ⓘ才會開，預設卡片只顯示標題/副標題/數據 -->
+        <div id="usic-info-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-brand-bg/80 backdrop-blur-sm">
+            <div class="bg-brand-card border border-brand-border rounded-2xl w-full max-w-sm max-h-[85vh] overflow-y-auto">
+                <div class="flex items-center justify-between p-4 border-b border-brand-border sticky top-0 bg-brand-card z-10">
+                    <h3 class="text-white font-bold flex items-center gap-2"><i data-lucide="info" class="w-5 h-5 text-brand-cyan"></i> <span id="usic-info-modal-title-text">指標說明</span></h3>
+                    <button id="usic-info-modal-close" class="text-slate-400 hover:text-white p-1"><i data-lucide="x" class="w-5 h-5"></i></button>
+                </div>
+                <div id="usic-info-modal-content" class="p-4 space-y-3"></div>
             </div>
         </div>
 
@@ -2127,8 +2145,8 @@
                         <b class="text-white">建議動作：</b>${w.action}
                     </div>
                     <div class="mt-2 mb-2 rounded-xl p-3.5 bg-brand-bg/40 border border-amber-400/15 text-[12px] text-slate-300 leading-relaxed">
-                        <div class="flex items-center gap-1.5 text-white font-bold text-[13px] mb-1.5"><i data-lucide="wind" class="w-3.5 h-3.5 text-amber-300"></i> 風力：看的是「短線情緒與波動」</div>
-                        綜合VIX、SPY/QQQ單日漲跌幅，以及台股20日乖離率。這些都屬於極度敏感的數據，只要昨晚美股科技股稍微軟腳，或是VIX恐慌指數驟升，分數就會瞬間飆高。這就像海面上的「天氣」，反映的是當下突然颳起的陣風與亂流，跟洋流的長線方向是兩件事。
+                        <div class="flex items-center gap-1.5 text-white font-bold text-[13px] mb-1.5"><i data-lucide="wind" class="w-3.5 h-3.5 text-amber-300"></i> 風力：解析市場「短線情緒與波動」</div>
+                        本指標透過監測美股關鍵指數與恐慌情緒，預判外部資金對台股可能產生的短期衝擊。當美股科技股出現顯著拉回，或 VIX 恐慌指數異常飆升時，風力分數將隨之提高。此機制如同海面上的「陣風與亂流」，旨在區隔長線趨勢與短期波動，協助您在市場震盪時，靈活調整短線部位的風險曝險。
                     </div>
                     <p class="text-[10px] text-slate-500 leading-relaxed font-mono-num">運算邏輯：採用 VIX (40% 權重) ＋ 美股指數單日漲跌幅 (60% 權重)。為精準對齊台股產業結構，美股漲跌幅採非對稱權重：SOX 費半 (30%) + QQQ 那斯達克 (20%) + SPY 標普500 (10%)。每項數據皆轉換為近250日Z-Score合併，並對近5日分數進行EMA平滑處理，過濾單日極端雜訊。此為輔助決策模型，非絕對預測。</p>
                     <table class="w-full text-[10px] text-slate-400 mt-2 border-t border-brand-border/50 pt-2">
@@ -2885,10 +2903,17 @@
         // 紅燈=指數同時>日20、日100MA(多頭)；紅黃燈=指數<日20MA但>日100MA(多頭拉回)；
         //          綠燈=指數同時<日20、日100MA(做多最多3成/放空5~7成)；綠黃燈=指數>日20MA但<日100MA(空頭反彈)
         // 紅黃燈/綠黃燈的建議成數沒有明確標準數字，以下是依邏輯內插的參考值。
+        // 用台北時區把Date物件轉成YYYY-MM-DD，跟daily資料的time欄位格式對齊，才能正確比對「即時報價的日期」是不是比「日線資料最後一筆」還新
+        function taipeiDateStr(date) {
+            try {
+                return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Taipei', year: 'numeric', month: '2-digit', day: '2-digit' }).format(date);
+            } catch (e) { return null; }
+        }
         async function loadMarketLight() {
             const badgeText = document.getElementById('market-light-badge-text');
             badgeText.textContent = '計算中...';
             let usedProxy = false;
+            let patchedWithRealtime = false;
             try {
                 let daily;
                 try {
@@ -2897,6 +2922,24 @@
                     console.warn('加權指數抓取失敗，最後才退回用0050當代理', e.message);
                     daily = await fetchStockDataMulti('0050');
                     usedProxy = true;
+                }
+                // Yahoo/證交所的「日線」資料來源，有時候在收盤後會延遲一段時間才把最新一天的收盤價更新進來，
+                // 導致拿到的daily最後一筆還停留在前一天，大盤燈號因此卡在前一天的指數判斷多空。
+                // 這裡用「即時報價」的日期(已經是收盤後的最終價，不是盤中跳動價)補上：如果即時報價的日期比daily最後一筆還新，
+                // 就把它當作「今天」的收盤價補進daily陣列尾端，再算MA20/MA100，這樣燈號才不會卡在前一天。
+                let realtime = null;
+                try {
+                    realtime = await fetchTaiexRealtime();
+                } catch (e) {
+                    console.warn('加權指數即時報價抓取失敗(不影響燈號本身的多空判斷)', e.message);
+                }
+                if (realtime && realtime.updateTime && daily.length) {
+                    const realtimeDateStr = taipeiDateStr(realtime.updateTime);
+                    const lastBarDateStr = daily[daily.length - 1].time;
+                    if (realtimeDateStr && lastBarDateStr && realtimeDateStr > lastBarDateStr) {
+                        daily = [...daily, { time: realtimeDateStr, open: realtime.price, high: realtime.price, low: realtime.price, close: realtime.price, volume: 0 }];
+                        patchedWithRealtime = true;
+                    }
                 }
                 const closes = daily.map(d => d.close);
                 const ma20 = closes.map((c, i) => sma(closes, 20, i));
@@ -2913,14 +2956,10 @@
                 marketLightCache = {
                     state, closeNow, ma20Now, ma100Now,
                     usedProxy,
+                    patchedWithRealtime,
                     source: usedProxy ? `0050(代理)・${dataSourceCache['0050']}` : taiexSourceLabel,
+                    realtime,
                 };
-                try {
-                    marketLightCache.realtime = await fetchTaiexRealtime();
-                } catch (e) {
-                    console.warn('加權指數即時報價抓取失敗(不影響燈號本身的多空判斷)', e.message);
-                    marketLightCache.realtime = null;
-                }
             } catch (e) {
                 console.warn('大盤燈號計算失敗', e);
                 marketLightCache = null;
@@ -2950,6 +2989,7 @@
             badgeText.innerHTML = `${m.emoji}${m.label} <span class="opacity-80">(${m.shortAlloc})</span>`;
             badge.className = `flex items-center gap-1 bg-brand-bg border rounded-lg px-2 py-1.5 text-xs font-bold transition hover:border-brand-cyan shrink-0 ${m.cls}`;
             const proxyWarn = marketLightCache.usedProxy ? `<div class="mt-2 text-amber-400 text-xs">⚠️ 加權指數資料來源暫時都抓不到，這次先用0050股價代理計算，跟實際加權指數可能會有些落差</div>` : '';
+            const patchWarn = marketLightCache.patchedWithRealtime ? `<div class="mt-2 text-brand-cyan text-xs">已用即時報價補上今天最新指數(日線資料來源還沒更新今天的收盤價)</div>` : '';
             const rt = marketLightCache.realtime;
             const rtHtml = rt ? (() => {
                 const chg = rt.prevClose !== null ? rt.price - rt.prevClose : null;
@@ -2976,6 +3016,7 @@
                     ${rtHtml}
                     <div class="mt-1.5 text-[10px] text-slate-500">資料來源：${marketLightCache.source}</div>
                     ${proxyWarn}
+                    ${patchWarn}
                 </div>
                 <div class="mt-3 rounded-xl p-3.5 bg-brand-bg/40 border border-brand-cyan/15 text-[12px] text-slate-300 leading-relaxed">
                     <div class="flex items-center gap-1.5 text-white font-bold text-[13px] mb-1.5"><i data-lucide="waves" class="w-3.5 h-3.5 text-brand-cyan"></i> 洋流：看的是「長線趨勢」</div>
@@ -4338,6 +4379,32 @@
             spy: { title: 'SPY 標普500', sub: '全球經濟晴雨表', icon: 'globe' },
             vix: { title: 'VIX 恐慌指數', sub: '外資的風險溫度計', icon: 'thermometer' },
         };
+        // 四大指標教學文案：[技術定位]＋[解讀心法]，點卡片右上角的說明圖示才會彈出，預設只顯示標題/副標題/數據
+        const US_INDICATOR_TEACHING = {
+            sox: { position: '台股的生命線', insight: '台灣半導體產業鏈與 SOX 高度正相關。費半漲跌直接聯動台股電子權值股，對市值型資產 (如 0050) 影響劇烈。' },
+            qqq: { position: '科技股風向球', insight: '反映全球科技巨頭動能。QQQ 強勢代表電子代工與零組件需求穩健，為純科技主題資產 (如 00929) 的核心驅動力。' },
+            spy: { position: '全球經濟晴雨表', insight: '標誌美國整體經濟健康度。SPY 穩定向上代表資金面充裕，有利外資回流台股，並支撐大型權值與高股息資產 (如 00878)。' },
+            vix: { position: '外資風險溫度計', insight: '衡量市場波動預期。VIX 飆高 (如 >20) 象徵市場恐慌，外資通常會優先抽離台股等新興市場，導致台股無差別下跌。' },
+        };
+        function openUsIndicatorInfoModal(key) {
+            const meta = US_INDICATOR_META[key];
+            const teach = US_INDICATOR_TEACHING[key];
+            if (!meta || !teach) return;
+            const titleEl = document.getElementById('usic-info-modal-title-text');
+            const contentEl = document.getElementById('usic-info-modal-content');
+            if (titleEl) titleEl.textContent = meta.title;
+            if (contentEl) contentEl.innerHTML = `
+                <div class="info-subcard">
+                    <div class="info-subcard-title"><span class="info-dot"></span> 技術定位</div>
+                    <div class="info-subcard-body">${teach.position}</div>
+                </div>
+                <div class="info-subcard info-subcard--amber">
+                    <div class="info-subcard-title"><span class="info-dot info-dot--amber"></span> 解讀心法</div>
+                    <div class="info-subcard-body">${teach.insight}</div>
+                </div>`;
+            const modal = document.getElementById('usic-info-modal');
+            if (modal) { modal.classList.remove('hidden'); safeLucideIcons({ root: modal }); }
+        }
         function renderUsMiniCards(us) {
             const usEl = document.getElementById('market-wind-us');
             if (!usEl) return;
@@ -4348,9 +4415,11 @@
                 const up = d ? (isVix ? d.chgPct >= 0 : d.chgPct >= 0) : null;
                 const chgCls = d && d.chgPct !== null ? (up ? 'usic-chg--up' : 'usic-chg--down') : '';
                 const chgText = d && d.chgPct !== null ? `${d.chgPct >= 0 ? '+' : ''}${d.chgPct.toFixed(1)}%` : '--';
+                const infoBtn = `<button type="button" class="usic-info-btn" data-indicator-key="${key}" aria-label="${meta.title}說明"><i data-lucide="info" style="width:9px;height:9px"></i></button>`;
                 if (isVix) {
                     return `
                     <div class="usic-card usic-card--vix vix-tier-calm" id="vix-mini-card">
+                        ${infoBtn}
                         <div class="vix-tube-wrap">
                             <div class="vix-tube"><div class="vix-tube-liquid" id="vix-tube-liquid" style="height:30%"></div></div>
                             <div>
@@ -4366,6 +4435,7 @@
                 }
                 return `
                 <div class="usic-card">
+                    ${infoBtn}
                     <div class="usic-card-top">
                         <i data-lucide="${meta.icon}" class="w-3.5 h-3.5 text-brand-cyan shrink-0 mt-0.5"></i>
                         <div>
@@ -4385,6 +4455,12 @@
             const windBtn = document.getElementById('wind-index-compact-btn');
             if (windBtn) windBtn.addEventListener('click', () => {
                 document.getElementById('wind-index-modal').classList.remove('hidden');
+            });
+            usEl.querySelectorAll('.usic-info-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    openUsIndicatorInfoModal(btn.dataset.indicatorKey);
+                });
             });
         }
         // 美股風力動態監測：嵌入指標網格的精簡卡片版本，只留標題＋指針＋分數＋級距文字，詳細說明收進「詳情」彈窗
@@ -5397,6 +5473,12 @@
             });
             document.getElementById('wind-index-modal').addEventListener('click', (e) => {
                 if (e.target.id === 'wind-index-modal') document.getElementById('wind-index-modal').classList.add('hidden');
+            });
+            document.getElementById('usic-info-modal-close').addEventListener('click', () => {
+                document.getElementById('usic-info-modal').classList.add('hidden');
+            });
+            document.getElementById('usic-info-modal').addEventListener('click', (e) => {
+                if (e.target.id === 'usic-info-modal') document.getElementById('usic-info-modal').classList.add('hidden');
             });
             document.getElementById('today-tomorrow-info-close').addEventListener('click', () => {
                 document.getElementById('today-tomorrow-info-modal').classList.add('hidden');
