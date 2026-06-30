@@ -164,6 +164,42 @@
         .y2k-body { padding: 9px 11px; font-size: 11px; line-height: 1.65; color: #cbd5e1; }
         .y2k-body b { color: #fff; }
 
+        /* ============ VIX動態流體溫度計 + 美股指標小說明格 ============ */
+        .indicator-mini-card {
+            background: linear-gradient(160deg, rgba(15,33,59,0.6), rgba(6,14,27,0.7));
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.08); border-radius: 12px;
+            padding: 9px 10px; text-align: left; transition: border-color .2s ease, transform .15s ease;
+        }
+        .indicator-mini-card:active { transform: scale(0.98); }
+        .indicator-mini-card:hover { border-color: rgba(0,242,254,0.35); }
+        .indicator-mini-title { font-size: 11px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 5px; margin-bottom: 2px; }
+        .indicator-mini-sub { font-size: 9.5px; color: #64748b; }
+        .vix-tube-wrap { display: flex; align-items: center; gap: 10px; }
+        .vix-tube {
+            position: relative; width: 22px; height: 64px; border-radius: 11px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.25);
+            backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+            overflow: hidden;
+            box-shadow: inset 0 0 6px rgba(255,255,255,0.08), 0 0 10px -4px rgba(0,0,0,0.6);
+        }
+        .vix-tube-liquid {
+            position: absolute; left: 0; right: 0; bottom: 0; height: 30%;
+            border-radius: 0 0 10px 10px;
+            transition: height .6s ease, background .6s ease;
+            background: linear-gradient(180deg, rgba(0,242,254,0.9), rgba(79,172,254,0.95));
+        }
+        .vix-tube-liquid::before {
+            content: ''; position: absolute; top: -6px; left: 0; right: 0; height: 12px;
+            background: inherit; border-radius: 50%;
+            animation: vix-wave 2.4s ease-in-out infinite;
+        }
+        @keyframes vix-wave { 0%, 100% { transform: translateY(0) scaleX(1); } 50% { transform: translateY(-2px) scaleX(1.06); } }
+        .vix-tier-calm .vix-tube-liquid { background: linear-gradient(180deg, rgba(0,242,254,0.9), rgba(79,172,254,0.95)); }
+        .vix-tier-watch .vix-tube-liquid { background: linear-gradient(180deg, rgba(255,200,80,0.95), rgba(251,146,60,0.95)); }
+        .vix-tier-panic .vix-tube-liquid { background: linear-gradient(180deg, rgba(255,120,120,0.95), rgba(220,38,38,0.95)); box-shadow: 0 0 14px 1px rgba(239,68,68,0.6); }
+
         /* Toast */
         .toast { transition: opacity 0.3s, transform 0.3s; opacity: 0; transform: translateY(-20px); pointer-events: none; }
         .toast.show { opacity: 1; transform: translateY(0); }
@@ -515,6 +551,42 @@
                 </div>
             </div>
 
+            <div class="grid grid-cols-2 gap-2">
+                <button class="indicator-mini-card us-indicator-btn" data-indicator="sox">
+                    <div class="indicator-mini-title"><i data-lucide="cpu" class="w-3 h-3 text-brand-cyan"></i> SOX 費半指數</div>
+                    <div class="indicator-mini-sub">台股的生命線</div>
+                </button>
+                <button class="indicator-mini-card us-indicator-btn" data-indicator="qqq">
+                    <div class="indicator-mini-title"><i data-lucide="zap" class="w-3 h-3 text-brand-cyan"></i> QQQ 那斯達克100</div>
+                    <div class="indicator-mini-sub">科技股風向球</div>
+                </button>
+                <button class="indicator-mini-card us-indicator-btn" data-indicator="spy">
+                    <div class="indicator-mini-title"><i data-lucide="globe" class="w-3 h-3 text-brand-cyan"></i> SPY 標普500</div>
+                    <div class="indicator-mini-sub">全球經濟晴雨表</div>
+                </button>
+                <button class="indicator-mini-card us-indicator-btn vix-tier-calm" id="vix-mini-card" data-indicator="vix">
+                    <div class="vix-tube-wrap">
+                        <div class="vix-tube"><div class="vix-tube-liquid" id="vix-tube-liquid" style="height:30%"></div></div>
+                        <div>
+                            <div class="indicator-mini-title">VIX 恐慌指數</div>
+                            <div class="indicator-mini-sub">外資的風險溫度計</div>
+                            <div class="text-[10px] font-mono-num text-slate-300 mt-0.5" id="vix-mini-value">--</div>
+                        </div>
+                    </div>
+                </button>
+            </div>
+
+            <!-- 美股指標說明彈窗 -->
+            <div id="us-indicator-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-brand-bg/80 backdrop-blur-sm">
+                <div class="bg-brand-card border border-brand-border rounded-2xl w-full max-w-sm max-h-[85vh] overflow-y-auto">
+                    <div class="flex items-center justify-between p-4 border-b border-brand-border sticky top-0 bg-brand-card z-10">
+                        <h3 id="us-indicator-modal-title" class="text-white font-bold flex items-center gap-2"><i data-lucide="info" class="w-5 h-5 text-brand-cyan"></i> 指標說明</h3>
+                        <button id="us-indicator-modal-close" class="text-slate-400 hover:text-white p-1"><i data-lucide="x" class="w-5 h-5"></i></button>
+                    </div>
+                    <div id="us-indicator-modal-content" class="p-4 text-[13px] text-slate-300 leading-relaxed"></div>
+                </div>
+            </div>
+
             <div class="glass-panel rounded-xl overflow-hidden">
                 <div class="w-full flex justify-between items-center p-4">
                     <button id="daily-report-toggle-btn" class="collapse-toggle flex-1 flex items-center gap-2 text-left" data-target="daily-report-content">
@@ -698,85 +770,85 @@
 
                 <div class="tide-card">
                     <button class="collapse-toggle w-full flex justify-between items-start gap-3 p-4 text-left" data-target="about-section-0a">
-                        <h3 class="info-heading-lg flex items-center gap-2">💡 關於潮汐指標</h3>
+                        <h3 class="info-heading-lg flex items-center gap-2"><i data-lucide="info" class="w-4 h-4 text-brand-cyan"></i> 關於潮汐指標</h3>
                         <span class="chevron text-slate-400 text-xs shrink-0 mt-1">▾</span>
                     </button>
                     <div id="about-section-0a" class="hidden px-4 pb-4 space-y-2.5">
-                        <p class="text-slate-300 text-[13px]">建立這個小工具的初衷，是為了拯救交易時常卡關的自己！特別是初期遇到「不知從何下手、看到複雜線圖就頭暈」的困境，或是總在「猶豫該不該買」跟「捨不得停損」之間無限迴圈。</p>
-                        <p class="text-slate-300 text-[13px]">這是一個免安裝的 Web 小程式，還能一鍵加入手機桌面（支援 PWA），就像你的隨身小秘書，隨時都能輕鬆點開查看 📱✨</p>
-                        <p class="text-slate-300 text-[13px]">為了照顧不同的交易步調，系統裡特別設計了三個貼心的小幫手：</p>
+                        <p class="text-slate-300 text-[13px]">我是一名35歲的上班族，平常喜歡研究新東西、自己動手解決問題。會做這個小工具，純粹是因為自己在交易時常常卡關——面對複雜線圖會不知從何下手，也常常在「該不該買」跟「捨不得停損」之間反覆猶豫。與其每次都重新想一遍，不如把判斷邏輯寫成程式，讓系統幫我守紀律。</p>
+                        <p class="text-slate-300 text-[13px]">這是一個免安裝的Web小程式，可以加入手機桌面（支援PWA），平常通勤、午休都能隨手打開看一下。</p>
+                        <p class="text-slate-300 text-[13px]">考量到每個人的交易步調不同，系統裡設計了三個模式：</p>
 
                         <div class="info-subcard">
-                            <div class="info-subcard-title"><span class="info-dot"></span> 🌱 新手無腦模式</div>
-                            <div class="info-subcard-body">專為不知道怎麼開始的階段量身打造！不需要看懂複雜的指標，系統會直接幫你算好「現在適不適合進場」以及「最多可能會虧多少」，還會用小清單自動幫你盯著防守價位，超級省心！</div>
+                            <div class="info-subcard-title"><span class="info-dot"></span> 新手無腦模式</div>
+                            <div class="info-subcard-body">給還不熟悉指標的階段使用。不需要看懂複雜的技術分析，系統會直接幫你算好「現在適不適合進場」以及「最多可能虧多少」，並用清單自動盯著防守價位。</div>
                         </div>
                         <div class="info-subcard">
-                            <div class="info-subcard-title"><span class="info-dot"></span> 🛋️ 長線週波段</div>
-                            <div class="info-subcard-body">獻給不想每天被盤勢綁架的懶人一族～幫你過濾掉每天上上下下的雜訊，用最愜意、最省時的節奏穩穩佈局。</div>
+                            <div class="info-subcard-title"><span class="info-dot"></span> 長線週波段</div>
+                            <div class="info-subcard-body">給不想每天被盤勢牽著走的人。過濾掉每天上上下下的雜訊，用比較從容的節奏穩穩佈局。</div>
                         </div>
                         <div class="info-subcard">
-                            <div class="info-subcard-title"><span class="info-dot"></span> ⚡ 日線短線衝刺</div>
-                            <div class="info-subcard-body">結合了多種技術分析，專門尋找市場上的強勢標的，提供給想要短期看到成績、喜歡一點快節奏的操作參考。</div>
+                            <div class="info-subcard-title"><span class="info-dot"></span> 日線短線衝刺</div>
+                            <div class="info-subcard-body">結合多種技術分析，找出市場上的強勢標的，提供給想要短期看到成績、節奏比較快的操作參考。</div>
                         </div>
 
-                        <p class="text-slate-300 text-[13px]">在這個簡單的介面底下，其實藏著一個勤奮的運算核心 ⚙️！它會自動交叉比對 VCP 型態、均線、基本面和籌碼數據，把複雜的分析轉換成超清楚的買賣點和防守價位。希望能用這個工具輔助決策，陪著我們一起克服人性的小弱點，乖乖守紀律，實現「大賺小賠」的目標！</p>
+                        <p class="text-slate-300 text-[13px]">介面看起來簡單，背後其實有一個會自動交叉比對VCP型態、均線、基本面和籌碼數據的運算核心，把複雜的分析轉換成清楚的買賣點和防守價位。希望這個工具能在決策時幫上忙，陪自己克服人性裡的弱點，乖乖守紀律，朝「大賺小賠」的方向努力。</p>
                     </div>
                 </div>
 
                 <div class="tide-card">
                     <button class="collapse-toggle w-full flex justify-between items-start gap-3 p-4 text-left" data-target="about-section-0c">
-                        <h3 class="info-heading-lg flex items-center gap-2">🧠 我的交易心法與長短線碎念</h3>
+                        <h3 class="info-heading-lg flex items-center gap-2"><i data-lucide="compass" class="w-4 h-4 text-brand-cyan"></i> 我的交易心法與長短線筆記</h3>
                         <span class="chevron text-slate-400 text-xs shrink-0 mt-1">▾</span>
                     </button>
                     <div id="about-section-0c" class="hidden px-4 pb-4 space-y-3">
-                        <p class="text-slate-300 text-[13px]">投資才不是無聊的猜大小遊戲，而是一場有計畫的尋寶大冒險喔！這套小系統就是為了陪我乖乖遵守這些交易鐵則而誕生的啦 ✨</p>
+                        <p class="text-slate-300 text-[13px]">投資不是賭大小，而是一套需要計畫跟紀律的長期練習。這套系統就是為了陪自己確實遵守下面這些原則而做的。</p>
 
                         <div>
-                            <div class="info-heading-md mb-2">🛡️ 專屬心態防護罩</div>
+                            <div class="info-heading-md mb-2"><i data-lucide="shield-check" class="w-3.5 h-3.5 text-brand-cyan"></i> 心態原則</div>
                             <div class="space-y-2">
                                 <div class="info-subcard">
-                                    <div class="info-subcard-title"><span class="info-dot"></span> ⚖️ 大賺小賠</div>
-                                    <div class="info-subcard-body">股市裡沒有穩賺不賠的魔法，只有靠著一次次交易慢慢存起來的「大賺小賠」。看錯方向請果斷揮揮手說掰掰，做對了就緊緊抱牢不放！停損就是保護荷包君的小保險，千萬別害怕虧損喔。</div>
+                                    <div class="info-subcard-title"><span class="info-dot"></span> 大賺小賠</div>
+                                    <div class="info-subcard-body">股市裡沒有穩賺不賠這回事，只有靠一次次交易慢慢累積出來的「大賺小賠」。看錯方向就果斷出場，做對了就抱牢。停損是保護本金的工具，不必害怕它。</div>
                                 </div>
                                 <div class="info-subcard">
-                                    <div class="info-subcard-title"><span class="info-dot"></span> 🛌 安心好眠</div>
-                                    <div class="info-subcard-body">風險永遠要排第一名，絕對只能拿「閒錢」出來玩！進場前一定要先算好「跌破均線最多會噴多少錢」。如果投資讓你晚上睡不著覺，代表資金控管亮紅燈啦，請立刻減碼壓壓驚！</div>
+                                    <div class="info-subcard-title"><span class="info-dot"></span> 安心睡眠</div>
+                                    <div class="info-subcard-body">風險控管永遠放第一位，只用閒錢操作。進場前先算好「跌破均線最多會虧多少」。如果部位讓你晚上睡不著，代表資金控管出了問題，該減碼了。</div>
                                 </div>
                                 <div class="info-subcard">
-                                    <div class="info-subcard-title"><span class="info-dot"></span> ⏳ 時間好閨蜜</div>
-                                    <div class="info-subcard-body">把注意力放在真實的市場行為上。用閒錢來操作，剩下的就耐心交給時間，乖乖等待甜美的果實長大 🌱。</div>
+                                    <div class="info-subcard-title"><span class="info-dot"></span> 時間是夥伴</div>
+                                    <div class="info-subcard-body">把注意力放在真實的市場行為上，用閒錢操作，剩下的交給時間，耐心等待結果。</div>
                                 </div>
                             </div>
                         </div>
 
                         <div>
-                            <div class="info-heading-md mb-2">📅 長線波段秘密絕招</div>
+                            <div class="info-heading-md mb-2"><i data-lucide="calendar-range" class="w-3.5 h-3.5 text-brand-cyan"></i> 長線波段心得</div>
                             <div class="space-y-2">
                                 <div class="info-subcard">
-                                    <div class="info-subcard-title"><span class="info-dot"></span> 📉 蹲低低進場</div>
-                                    <div class="info-subcard-body">蹲得越低跳得越高！從這裡進場安全感滿分、潛在利潤也最大，強烈建議新手寶寶們從這裡開始練功喔！</div>
+                                    <div class="info-subcard-title"><span class="info-dot"></span> 低檔進場</div>
+                                    <div class="info-subcard-body">從相對低檔進場，安全感跟潛在利潤都比較高，建議新手從這個方式開始練習。</div>
                                 </div>
                                 <div class="info-subcard">
-                                    <div class="info-subcard-title"><span class="info-dot"></span> 🚀 高角度起飛</div>
-                                    <div class="info-subcard-body">抓準主力發動的瞬間，跟著火箭一起快速脫離成本區！</div>
+                                    <div class="info-subcard-title"><span class="info-dot"></span> 順勢突破</div>
+                                    <div class="info-subcard-body">抓準主力發動的瞬間，跟著趨勢快速脫離成本區。</div>
                                 </div>
                                 <div class="info-subcard">
-                                    <div class="info-subcard-title"><span class="info-dot"></span> 💡 週進週出</div>
-                                    <div class="info-subcard-body">靠這兩招穩穩存滿小金庫 💰！只要是看週線訊號進場的，就乖乖用「週 K 低點」或「週 20MA」來判斷什麼時候該下車，千萬別每天盯著盤面自己嚇自己啦。</div>
+                                    <div class="info-subcard-title"><span class="info-dot"></span> 週進週出</div>
+                                    <div class="info-subcard-body">用這兩種方式進場累積部位。只要是看週線訊號進場的，就用「週K低點」或「週20MA」判斷出場時機，不必每天盯盤自己嚇自己。</div>
                                 </div>
                             </div>
                         </div>
 
                         <div>
-                            <div class="info-heading-md mb-2">📊 日線保命小指南</div>
+                            <div class="info-heading-md mb-2"><i data-lucide="bar-chart-3" class="w-3.5 h-3.5 text-brand-cyan"></i> 日線操作守則</div>
                             <div class="space-y-2">
                                 <div class="info-subcard">
-                                    <div class="info-subcard-title"><span class="info-dot"></span> 🚦 看燈號下注</div>
-                                    <div class="info-subcard-body">當大盤乖乖站上日 20MA 跟 100MA（亮起開心的紅燈），我才會放心派出 5~7 成的資金去探險。萬一跌破雙均線（亮起冷冰冰的綠燈），最多只能拿 3 成資金，甚至空手在旁邊吃瓜看戲。看個股前一定要先看大盤的臉色，絕對不逆勢硬闖！</div>
+                                    <div class="info-subcard-title"><span class="info-dot"></span> 看燈號下注</div>
+                                    <div class="info-subcard-body">大盤站上日20MA跟100MA(紅燈)時，才會放心動用5~7成資金。跌破雙均線(綠燈)時，最多只拿3成資金，甚至空手觀望。看個股前一定先看大盤的臉色，不逆勢硬闖。</div>
                                 </div>
                                 <div class="info-subcard">
-                                    <div class="info-subcard-title"><span class="info-dot"></span> 📈 多頭排列陣型</div>
-                                    <div class="info-subcard-body">短線最怕遇到長短週期不同步的上下震盪。進場前一定要確認短線的「日 20MA」有乖乖待在長線的「日 100MA」上方（這就是多頭排列）才可以喔。遇到下跌趨勢的時候，絕對別自作聰明去空手接刀子呀！</div>
+                                    <div class="info-subcard-title"><span class="info-dot"></span> 多頭排列</div>
+                                    <div class="info-subcard-body">短線最怕遇到長短週期不同步的上下震盪。進場前一定確認短線的「日20MA」站在長線的「日100MA」上方(多頭排列)。遇到下跌趨勢，不去空手接刀子。</div>
                                 </div>
                             </div>
                         </div>
@@ -792,36 +864,36 @@
                             <span class="chevron text-slate-400 text-xs">▾</span>
                         </button>
                         <div id="about-section-3" class="hidden px-4 pb-4 text-[13px]">
-                            <p class="text-slate-400">沒有固定排程，每次切換股票才即時連線抓取，依序嘗試 FinMind(已用token提高額度)→證交所(上市)→櫃買中心(上櫃)→Yahoo Finance(+CORS代理備援)，全部失敗才顯示模擬資料(圖表上會有⚠️警告，不能參考)。股價K線資料上市股、上櫃股都支援；三大法人買賣超優先查證交所T86(上市)，查不到(通常是上櫃股)會自動改用FinMind的資料補上，所以上市櫃都看得到；個股估值(本益比/殖利率/股價淨值比)則是上市查證交所、上櫃查櫃買中心。各資料源CORS穩定性都還在持續觀察調整中。</p>
+                            <p class="text-slate-400">沒有固定排程，每次切換股票才即時連線抓取，依序嘗試 FinMind(已用token提高額度)→證交所(上市)→櫃買中心(上櫃)→Yahoo Finance(+CORS代理備援)，全部失敗才顯示模擬資料(圖表上會有警告標示，不能參考)。股價K線資料上市股、上櫃股都支援；三大法人買賣超優先查證交所T86(上市)，查不到(通常是上櫃股)會自動改用FinMind的資料補上，所以上市櫃都看得到；個股估值(本益比/殖利率/股價淨值比)則是上市查證交所、上櫃查櫃買中心。各資料源CORS穩定性都還在持續觀察調整中。</p>
                         </div>
                     </div>
 
 
                     <div class="tide-card tide-card--amber">
                         <div class="flex items-center gap-2 p-4 pb-3">
-                            <h3 class="info-heading-lg flex items-center gap-2"><i data-lucide="shield" class="w-4 h-4 text-amber-300"></i> 🛡️ 我的免責小聲明</h3>
+                            <h3 class="info-heading-lg flex items-center gap-2"><i data-lucide="shield" class="w-4 h-4 text-amber-300"></i> 免責聲明</h3>
                         </div>
                         <div class="px-4 pb-4 space-y-2.5">
-                            <p class="text-amber-100 text-[13px] mb-1">雖然這是我用心打造的專屬工具包，但有些醜話還是得先說在前面喔！</p>
+                            <p class="text-amber-100 text-[13px] mb-1">這是我用心打造的工具，但有幾件事要先說清楚。</p>
 
                             <div class="info-subcard info-subcard--amber">
-                                <div class="info-subcard-title"><span class="info-dot info-dot--amber"></span> 🧸 這不是投顧報牌</div>
-                                <div class="info-subcard-body">這裡出現的所有數據與圖表，主要是為了讓我自己做策略回測跟學術研究用的，絕對不構成任何形式的投資建議或邀約。</div>
+                                <div class="info-subcard-title"><span class="info-dot info-dot--amber"></span> 不是投顧報牌</div>
+                                <div class="info-subcard-body">這裡出現的所有數據與圖表，主要是為了讓我自己做策略回測跟研究用的，不構成任何形式的投資建議或邀約。</div>
                             </div>
 
                             <div class="info-subcard info-subcard--amber">
-                                <div class="info-subcard-title"><span class="info-dot info-dot--amber"></span> 🔢 演算法沒有水晶球</div>
-                                <div class="info-subcard-body">畫面上跳出來的買賣點、評分燈號或是防守價位，都是系統套用固定規則、看著「過去的歷史資料」苦命算出來的。過去的績效再漂亮，也不代表未來穩賺不賠，股市變數多，隨時可能會有虧損本金的風險！</div>
+                                <div class="info-subcard-title"><span class="info-dot info-dot--amber"></span> 演算法不是水晶球</div>
+                                <div class="info-subcard-body">畫面上的買賣點、評分燈號或防守價位，都是系統套用固定規則、依「過去的歷史資料」算出來的。過去的績效再漂亮，也不代表未來穩賺不賠，股市變數多，隨時可能有虧損本金的風險。</div>
                             </div>
 
                             <div class="info-subcard info-subcard--amber">
-                                <div class="info-subcard-title"><span class="info-dot info-dot--amber"></span> 🔌 資料來源偶爾會罷工</div>
-                                <div class="info-subcard-body">這個小工具是靠著抓取外部第三方 API（像是 FinMind、證交所、櫃買中心、Yahoo Finance）的資料來運作。我實在沒辦法保證它們永遠 100% 即時又正確；如果哪天連線斷掉，畫面可能會跑出「模擬資料」來墊檔，這點要請多包涵啦～</div>
+                                <div class="info-subcard-title"><span class="info-dot info-dot--amber"></span> 資料來源偶爾會中斷</div>
+                                <div class="info-subcard-body">這個工具是靠抓取外部第三方API(像是FinMind、證交所、櫃買中心、Yahoo Finance)的資料來運作。我沒辦法保證它們永遠100%即時又正確；如果連線斷掉，畫面可能會跑出模擬資料來墊檔，這點請見諒。</div>
                             </div>
 
                             <div class="info-subcard info-subcard--amber">
-                                <div class="info-subcard-title"><span class="info-dot info-dot--amber"></span> 💸 自己的錢包自己顧</div>
-                                <div class="info-subcard-body">任何參考本平台資訊所做出的投資決策跟盈虧結果，都要由您自己負全責喔！我只是個愛寫程式的開發者，賠錢了千萬不能找我算帳 🥺。大家下單前，一定要好好評估自身的風險承受度，或是尋求專業顧問的協助。</div>
+                                <div class="info-subcard-title"><span class="info-dot info-dot--amber"></span> 盈虧自負</div>
+                                <div class="info-subcard-body">任何參考本平台資訊所做出的投資決策跟盈虧結果，都要由您自己負責。我只是個喜歡寫程式的開發者，賠錢不能找我算帳。下單前請務必評估自身的風險承受度，或尋求專業顧問的協助。</div>
                             </div>
                         </div>
                     </div>
@@ -834,137 +906,137 @@
         </div>
 
         <!-- 教學分頁 -->
-        <div id="panel-tutorial" class="absolute inset-0 hidden overflow-y-auto p-5 hide-scroll text-sm text-slate-300 leading-relaxed bg-brand-bg">
-            <div class="max-w-2xl mx-auto py-4 space-y-4">
-                <div class="flex items-center gap-3 border-b border-brand-border pb-4">
-                    <div class="bg-gradient-to-br from-brand-cyan to-brand-teal p-2 rounded-xl shadow-lg"><i data-lucide="graduation-cap" class="w-6 h-6 text-brand-bg"></i></div>
-                    <div>
-                        <h2 class="text-2xl font-bold text-white tracking-wider">教學</h2>
-                        <p class="text-slate-400 text-xs">怎麼選自己的交易風格、怎麼用這個工具，都在這裡</p>
-                    </div>
-                </div>
+ <div id="panel-tutorial" class="absolute inset-0 hidden overflow-y-auto p-5 hide-scroll text-sm text-slate-300 leading-relaxed bg-brand-bg">
+ <div class="max-w-2xl mx-auto py-4 space-y-4">
+ <div class="flex items-center gap-3 border-b border-brand-border pb-4">
+ <div class="bg-gradient-to-br from-brand-cyan to-brand-teal p-2 rounded-xl shadow-lg"><i data-lucide="graduation-cap" class="w-6 h-6 text-brand-bg"></i></div>
+ <div>
+ <h2 class="text-2xl font-bold text-white tracking-wider">教學</h2>
+ <p class="text-slate-400 text-xs">怎麼選自己的交易風格、怎麼用這個工具，都在這裡</p>
+ </div>
+ </div>
 
-                <div class="space-y-2">
-                    <div class="tide-card">
-                        <button class="collapse-toggle w-full flex justify-between items-center p-4 text-left" data-target="tutorial-section-longshort">
-                            <h3 class="info-heading-lg flex items-center gap-2"><i data-lucide="git-compare" class="w-4 h-4 text-brand-teal"></i> ⏳ 我適合長線還是短線？</h3>
-                            <span class="chevron text-slate-400 text-xs">▾</span>
-                        </button>
-                        <div id="tutorial-section-longshort" class="px-4 pb-4 space-y-2.5">
-                            <p class="text-[13px] text-slate-300">最核心的差別就是「<b class="text-white">看的K棒週期不一樣</b>」：</p>
+ <div class="space-y-2">
+ <div class="tide-card">
+ <button class="collapse-toggle w-full flex justify-between items-center p-4 text-left" data-target="tutorial-section-longshort">
+ <h3 class="info-heading-lg flex items-center gap-2"><i data-lucide="git-compare" class="w-4 h-4 text-brand-teal"></i> 我適合長線還是短線？</h3>
+ <span class="chevron text-slate-400 text-xs">▾</span>
+ </button>
+ <div id="tutorial-section-longshort" class="px-4 pb-4 space-y-2.5">
+ <p class="text-[13px] text-slate-300">最核心的差別就是「<b class="text-white">看的K棒週期不一樣</b>」：</p>
 
-                            <div class="info-subcard">
-                                <div class="info-subcard-title"><span class="info-dot"></span> 長線</div>
-                                <div class="info-subcard-body">用「週K棒」（一週收一次）判斷，進場條件是看「這週」有沒有盤整突破、站上週20MA、或爆量。一週看一次就好，不用每天盯盤，停損也是用「跌破上週低點」這種比較寬鬆的方式，目標是抓大波段、減少進出次數跟手續費。<br><b class="text-amber-300">適合：上班忙、不想常常看盤、想存波段的人。</b></div>
-                            </div>
-                            <div class="info-subcard">
-                                <div class="info-subcard-title"><span class="info-dot"></span> 短線</div>
-                                <div class="info-subcard-body">用「日K棒」（每天收一次）判斷，進場條件是看VCP評分（KD/MACD/RSI等技術指標濃縮成0~18分）夠不夠高、有沒有站上日20MA。因為是以天為單位判斷，需要每天關注，進出也比較頻繁，停損抓得更緊（最長抱10天、虧損15%就出場），目標是抓短期內比較強勢、會快速噴出的股票。<br><b class="text-amber-300">適合：有空盯盤、想要比較快看到結果、能接受比較頻繁進出的人。</b></div>
-                            </div>
+ <div class="info-subcard">
+ <div class="info-subcard-title"><span class="info-dot"></span> 長線</div>
+ <div class="info-subcard-body">用「週K棒」（一週收一次）判斷，進場條件是看「這週」有沒有盤整突破、站上週20MA、或爆量。一週看一次就好，不用每天盯盤，停損也是用「跌破上週低點」這種比較寬鬆的方式，目標是抓大波段、減少進出次數跟手續費。<br><b class="text-amber-300">適合：上班忙、不想常常看盤、想存波段的人。</b></div>
+ </div>
+ <div class="info-subcard">
+ <div class="info-subcard-title"><span class="info-dot"></span> 短線</div>
+ <div class="info-subcard-body">用「日K棒」（每天收一次）判斷，進場條件是看VCP評分（KD/MACD/RSI等技術指標濃縮成0~18分）夠不夠高、有沒有站上日20MA。因為是以天為單位判斷，需要每天關注，進出也比較頻繁，停損抓得更緊（最長抱10天、虧損15%就出場），目標是抓短期內比較強勢、會快速噴出的股票。<br><b class="text-amber-300">適合：有空盯盤、想要比較快看到結果、能接受比較頻繁進出的人。</b></div>
+ </div>
 
-                            <p class="text-slate-400 text-[12px] leading-relaxed">簡單比喻：長線像是看「這個月趨勢往哪走」，短線像是看「這幾天有沒有要噴」。同一檔股票完全可能長線結構不錯（值得長期關注），但這幾天還沒輪到噴的時間點（短線說觀望）；也可能反過來，短線今天剛好噴了，但長線結構還沒站穩（長線不會列入買點）——這不是矛盾，只是兩個不同時間長度在各自講話。掃描結果如果出現這種分歧，畫面上會直接寫原因給你看。如果不確定，兩個都可以先小量試試看，用個一兩個月，自然會感覺出來哪種節奏比較適合自己。</p>
-                        </div>
-                    </div>
+ <p class="text-slate-400 text-[12px] leading-relaxed">簡單比喻：長線像是看「這個月趨勢往哪走」，短線像是看「這幾天有沒有要噴」。同一檔股票完全可能長線結構不錯（值得長期關注），但這幾天還沒輪到噴的時間點（短線說觀望）；也可能反過來，短線今天剛好噴了，但長線結構還沒站穩（長線不會列入買點）——這不是矛盾，只是兩個不同時間長度在各自講話。掃描結果如果出現這種分歧，畫面上會直接寫原因給你看。如果不確定，兩個都可以先小量試試看，用個一兩個月，自然會感覺出來哪種節奏比較適合自己。</p>
+ </div>
+ </div>
 
-                    <div class="tide-card">
-                        <button class="collapse-toggle w-full flex justify-between items-center p-4 text-left" data-target="tutorial-section-1">
-                            <h3 class="info-heading-lg flex items-center gap-2"><i data-lucide="layout-grid" class="w-4 h-4 text-brand-teal"></i> 🗺️ 我的專屬功能導覽</h3>
-                            <span class="chevron text-slate-400 text-xs">▾</span>
-                        </button>
-                        <div id="tutorial-section-1" class="hidden px-4 pb-4 space-y-2">
-                            <div class="info-subcard">
-                                <div class="info-subcard-title"><span class="info-dot"></span> 📊 日線戰術板</div>
-                                <div class="info-subcard-body">找出「站上 20MA、底下有 100MA 撐腰保護」的強勢股，進場給 3 天觀察期，開始賺錢就啟動移動停利幫我鎖住獲利。K 棒配有日 20/100MA 均線和布林通道，上方「VCP」「短線」「明日策略」三個按鈕，可以看 0~18 分的量化評分儀表板，還能試算「明天適不適合進場、停損該設多少」，完全不佔圖表空間，畫面清爽。</div>
-                            </div>
-                            <div class="info-subcard">
-                                <div class="info-subcard-title"><span class="info-dot"></span> 📅 長線波段看盤</div>
-                                <div class="info-subcard-body">自動抓出「帶量起漲」的關鍵買點，買進後只要沒跌破上週低點就安心抱著，跟著大趨勢走。點一下「長週線波段工具」按鈕，看本週符合幾項進場條件，圖表上會畫出盤整框跟明確的買賣點，完全不用自己拉線。</div>
-                            </div>
-                            <div class="info-subcard">
-                                <div class="info-subcard-title"><span class="info-dot"></span> 📈 數據與績效中心</div>
-                                <div class="info-subcard-body">三大法人買賣超動向＋價值雷達（PE/PB/Yield）幫我快速做基本面體檢，搭配大盤與個股的紅綠燈號一秒看懂市場水位。底下還有長短線勝率 PK、每月績效追蹤，跟歷史交易回測紀錄，讓每次覆盤都有憑有據。</div>
-                            </div>
-                            <div class="info-subcard">
-                                <div class="info-subcard-title"><span class="info-dot"></span> 🎯 全範圍掃描器</div>
-                                <div class="info-subcard-body">一鍵掃描「自選漁場」或內建的中大型股名單，用 0~10 分綜合評分排序，8 分以上自動標記「🎯 短線買入」，還會自動過濾成交量太少的冷門股，找飆股超輕鬆。</div>
-                            </div>
-                            <div class="info-subcard">
-                                <div class="info-subcard-title"><span class="info-dot"></span> 🔰 新手模式</div>
-                                <div class="info-subcard-body">看不懂線圖、評分也沒關係！直接輸入想買的股票跟金額，就告訴你現在適不適合買、最多大概會賠多少錢，還能加入持股提醒清單，自動幫我比對停利/停損價位。</div>
-                            </div>
-                            <div class="info-subcard">
-                                <div class="info-subcard-title"><span class="info-dot"></span> 📊 儀表板</div>
-                                <div class="info-subcard-body">打開App第一眼看到的畫面，有每日股市風力圖(大盤+美股關鍵指標)跟盤後速報(追蹤清單的突破高低/漲跌停/法人買賣超)，當天市況一眼掃完。</div>
-                            </div>
-                        </div>
-                    </div>
+ <div class="tide-card">
+ <button class="collapse-toggle w-full flex justify-between items-center p-4 text-left" data-target="tutorial-section-1">
+ <h3 class="info-heading-lg flex items-center gap-2"><i data-lucide="layout-grid" class="w-4 h-4 text-brand-teal"></i> 我的專屬功能導覽</h3>
+ <span class="chevron text-slate-400 text-xs">▾</span>
+ </button>
+ <div id="tutorial-section-1" class="hidden px-4 pb-4 space-y-2">
+ <div class="info-subcard">
+ <div class="info-subcard-title"><span class="info-dot"></span> 日線戰術板</div>
+ <div class="info-subcard-body">找出「站上 20MA、底下有 100MA 撐腰保護」的強勢股，進場給 3 天觀察期，開始賺錢就啟動移動停利幫我鎖住獲利。K 棒配有日 20/100MA 均線和布林通道，上方「VCP」「短線」「明日策略」三個按鈕，可以看 0~18 分的量化評分儀表板，還能試算「明天適不適合進場、停損該設多少」，完全不佔圖表空間，畫面清爽。</div>
+ </div>
+ <div class="info-subcard">
+ <div class="info-subcard-title"><span class="info-dot"></span> 長線波段看盤</div>
+ <div class="info-subcard-body">自動抓出「帶量起漲」的關鍵買點，買進後只要沒跌破上週低點就安心抱著，跟著大趨勢走。點一下「長週線波段工具」按鈕，看本週符合幾項進場條件，圖表上會畫出盤整框跟明確的買賣點，完全不用自己拉線。</div>
+ </div>
+ <div class="info-subcard">
+ <div class="info-subcard-title"><span class="info-dot"></span> 數據與績效中心</div>
+ <div class="info-subcard-body">三大法人買賣超動向＋價值雷達（PE/PB/Yield）幫我快速做基本面體檢，搭配大盤與個股的紅綠燈號一秒看懂市場水位。底下還有長短線勝率 PK、每月績效追蹤，跟歷史交易回測紀錄，讓每次覆盤都有憑有據。</div>
+ </div>
+ <div class="info-subcard">
+ <div class="info-subcard-title"><span class="info-dot"></span> 全範圍掃描器</div>
+ <div class="info-subcard-body">一鍵掃描「自選漁場」或內建的中大型股名單，用 0~10 分綜合評分排序，8 分以上自動標記「 短線買入」，還會自動過濾成交量太少的冷門股，找飆股超輕鬆。</div>
+ </div>
+ <div class="info-subcard">
+ <div class="info-subcard-title"><span class="info-dot"></span> 新手模式</div>
+ <div class="info-subcard-body">看不懂線圖、評分也沒關係！直接輸入想買的股票跟金額，就告訴你現在適不適合買、最多大概會賠多少錢，還能加入持股提醒清單，自動幫我比對停利/停損價位。</div>
+ </div>
+ <div class="info-subcard">
+ <div class="info-subcard-title"><span class="info-dot"></span> 儀表板</div>
+ <div class="info-subcard-body">打開App第一眼看到的畫面，有每日股市風力圖(大盤+美股關鍵指標)跟盤後速報(追蹤清單的突破高低/漲跌停/法人買賣超)，當天市況一眼掃完。</div>
+ </div>
+ </div>
+ </div>
 
-                    <div class="tide-card">
-                        <button class="collapse-toggle w-full flex justify-between items-center p-4 text-left" data-target="tutorial-section-2">
-                            <h3 class="info-heading-lg flex items-center gap-2"><i data-lucide="swords" class="w-4 h-4 text-brand-teal"></i> 📝 我的專屬買賣策略小抄</h3>
-                            <span class="chevron text-slate-400 text-xs">▾</span>
-                        </button>
-                        <div id="tutorial-section-2" class="hidden px-4 pb-4 space-y-3">
-                            <div class="info-heading-md">📊 日線 / VCP 短線策略</div>
-                            <div class="space-y-2">
-                                <div class="info-subcard">
-                                    <div class="info-subcard-title"><span class="info-dot"></span> ✅ 進場條件</div>
-                                    <div class="info-subcard-body">系統採用了 Minervini SEPA 量化評分（滿分 18 分）。只要分數拿到 8 分以上的及格分，加上當天「帶量突破 10 日高點」，我就會讓系統把它抓進場！(訊號當天收盤才確認，所以實際上是隔天才真正算進場，避免回測偷看到還沒發生的價格)</div>
-                                </div>
-                                <div class="info-subcard">
-                                    <div class="info-subcard-title"><span class="info-dot"></span> ❌ 出場機制</div>
-                                    <div class="info-subcard-body">買進後我會先給它 3 天的寬容期，而且必須「出量」才會確認停損，這樣才不會隔天就被主力輕易洗出場～一旦開始賺錢了，系統就會幫我切換成「跌破前一日最低價」的移動停利模式，盡最大努力把利潤留住！不過為了控制風險，只要虧損達到 15% 就強制說掰掰。<br><b class="text-amber-300">「最長抱10天」這條規則只有在「已經賺錢」的情況下才會強制停利出場</b>，如果到第10天還沒賺錢，不會因為天數到了就被趕出場，還是會繼續用上面那些停損條件去判斷，這點容易被誤會，特別寫清楚。這些都會清楚標記在日線圖上喔。</div>
-                                </div>
-                                <div class="info-subcard">
-                                    <div class="info-subcard-title"><span class="info-dot"></span> 🔮「明日策略」按鈕</div>
-                                    <div class="info-subcard-body">這是我設計的輔助小幫手！它會用更簡單直覺的條件（站上日 20MA 且底下有日 100MA 撐腰保護）幫我偷偷試算現在是不是進場好時機。它會搭配 VCP 評分給我專屬的燈號建議，不過這只是個輔助參考，不能取代 VCP 評分的主要判斷喔！</div>
-                                </div>
-                                <div class="info-subcard">
-                                    <div class="info-subcard-title"><span class="info-dot"></span> 🎨 日線圖的顏色小秘密</div>
-                                    <div class="info-subcard-body">綠色 ▲ = 買進 ／ 紅色 ▼ = 停損 ／ 藍色 ▼ = 停利 ／ 青色線 = 布林通道（看不順眼可以關掉） ／ 黃色量棒 = 當日爆量（超過均量 1.5 倍的乖寶寶）。</div>
-                                </div>
-                            </div>
+ <div class="tide-card">
+ <button class="collapse-toggle w-full flex justify-between items-center p-4 text-left" data-target="tutorial-section-2">
+ <h3 class="info-heading-lg flex items-center gap-2"><i data-lucide="swords" class="w-4 h-4 text-brand-teal"></i> 我的專屬買賣策略小抄</h3>
+ <span class="chevron text-slate-400 text-xs">▾</span>
+ </button>
+ <div id="tutorial-section-2" class="hidden px-4 pb-4 space-y-3">
+ <div class="info-heading-md"> 日線 / VCP 短線策略</div>
+ <div class="space-y-2">
+ <div class="info-subcard">
+ <div class="info-subcard-title"><span class="info-dot"></span> 進場條件</div>
+ <div class="info-subcard-body">系統採用了 Minervini SEPA 量化評分（滿分 18 分）。只要分數拿到 8 分以上的及格分，加上當天「帶量突破 10 日高點」，我就會讓系統把它抓進場！(訊號當天收盤才確認，所以實際上是隔天才真正算進場，避免回測偷看到還沒發生的價格)</div>
+ </div>
+ <div class="info-subcard">
+ <div class="info-subcard-title"><span class="info-dot"></span> 出場機制</div>
+ <div class="info-subcard-body">買進後我會先給它 3 天的寬容期，而且必須「出量」才會確認停損，這樣才不會隔天就被主力輕易洗出場～一旦開始賺錢了，系統就會幫我切換成「跌破前一日最低價」的移動停利模式，盡最大努力把利潤留住！不過為了控制風險，只要虧損達到 15% 就強制說掰掰。<br><b class="text-amber-300">「最長抱10天」這條規則只有在「已經賺錢」的情況下才會強制停利出場</b>，如果到第10天還沒賺錢，不會因為天數到了就被趕出場，還是會繼續用上面那些停損條件去判斷，這點容易被誤會，特別寫清楚。這些都會清楚標記在日線圖上喔。</div>
+ </div>
+ <div class="info-subcard">
+ <div class="info-subcard-title"><span class="info-dot"></span> 「明日策略」按鈕</div>
+ <div class="info-subcard-body">這是我設計的輔助小幫手！它會用更簡單直覺的條件（站上日 20MA 且底下有日 100MA 撐腰保護）幫我偷偷試算現在是不是進場好時機。它會搭配 VCP 評分給我專屬的燈號建議，不過這只是個輔助參考，不能取代 VCP 評分的主要判斷喔！</div>
+ </div>
+ <div class="info-subcard">
+ <div class="info-subcard-title"><span class="info-dot"></span> 日線圖的顏色小秘密</div>
+ <div class="info-subcard-body">綠色 ▲ = 買進 ／ 紅色 ▼ = 停損 ／ 藍色 ▼ = 停利 ／ 青色線 = 布林通道（看不順眼可以關掉） ／ 黃色量棒 = 當日爆量（超過均量 1.5 倍的乖寶寶）。</div>
+ </div>
+ </div>
 
-                            <div class="info-heading-md pt-1">📅 長線波段策略</div>
-                            <div class="space-y-2">
-                                <div class="info-subcard">
-                                    <div class="info-subcard-title"><span class="info-dot"></span> ✅ 進場條件</div>
-                                    <div class="info-subcard-body">我設定了三種合格買點：①「盤整突破」：近期盤整後本週帶量衝出去！ ②「站上均線」：整根 K 棒努力從週 20MA 下方爬上來～ ③「爆量確認」：本來就乖乖待在均線上方，但本週突然爆發帶量。這三種都必須符合「當週成交量大於近 5 週均量」，太冷清的標的我不碰，免得追到假突破。盤整期間（高不過前高、低不過前低）只放行①突破，②③暫停判定，避免在盤整框裡反覆站上又跌破均線、白白被洗來洗去。②③這兩種買點還多了一條「均線斜率向上」的濾網——當週20MA要大於等於上週20MA才允許觸發，均線還在下彎時先不進場，免得被隨後的下彎均線雙巴。訊號當週收盤才確認，所以是隔週收盤才真正算進場。</div>
-                                </div>
-                                <div class="info-subcard">
-                                    <div class="info-subcard-title"><span class="info-dot"></span> ❌ 出場機制</div>
-                                    <div class="info-subcard-body">如果是「盤整突破」的型態，只要上漲達到我設定的目標（預設是 3%），系統就會提醒我開心停利；其他型態（站上均線、爆量確認）如果還沒賺錢，停損已經改用「跌破週20MA」動態判斷，不再是固定%數——這樣可以給股價合理的震盪空間，不容易在均線糾結的盤整區被微小波動誤觸發；一旦開始獲利，一樣會啟動「跌破前一週最低價」的移動停利法，盡量把利潤留住！這些標記都會畫在長線圖上。</div>
-                                </div>
-                            </div>
-                            <p class="text-slate-400 text-[12px] leading-relaxed">⚙️ 小叮嚀：上面提到的所有門檻（像是盤整的寬鬆度、爆量要幾倍、停損/停利的 % 數），我都有把它們做成彈性的參數！隨時可以點擊網頁最上方導覽列的「⚙️ 設定」齒輪，依照我當下的心情跟市況自由微調喔。</p>
-                        </div>
-                    </div>
+ <div class="info-heading-md pt-1"> 長線波段策略</div>
+ <div class="space-y-2">
+ <div class="info-subcard">
+ <div class="info-subcard-title"><span class="info-dot"></span> 進場條件</div>
+ <div class="info-subcard-body">我設定了三種合格買點：①「盤整突破」：近期盤整後本週帶量衝出去！ ②「站上均線」：整根 K 棒努力從週 20MA 下方爬上來～ ③「爆量確認」：本來就乖乖待在均線上方，但本週突然爆發帶量。這三種都必須符合「當週成交量大於近 5 週均量」，太冷清的標的我不碰，免得追到假突破。盤整期間（高不過前高、低不過前低）只放行①突破，②③暫停判定，避免在盤整框裡反覆站上又跌破均線、白白被洗來洗去。②③這兩種買點還多了一條「均線斜率向上」的濾網——當週20MA要大於等於上週20MA才允許觸發，均線還在下彎時先不進場，免得被隨後的下彎均線雙巴。訊號當週收盤才確認，所以是隔週收盤才真正算進場。</div>
+ </div>
+ <div class="info-subcard">
+ <div class="info-subcard-title"><span class="info-dot"></span> 出場機制</div>
+ <div class="info-subcard-body">如果是「盤整突破」的型態，只要上漲達到我設定的目標（預設是 3%），系統就會提醒我開心停利；其他型態（站上均線、爆量確認）如果還沒賺錢，停損已經改用「跌破週20MA」動態判斷，不再是固定%數——這樣可以給股價合理的震盪空間，不容易在均線糾結的盤整區被微小波動誤觸發；一旦開始獲利，一樣會啟動「跌破前一週最低價」的移動停利法，盡量把利潤留住！這些標記都會畫在長線圖上。</div>
+ </div>
+ </div>
+ <p class="text-slate-400 text-[12px] leading-relaxed"> 小叮嚀：上面提到的所有門檻（像是盤整的寬鬆度、爆量要幾倍、停損/停利的 % 數），我都有把它們做成彈性的參數！隨時可以點擊網頁最上方導覽列的「 設定」齒輪，依照我當下的心情跟市況自由微調喔。</p>
+ </div>
+ </div>
 
-                    <div class="tide-card">
-                        <button class="collapse-toggle w-full flex justify-between items-center p-4 text-left" data-target="tutorial-section-pwa">
-                            <h3 class="info-heading-lg flex items-center gap-2"><i data-lucide="smartphone" class="w-4 h-4 text-brand-teal"></i> 📱 加入手機主畫面(App模式)</h3>
-                            <span class="chevron text-slate-400 text-xs">▾</span>
-                        </button>
-                        <div id="tutorial-section-pwa" class="hidden px-4 pb-4 space-y-3 text-[13px]">
-                            <div class="bg-amber-900/20 border border-amber-500/30 rounded-lg p-3">
-                                <p class="text-amber-200 text-xs">⚠️ 用 Google App、Line、Messenger等內嵌瀏覽器打開這個網址，沒辦法加入主畫面。請先用 <b>Safari</b>(iPhone) 或 <b>Chrome</b>(Android) 開啟這個網址再操作。</p>
-                            </div>
-                            <div class="info-subcard">
-                                <div class="info-subcard-title"><span class="info-dot"></span> <i data-lucide="apple" class="w-4 h-4 text-slate-300"></i> iPhone (Safari)</div>
-                                <div class="info-subcard-body">① 點擊底部工具列的「分享」按鈕(方框+箭頭往上) → ② 向下滑動，點擊「加入主畫面」。</div>
-                            </div>
-                            <div class="info-subcard">
-                                <div class="info-subcard-title"><span class="info-dot"></span> <i data-lucide="smartphone" class="w-4 h-4 text-brand-down"></i> Android (Chrome)</div>
-                                <div class="info-subcard-body">點擊右上角選單(⋮) → 選擇「加入主畫面」。</div>
-                            </div>
-                            <p class="text-slate-500 text-xs">只需一秒鐘，即可將潮汐指標變成手機裡的專屬看盤App，享受全螢幕的沉浸式體驗。</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+ <div class="tide-card">
+ <button class="collapse-toggle w-full flex justify-between items-center p-4 text-left" data-target="tutorial-section-pwa">
+ <h3 class="info-heading-lg flex items-center gap-2"><i data-lucide="smartphone" class="w-4 h-4 text-brand-teal"></i> 加入手機主畫面(App模式)</h3>
+ <span class="chevron text-slate-400 text-xs">▾</span>
+ </button>
+ <div id="tutorial-section-pwa" class="hidden px-4 pb-4 space-y-3 text-[13px]">
+ <div class="bg-amber-900/20 border border-amber-500/30 rounded-lg p-3">
+ <p class="text-amber-200 text-xs"> 用 Google App、Line、Messenger等內嵌瀏覽器打開這個網址，沒辦法加入主畫面。請先用 <b>Safari</b>(iPhone) 或 <b>Chrome</b>(Android) 開啟這個網址再操作。</p>
+ </div>
+ <div class="info-subcard">
+ <div class="info-subcard-title"><span class="info-dot"></span> <i data-lucide="apple" class="w-4 h-4 text-slate-300"></i> iPhone (Safari)</div>
+ <div class="info-subcard-body">① 點擊底部工具列的「分享」按鈕(方框+箭頭往上) → ② 向下滑動，點擊「加入主畫面」。</div>
+ </div>
+ <div class="info-subcard">
+ <div class="info-subcard-title"><span class="info-dot"></span> <i data-lucide="smartphone" class="w-4 h-4 text-brand-down"></i> Android (Chrome)</div>
+ <div class="info-subcard-body">點擊右上角選單(⋮) → 選擇「加入主畫面」。</div>
+ </div>
+ <p class="text-slate-500 text-xs">只需一秒鐘，即可將潮汐指標變成手機裡的專屬看盤App，享受全螢幕的沉浸式體驗。</p>
+ </div>
+ </div>
+ </div>
+ </div>
+ </div>
 
-        <!-- 掃描分頁 -->
+ <!-- 掃描分頁 -->
         <div id="panel-scan" class="absolute inset-0 hidden overflow-y-auto p-4 hide-scroll bg-brand-bg">
             <div class="max-w-3xl mx-auto space-y-4">
                 <div class="glass-panel rounded-xl overflow-hidden text-xs text-slate-300 leading-relaxed">
@@ -2922,7 +2994,7 @@
             if (!marketLightCache || !lastWindIndexResult) {
                 el.innerHTML = `
                 <div class="y2k-box">
-                    <div class="y2k-header"><span>【今日/明日動態評估模組】</span><span class="y2k-blink">●</span></div>
+                    <div class="y2k-header"><span>【台美股連動 動態策略評估模組】</span><span class="y2k-blink">●</span></div>
                     <div class="y2k-body text-slate-500">資料計算中，洋流與風力數據齊備後會自動顯示策略...</div>
                 </div>`;
                 return;
@@ -2960,10 +3032,11 @@
             el.innerHTML = `
             <div class="y2k-box">
                 <div class="y2k-header">
-                    <span>【今日/明日動態評估模組】</span>
+                    <span>【台美股連動 動態策略評估模組】</span>
                     <span class="flex items-center gap-1"><span class="y2k-blink">●</span>07:00／17:00</span>
                 </div>
                 <div class="y2k-body">
+                    <div class="text-[9.5px] text-slate-500 mb-1 tracking-wide">美股風向 ⨉ 台股大盤</div>
                     <div class="text-white font-bold mb-1">${title}</div>
                     <div>${body}</div>
                 </div>
@@ -4232,6 +4305,25 @@
                     ${miniCard('QQQ', 'qqq', false)}
                     ${miniCard('SOX', 'sox', false)}
                 </div>`;
+            updateVixThermometer(us && us.vix ? us.vix.price : null);
+        }
+        // VIX動態流體溫度計：<20冰藍/青綠，20~30橘黃警戒，>30螢光紅恐慌；液面高度依VIX數值對應0~40的範圍縮放
+        function updateVixThermometer(vix) {
+            const card = document.getElementById('vix-mini-card');
+            const liquid = document.getElementById('vix-tube-liquid');
+            const valueEl = document.getElementById('vix-mini-value');
+            if (!card || !liquid) return;
+            if (vix === null || vix === undefined || !isFinite(vix)) {
+                if (valueEl) valueEl.textContent = '--';
+                return;
+            }
+            const pct = Math.max(8, Math.min(100, (vix / 40) * 100));
+            liquid.style.height = pct + '%';
+            card.classList.remove('vix-tier-calm', 'vix-tier-watch', 'vix-tier-panic');
+            if (vix < 20) card.classList.add('vix-tier-calm');
+            else if (vix <= 30) card.classList.add('vix-tier-watch');
+            else card.classList.add('vix-tier-panic');
+            if (valueEl) valueEl.textContent = vix.toFixed(1);
         }
         async function renderMarketWindPanel() {
             try {
@@ -5164,6 +5256,41 @@
             });
             document.getElementById('wind-index-modal').addEventListener('click', (e) => {
                 if (e.target.id === 'wind-index-modal') document.getElementById('wind-index-modal').classList.add('hidden');
+            });
+            const US_INDICATOR_INFO = {
+                sox: {
+                    title: 'SOX 費城半導體指數：台股的生命線',
+                    body: '台灣擁有完整的半導體產業鏈，台積電更是佔了台股極大的權重。SOX的漲跌幾乎會以高度正相關的方式，直接反映在隔天的台股大盤，對於追蹤大盤指數的市值型資產(如0050)影響最為劇烈。'
+                },
+                qqq: {
+                    title: 'QQQ 那斯達克100 ETF：科技股風向球',
+                    body: 'QQQ集中了美國頂尖的科技巨頭(如蘋果、微軟、NVIDIA等)，而台灣正是這些巨頭背後重要的硬體代工與零組件供應商。當QQQ表現強勢，台灣的電子零組件與科技類股通常也會受惠，這對科技主題的資產(如00929)是一大動能。'
+                },
+                spy: {
+                    title: 'SPY 標普500 ETF：全球經濟晴雨表',
+                    body: '代表美國500家大型企業，反映美國整體的經濟健康度。當SPY穩定向上，代表全球資金充裕、景氣樂觀，外資更有意願投入台股，同時也能支撐具備穩定殖利率的大型權值股或高股息資產(如00878)。'
+                },
+                vix: {
+                    title: 'VIX 恐慌指數：外資的風險溫度計',
+                    body: '衡量市場對未來波動的預期。當VIX飆高(通常大於20甚至30)，代表市場陷入恐慌，此時外資為了避險，往往會將資金從新興市場(包含台灣)快速抽離，導致台股無差別下跌。'
+                }
+            };
+            document.querySelectorAll('.us-indicator-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const key = btn.dataset.indicator;
+                    const info = US_INDICATOR_INFO[key];
+                    if (!info) return;
+                    document.getElementById('us-indicator-modal-title').innerHTML = `<i data-lucide="info" class="w-5 h-5 text-brand-cyan"></i> ${info.title.split('：')[0]}`;
+                    document.getElementById('us-indicator-modal-content').innerHTML = `<div class="text-white font-bold text-[14px] mb-2">${info.title}</div><p>${info.body}</p>`;
+                    document.getElementById('us-indicator-modal').classList.remove('hidden');
+                    safeLucideIcons({ root: document.getElementById('us-indicator-modal') });
+                });
+            });
+            document.getElementById('us-indicator-modal-close').addEventListener('click', () => {
+                document.getElementById('us-indicator-modal').classList.add('hidden');
+            });
+            document.getElementById('us-indicator-modal').addEventListener('click', (e) => {
+                if (e.target.id === 'us-indicator-modal') document.getElementById('us-indicator-modal').classList.add('hidden');
             });
         });
     </script>
