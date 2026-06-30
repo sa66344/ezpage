@@ -164,29 +164,37 @@
         .y2k-body { padding: 9px 11px; font-size: 11px; line-height: 1.65; color: #cbd5e1; }
         .y2k-body b { color: #fff; }
 
-        /* ============ VIX動態流體溫度計 + 美股指標小說明格 ============ */
-        .indicator-mini-card {
+        /* ============ 美股關鍵指標：數據＋說明合一卡片網格(Swiss Design + Glassmorphism) ============ */
+        .usic-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+        .usic-card {
+            position: relative; overflow: hidden; border-radius: 12px; padding: 10px 11px;
             background: linear-gradient(160deg, rgba(15,33,59,0.6), rgba(6,14,27,0.7));
             backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.08); border-radius: 12px;
-            padding: 9px 10px; text-align: left; transition: border-color .2s ease, transform .15s ease;
+            border: 1px solid rgba(255,255,255,0.08);
+            display: flex; flex-direction: column; justify-content: space-between; gap: 10px;
+            min-height: 78px;
         }
-        .indicator-mini-card:active { transform: scale(0.98); }
-        .indicator-mini-card:hover { border-color: rgba(0,242,254,0.35); }
-        .indicator-mini-title { font-size: 11px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 5px; margin-bottom: 2px; }
-        .indicator-mini-sub { font-size: 9.5px; color: #64748b; }
-        .vix-tube-wrap { display: flex; align-items: center; gap: 10px; }
+        .usic-card-top { display: flex; align-items: flex-start; gap: 6px; }
+        .usic-title { font-size: 11.5px; font-weight: 700; color: #fff; line-height: 1.2; }
+        .usic-sub { font-size: 9.5px; color: #64748b; margin-top: 1px; }
+        .usic-data { display: flex; align-items: baseline; justify-content: flex-end; gap: 6px; }
+        .usic-value { font-family: 'SF Mono','Roboto Mono','Courier New',monospace; font-weight: 800; font-size: 16px; letter-spacing: -0.02em; color: #e2e8f0; }
+        .usic-chg { font-family: 'SF Mono','Roboto Mono','Courier New',monospace; font-weight: 700; font-size: 11px; }
+        .usic-chg--up { color: #ff6b6e; text-shadow: 0 0 7px rgba(255,77,79,0.65); }
+        .usic-chg--down { color: #2dffa0; text-shadow: 0 0 7px rgba(0,230,118,0.6); }
+        .usic-card--vix { grid-column: 1 / -1; flex-direction: row; align-items: center; gap: 12px; }
+        .vix-tube-wrap { display: flex; align-items: center; gap: 12px; flex: 1; }
         .vix-tube {
-            position: relative; width: 22px; height: 64px; border-radius: 11px;
+            position: relative; width: 20px; height: 56px; border-radius: 10px; flex-shrink: 0;
             background: rgba(255,255,255,0.04);
-            border: 1px solid rgba(255,255,255,0.25);
+            border: 1px solid rgba(255,255,255,0.28);
             backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
             overflow: hidden;
-            box-shadow: inset 0 0 6px rgba(255,255,255,0.08), 0 0 10px -4px rgba(0,0,0,0.6);
+            box-shadow: inset 0 0 6px rgba(255,255,255,0.1), inset -2px 0 4px rgba(255,255,255,0.08), 0 0 10px -4px rgba(0,0,0,0.6);
         }
         .vix-tube-liquid {
             position: absolute; left: 0; right: 0; bottom: 0; height: 30%;
-            border-radius: 0 0 10px 10px;
+            border-radius: 0 0 9px 9px;
             transition: height .6s ease, background .6s ease;
             background: linear-gradient(180deg, rgba(0,242,254,0.9), rgba(79,172,254,0.95));
         }
@@ -199,6 +207,7 @@
         .vix-tier-calm .vix-tube-liquid { background: linear-gradient(180deg, rgba(0,242,254,0.9), rgba(79,172,254,0.95)); }
         .vix-tier-watch .vix-tube-liquid { background: linear-gradient(180deg, rgba(255,200,80,0.95), rgba(251,146,60,0.95)); }
         .vix-tier-panic .vix-tube-liquid { background: linear-gradient(180deg, rgba(255,120,120,0.95), rgba(220,38,38,0.95)); box-shadow: 0 0 14px 1px rgba(239,68,68,0.6); }
+        @media (max-width: 380px) { .usic-grid { grid-template-columns: 1fr; } }
 
         /* Toast */
         .toast { transition: opacity 0.3s, transform 0.3s; opacity: 0; transform: translateY(-20px); pointer-events: none; }
@@ -527,6 +536,33 @@
         <!-- 日線分頁 -->
         <div id="panel-dashboard" class="absolute inset-0 overflow-y-auto p-4 hide-scroll bg-brand-bg space-y-3">
             <div id="today-tomorrow-module"></div>
+            <div id="today-tomorrow-info-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-brand-bg/80 backdrop-blur-sm">
+                <div class="neon-glass-card w-full max-w-sm max-h-[85vh] overflow-y-auto">
+                    <div class="flex items-center justify-between p-4 border-b border-white/10 sticky top-0 bg-brand-card/90 backdrop-blur z-10">
+                        <h3 class="text-white font-bold flex items-center gap-2 text-sm"><i data-lucide="terminal" class="w-4 h-4 text-brand-cyan"></i> 系統運作邏輯說明</h3>
+                        <button id="today-tomorrow-info-close" class="text-slate-400 hover:text-white p-1"><i data-lucide="x" class="w-5 h-5"></i></button>
+                    </div>
+                    <div class="p-4 space-y-4 text-[12.5px] text-slate-300 leading-relaxed">
+                        <div>
+                            <div class="text-white font-bold text-[13px] mb-1.5 flex items-center gap-1.5"><i data-lucide="clock" class="w-3.5 h-3.5 text-brand-cyan"></i> 為什麼台股看17:00？</div>
+                            <div class="grid gap-1.5">
+                                <div class="flex items-start gap-1.5"><span class="geo-dot mt-1.5"></span><span><b class="text-white">13:30 表面收盤：</b>指數與股價固定，但無法反映真實籌碼動向。</span></div>
+                                <div class="flex items-start gap-1.5"><span class="geo-dot mt-1.5"></span><span><b class="text-white">15:00～16:30 籌碼公布：</b>證交所陸續釋出三大法人買賣超、融資券餘額等關鍵內部數據。</span></div>
+                                <div class="flex items-start gap-1.5"><span class="geo-dot mt-1.5"></span><span><b class="text-white">17:00 最終確認：</b>所有數據結算並匯入系統。此時計算的「大盤燈號」能徹底過濾盤中假動作，具備最高決策價值。</span></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="text-white font-bold text-[13px] mb-1.5 flex items-center gap-1.5"><i data-lucide="wind" class="w-3.5 h-3.5 text-amber-300"></i> 什麼是連動風力？</div>
+                            <p class="mb-1.5">針對台股高度依賴外資的「淺碟市場」特性，所量身打造的風險預警指標。</p>
+                            <div class="grid gap-1.5">
+                                <div class="flex items-start gap-1.5"><span class="geo-dot mt-1.5"></span><span><b class="text-white">運算核心：</b>VIX恐慌指數(40%) + SPY/QQQ漲跌幅與乖離率(60%)。</span></div>
+                                <div class="flex items-start gap-1.5"><span class="geo-dot mt-1.5"></span><span><b class="text-white">風力飆高(避險提款)：</b>美股動盪，外資隔日極大概率將台股作為提款機，此時進場極易接刀，應拉高現金水位。</span></div>
+                                <div class="flex items-start gap-1.5"><span class="geo-dot mt-1.5"></span><span><b class="text-white">風力降溫(訊號回穩)：</b>美股止跌、恐慌回落。外資情緒穩定後，才是動用保留現金進場佈局的高勝率時機。</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <div class="flex items-center justify-between">
                 <h2 class="text-white font-bold text-lg flex items-center gap-2"><i data-lucide="layout-dashboard" class="w-5 h-5 text-brand-cyan"></i> 我的追蹤總覽</h2>
                 <button id="dashboard-refresh-btn" class="flex items-center gap-1 bg-brand-card text-slate-300 border border-brand-border px-2.5 py-1.5 rounded-lg transition hover:bg-slate-700 text-xs">
@@ -534,56 +570,20 @@
                 </button>
             </div>
 
-            <div class="grid grid-cols-2 gap-3">
-                <button id="wind-index-compact-btn" class="tide-card p-3 text-left active:scale-[0.99] transition flex flex-col">
-                    <div class="flex items-center justify-between mb-1">
-                        <h3 class="text-white font-bold text-xs flex items-center gap-1"><i data-lucide="gauge" class="w-3.5 h-3.5 text-brand-cyan"></i> 連動風力</h3>
-                        <span class="text-[9px] text-brand-cyan flex items-center">詳情<i data-lucide="chevron-right" class="w-3 h-3"></i></span>
-                    </div>
-                    <div id="wind-index-compact-content" class="flex-1">
-                        <p class="text-slate-500 text-[10px] py-2">計算中...</p>
-                    </div>
-                </button>
-
-                <div class="tide-card p-3 flex flex-col">
-                    <div class="text-white font-bold text-xs flex items-center gap-1 mb-1"><i data-lucide="trending-up" class="w-3.5 h-3.5 text-brand-cyan"></i> 美股關鍵指標</div>
-                    <div id="market-wind-us" class="flex-1"><p class="text-slate-500 text-[10px] py-2">載入中...</p></div>
+            <button id="wind-index-compact-btn" class="tide-card p-3 text-left active:scale-[0.99] transition flex flex-col w-full">
+                <div class="flex items-center justify-between mb-1">
+                    <h3 class="text-white font-bold text-xs flex items-center gap-1"><i data-lucide="gauge" class="w-3.5 h-3.5 text-brand-cyan"></i> 連動風力</h3>
+                    <span class="text-[9px] text-brand-cyan flex items-center">詳情<i data-lucide="chevron-right" class="w-3 h-3"></i></span>
                 </div>
-            </div>
+                <div id="wind-index-compact-content" class="flex-1">
+                    <p class="text-slate-500 text-[10px] py-2">計算中...</p>
+                </div>
+            </button>
 
-            <div class="grid grid-cols-2 gap-2">
-                <button class="indicator-mini-card us-indicator-btn" data-indicator="sox">
-                    <div class="indicator-mini-title"><i data-lucide="cpu" class="w-3 h-3 text-brand-cyan"></i> SOX 費半指數</div>
-                    <div class="indicator-mini-sub">台股的生命線</div>
-                </button>
-                <button class="indicator-mini-card us-indicator-btn" data-indicator="qqq">
-                    <div class="indicator-mini-title"><i data-lucide="zap" class="w-3 h-3 text-brand-cyan"></i> QQQ 那斯達克100</div>
-                    <div class="indicator-mini-sub">科技股風向球</div>
-                </button>
-                <button class="indicator-mini-card us-indicator-btn" data-indicator="spy">
-                    <div class="indicator-mini-title"><i data-lucide="globe" class="w-3 h-3 text-brand-cyan"></i> SPY 標普500</div>
-                    <div class="indicator-mini-sub">全球經濟晴雨表</div>
-                </button>
-                <button class="indicator-mini-card us-indicator-btn vix-tier-calm" id="vix-mini-card" data-indicator="vix">
-                    <div class="vix-tube-wrap">
-                        <div class="vix-tube"><div class="vix-tube-liquid" id="vix-tube-liquid" style="height:30%"></div></div>
-                        <div>
-                            <div class="indicator-mini-title">VIX 恐慌指數</div>
-                            <div class="indicator-mini-sub">外資的風險溫度計</div>
-                            <div class="text-[10px] font-mono-num text-slate-300 mt-0.5" id="vix-mini-value">--</div>
-                        </div>
-                    </div>
-                </button>
-            </div>
-
-            <!-- 美股指標說明彈窗 -->
-            <div id="us-indicator-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-brand-bg/80 backdrop-blur-sm">
-                <div class="bg-brand-card border border-brand-border rounded-2xl w-full max-w-sm max-h-[85vh] overflow-y-auto">
-                    <div class="flex items-center justify-between p-4 border-b border-brand-border sticky top-0 bg-brand-card z-10">
-                        <h3 id="us-indicator-modal-title" class="text-white font-bold flex items-center gap-2"><i data-lucide="info" class="w-5 h-5 text-brand-cyan"></i> 指標說明</h3>
-                        <button id="us-indicator-modal-close" class="text-slate-400 hover:text-white p-1"><i data-lucide="x" class="w-5 h-5"></i></button>
-                    </div>
-                    <div id="us-indicator-modal-content" class="p-4 text-[13px] text-slate-300 leading-relaxed"></div>
+            <div>
+                <div class="text-white font-bold text-xs flex items-center gap-1 mb-1.5"><i data-lucide="trending-up" class="w-3.5 h-3.5 text-brand-cyan"></i> 美股關鍵指標</div>
+                <div id="market-wind-us" class="usic-grid">
+                    <p class="text-slate-500 text-[10px] py-2">載入中...</p>
                 </div>
             </div>
 
@@ -3007,33 +3007,37 @@
 
             let title, body;
             if (isBull && wind <= 2.5) {
-                title = '長線洋流穩健・海面天氣晴朗';
-                body = `<b>今日策略：</b>適合動用保留資金，針對核心資產於例行扣款外逢低加碼。<br><b>明日觀察：</b>持續鎖定上午07:00美股收盤數據，若風力維持低水位，多頭慣性將延續。`;
+                title = '台股大環境很好，昨晚外資也沒什麼避險情緒';
+                body = `<b>今日策略：</b>手上的存股或強勢股安心抱著。如果有閒錢，今天很適合挑好股票，或是針對0050、00878逢低買進。<br><b>明日觀察：</b>只要早上系統的「風力」沒有突然飆高，就可以繼續放心抱牢。`;
             } else if (isBull && wind <= 5.0) {
-                title = '長線洋流穩健・但海面風浪逐漸增強';
-                body = `<b>今日策略：</b>核心部位按兵不動，暫停一切手動加碼，保留現金。<br><b>明日觀察：</b>嚴格鎖定明日上午07:00美股結算分數，觀察強風是否減弱，再決定是否釋放資金。`;
+                title = '台股大趨勢還在，但昨晚海外有點動盪，今天台股盤中可能會跟著上下刷洗';
+                body = `<b>今日策略：</b>原本買好的台股放著就好，但今天先忍住不要加碼，留點現金在手上看戲。<br><b>明日觀察：</b>等明天早上外資情緒(風力分數)穩定了，再來決定要不要動用現金。`;
             } else if (isBull && wind <= 7.5) {
-                title = '長線洋流依然向前・但短線遭遇美股劇烈亂流';
-                body = `<b>今日策略：</b>核心存股部位勿恐慌清倉，但短線波段部位建議果斷減碼20-30%提高現金水位。<br><b>明日觀察：</b>觀察明日上午07:00美股能否止跌。台股開盤後，進一步鎖定下午17:00盤後籌碼結算，確認長線洋流(雙均線)是否遭到破壞。`;
+                title = '台股長線還撐著，但昨晚美股大跌，今天台股很高機率會被外資無差別提款';
+                body = `<b>今日策略：</b>長線存股不用管它；但如果是做短線賺價差的個股，今天趁有反彈建議先賣掉2到3成，收點現金回來保護自己。<br><b>明日觀察：</b>下午5點確認台股收盤，看大盤有沒有被外資賣到跌破長線均線(破壞大趨勢)。`;
             } else if (isBull) {
-                title = '極端氣候出現・全球市場陷入恐慌';
-                body = `<b>今日策略：</b>全面啟動防禦機制，短線部位嚴格執行止損，嚴禁任何接刀或摸底行為。<br><b>明日觀察：</b>靜待每日上午07:00恐慌指數(VIX)降溫，在風暴過去前，保持最高現金比率。`;
+                title = '全球市場大恐慌，今天台股開盤大概率跟著重挫';
+                body = `<b>今日策略：</b>保護本金最重要！做短線的該停損就果斷砍，絕對不要看台股大跌就覺得好便宜跑去接刀子。<br><b>明日觀察：</b>在系統風力降下來之前，現金留越多越好，空手等待風暴過去。`;
             } else if (isTransition && wind <= 5.0) {
-                title = '短線動能轉弱・長線支撐測試中(洋流進入紊亂緩衝區)';
-                body = `<b>今日策略：</b>核心資產之定期定額維持紀律扣款。手動資金退場觀望，嚴禁提早盲目摸底。<br><b>明日觀察：</b>每日下午17:00鎖定台股盤後均線位置，觀察加權指數是否在100MA(長線海床)附近獲得實質支撐，屆時再評估小額分批試單。`;
+                title = '台股大盤目前卡關，正在往下尋找支撐，方向不明確';
+                body = `<b>今日策略：</b>高股息或市值型ETF的「定期定額」繼續扣款。但其他個股先別急著買，現金抓緊，不要盲目摸底。<br><b>明日觀察：</b>每天下午5點看台股收盤，等指數慢慢跌到100MA(長線支撐)附近，確定有守住再來考慮小額試單。`;
             } else if (isTransition) {
-                title = '趨勢混沌且遭遇海外強烈氣旋・大盤破底風險極高';
-                body = `<b>今日策略：</b>全面保守觀望，短線部位應果斷降低水位，保留最大現金流。<br><b>明日觀察：</b>雙重鎖定上午07:00美股跌勢是否止穩、以及下午17:00台股收盤是否跌破100MA。在雙重訊號明朗前，絕不輕舉妄動。`;
+                title = '台股本來就不穩，加上昨晚海外亂流，今天大盤非常容易直接破底';
+                body = `<b>今日策略：</b>最高防禦狀態！短線部位果斷減碼退場，滿手現金最安全，嚴禁任何買進動作。<br><b>明日觀察：</b>下午5點確認台股是否跌破長線均線。在殺盤訊號停止前，什麼都不要做。`;
             } else {
                 // 大盤燈號空頭(綠燈)時的保守保底策略(原文案未涵蓋此情境，依同一套邏輯內插)
-                title = isBear && wind <= 5.0 ? '長線洋流偏空・短線風浪尚可控' : '長線洋流偏空・短線風浪亦不平靜';
-                body = `<b>今日策略：</b>整體位階偏空，手動加碼一律暫停，僅維持極小比例定期定額紀律扣款，現金為王。<br><b>明日觀察：</b>持續鎖定上午07:00美股動向、下午17:00台股收盤位階，等待長線洋流(雙均線)由空翻多的訊號出現再轉趨積極。`;
+                title = isBear && wind <= 5.0 ? '台股長線位階偏空，短線風浪還算可控' : '台股長線位階偏空，短線風浪也不平靜';
+                body = `<b>今日策略：</b>整體位階偏空，手動加碼一律暫停，僅維持極小比例定期定額紀律扣款，現金為王。<br><b>明日觀察：</b>持續鎖定上午外資動向、下午台股收盤位階，等待長線趨勢由空翻多的訊號出現再轉趨積極。`;
             }
+            const updatedAt = new Date().toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' });
             el.innerHTML = `
             <div class="y2k-box">
                 <div class="y2k-header">
-                    <span>【台美股連動 動態策略評估模組】</span>
-                    <span class="flex items-center gap-1"><span class="y2k-blink">●</span>07:00／17:00</span>
+                    <span class="flex items-center gap-1.5">【台美股連動 動態策略評估模組】<button id="today-tomorrow-info-btn" class="text-brand-cyan/80 hover:text-brand-cyan" title="系統運作邏輯說明"><i data-lucide="circle-help" class="w-3 h-3"></i></button></span>
+                    <span class="flex items-center gap-1.5 shrink-0">
+                        <span class="y2k-blink">●</span>更新於${updatedAt}
+                        <button id="today-tomorrow-refresh-btn" class="text-brand-cyan/80 hover:text-brand-cyan" title="重新整理"><i data-lucide="refresh-cw" class="w-3 h-3"></i></button>
+                    </span>
                 </div>
                 <div class="y2k-body">
                     <div class="text-[9.5px] text-slate-500 mb-1 tracking-wide">美股風向 ⨉ 台股大盤</div>
@@ -3041,6 +3045,21 @@
                     <div>${body}</div>
                 </div>
             </div>`;
+            safeLucideIcons({ root: el });
+            const refreshBtn = document.getElementById('today-tomorrow-refresh-btn');
+            if (refreshBtn) refreshBtn.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                refreshBtn.classList.add('animate-spin');
+                await loadMarketLight();
+                await renderWindIndexCard();
+                refreshBtn.classList.remove('animate-spin');
+            });
+            const infoBtn = document.getElementById('today-tomorrow-info-btn');
+            if (infoBtn) infoBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const modal = document.getElementById('today-tomorrow-info-modal');
+                if (modal) modal.classList.remove('hidden');
+            });
         }
 
         // ============ 個股燈號(套用跟大盤燈號同一套公式，但用這檔股票自己的日20/100MA) ============
@@ -4285,45 +4304,69 @@
             </svg>`;
         }
         let lastUsSnapshot = null; // 快取美股資料，避免大盤燈號算完後重畫台股區塊時，重複再打一次美股API
+        const US_INDICATOR_META = {
+            sox: { title: 'SOX 費半指數', sub: '台股的生命線', icon: 'cpu' },
+            qqq: { title: 'QQQ 那斯達克100', sub: '科技股風向球', icon: 'zap' },
+            spy: { title: 'SPY 標普500', sub: '全球經濟晴雨表', icon: 'globe' },
+            vix: { title: 'VIX 恐慌指數', sub: '外資的風險溫度計', icon: 'thermometer' },
+        };
         function renderUsMiniCards(us) {
             const usEl = document.getElementById('market-wind-us');
             if (!usEl) return;
-            const miniCard = (label, key, isVix) => {
+            const dataBlock = (key) => {
                 const d = us && us[key];
-                const cls = !d ? 'text-slate-500' : isVix ? (d.price > 20 ? 'text-red-400' : 'text-green-400') : (d.chgPct >= 0 ? 'text-red-400' : 'text-green-400');
+                const meta = US_INDICATOR_META[key];
+                const isVix = key === 'vix';
+                const up = d ? (isVix ? d.chgPct >= 0 : d.chgPct >= 0) : null;
+                const chgCls = d && d.chgPct !== null ? (up ? 'usic-chg--up' : 'usic-chg--down') : '';
+                const chgText = d && d.chgPct !== null ? `${d.chgPct >= 0 ? '+' : ''}${d.chgPct.toFixed(1)}%` : '--';
+                if (isVix) {
+                    return `
+                    <div class="usic-card usic-card--vix vix-tier-calm" id="vix-mini-card">
+                        <div class="vix-tube-wrap">
+                            <div class="vix-tube"><div class="vix-tube-liquid" id="vix-tube-liquid" style="height:30%"></div></div>
+                            <div>
+                                <div class="usic-title">${meta.title}</div>
+                                <div class="usic-sub">${meta.sub}</div>
+                            </div>
+                        </div>
+                        <div class="usic-data">
+                            <span class="usic-value">${d ? fmt(d.price, 1) : '--'}</span>
+                            <span class="usic-chg ${chgCls}">${chgText}</span>
+                        </div>
+                    </div>`;
+                }
                 return `
-                <div class="bg-brand-bg/70 border border-brand-border rounded-md px-1.5 py-1.5 text-center">
-                    <div class="text-[9px] text-slate-500 truncate">${label}</div>
-                    <div class="${cls} font-mono-num font-bold text-xs">${d ? fmt(d.price, 1) : '--'}</div>
-                    <div class="${cls} font-mono-num text-[9px]">${d && d.chgPct !== null ? `${d.chgPct >= 0 ? '+' : ''}${d.chgPct.toFixed(1)}%` : ''}</div>
+                <div class="usic-card">
+                    <div class="usic-card-top">
+                        <i data-lucide="${meta.icon}" class="w-3.5 h-3.5 text-brand-cyan shrink-0 mt-0.5"></i>
+                        <div>
+                            <div class="usic-title">${meta.title}</div>
+                            <div class="usic-sub">${meta.sub}</div>
+                        </div>
+                    </div>
+                    <div class="usic-data">
+                        <span class="usic-value">${d ? fmt(d.price, 1) : '--'}</span>
+                        <span class="usic-chg ${chgCls}">${chgText}</span>
+                    </div>
                 </div>`;
             };
-            usEl.innerHTML = `
-                <div class="grid grid-cols-2 gap-1.5">
-                    ${miniCard('VIX', 'vix', true)}
-                    ${miniCard('SPY', 'spy', false)}
-                    ${miniCard('QQQ', 'qqq', false)}
-                    ${miniCard('SOX', 'sox', false)}
-                </div>`;
+            usEl.innerHTML = `${dataBlock('sox')}${dataBlock('qqq')}${dataBlock('spy')}${dataBlock('vix')}`;
             updateVixThermometer(us && us.vix ? us.vix.price : null);
+            safeLucideIcons({ root: usEl });
         }
         // VIX動態流體溫度計：<20冰藍/青綠，20~30橘黃警戒，>30螢光紅恐慌；液面高度依VIX數值對應0~40的範圍縮放
         function updateVixThermometer(vix) {
             const card = document.getElementById('vix-mini-card');
             const liquid = document.getElementById('vix-tube-liquid');
-            const valueEl = document.getElementById('vix-mini-value');
             if (!card || !liquid) return;
-            if (vix === null || vix === undefined || !isFinite(vix)) {
-                if (valueEl) valueEl.textContent = '--';
-                return;
-            }
+            if (vix === null || vix === undefined || !isFinite(vix)) return;
             const pct = Math.max(8, Math.min(100, (vix / 40) * 100));
             liquid.style.height = pct + '%';
             card.classList.remove('vix-tier-calm', 'vix-tier-watch', 'vix-tier-panic');
             if (vix < 20) card.classList.add('vix-tier-calm');
             else if (vix <= 30) card.classList.add('vix-tier-watch');
             else card.classList.add('vix-tier-panic');
-            if (valueEl) valueEl.textContent = vix.toFixed(1);
         }
         async function renderMarketWindPanel() {
             try {
@@ -5257,40 +5300,11 @@
             document.getElementById('wind-index-modal').addEventListener('click', (e) => {
                 if (e.target.id === 'wind-index-modal') document.getElementById('wind-index-modal').classList.add('hidden');
             });
-            const US_INDICATOR_INFO = {
-                sox: {
-                    title: 'SOX 費城半導體指數：台股的生命線',
-                    body: '台灣擁有完整的半導體產業鏈，台積電更是佔了台股極大的權重。SOX的漲跌幾乎會以高度正相關的方式，直接反映在隔天的台股大盤，對於追蹤大盤指數的市值型資產(如0050)影響最為劇烈。'
-                },
-                qqq: {
-                    title: 'QQQ 那斯達克100 ETF：科技股風向球',
-                    body: 'QQQ集中了美國頂尖的科技巨頭(如蘋果、微軟、NVIDIA等)，而台灣正是這些巨頭背後重要的硬體代工與零組件供應商。當QQQ表現強勢，台灣的電子零組件與科技類股通常也會受惠，這對科技主題的資產(如00929)是一大動能。'
-                },
-                spy: {
-                    title: 'SPY 標普500 ETF：全球經濟晴雨表',
-                    body: '代表美國500家大型企業，反映美國整體的經濟健康度。當SPY穩定向上，代表全球資金充裕、景氣樂觀，外資更有意願投入台股，同時也能支撐具備穩定殖利率的大型權值股或高股息資產(如00878)。'
-                },
-                vix: {
-                    title: 'VIX 恐慌指數：外資的風險溫度計',
-                    body: '衡量市場對未來波動的預期。當VIX飆高(通常大於20甚至30)，代表市場陷入恐慌，此時外資為了避險，往往會將資金從新興市場(包含台灣)快速抽離，導致台股無差別下跌。'
-                }
-            };
-            document.querySelectorAll('.us-indicator-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const key = btn.dataset.indicator;
-                    const info = US_INDICATOR_INFO[key];
-                    if (!info) return;
-                    document.getElementById('us-indicator-modal-title').innerHTML = `<i data-lucide="info" class="w-5 h-5 text-brand-cyan"></i> ${info.title.split('：')[0]}`;
-                    document.getElementById('us-indicator-modal-content').innerHTML = `<div class="text-white font-bold text-[14px] mb-2">${info.title}</div><p>${info.body}</p>`;
-                    document.getElementById('us-indicator-modal').classList.remove('hidden');
-                    safeLucideIcons({ root: document.getElementById('us-indicator-modal') });
-                });
+            document.getElementById('today-tomorrow-info-close').addEventListener('click', () => {
+                document.getElementById('today-tomorrow-info-modal').classList.add('hidden');
             });
-            document.getElementById('us-indicator-modal-close').addEventListener('click', () => {
-                document.getElementById('us-indicator-modal').classList.add('hidden');
-            });
-            document.getElementById('us-indicator-modal').addEventListener('click', (e) => {
-                if (e.target.id === 'us-indicator-modal') document.getElementById('us-indicator-modal').classList.add('hidden');
+            document.getElementById('today-tomorrow-info-modal').addEventListener('click', (e) => {
+                if (e.target.id === 'today-tomorrow-info-modal') document.getElementById('today-tomorrow-info-modal').classList.add('hidden');
             });
         });
     </script>
