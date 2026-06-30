@@ -279,10 +279,10 @@
             <input id="volume-multiple-input" type="number" min="1" max="5" step="0.1" class="w-full mt-1.5 bg-brand-bg border border-brand-border text-white px-2 py-1.5 rounded-lg text-center">
             <p class="text-slate-400 text-[11px] mt-1.5 leading-relaxed">判斷「這週量算不算大」的標準。例如設1.5倍，假設近5週平均量是1000張，這週量要超過1500張才算「帶量」，才符合合格買點的條件之一；數字越小，門檻越鬆，越容易判定為帶量。</p>
         </div>
-        <div class="mb-3 bg-brand-bg/60 rounded-lg p-3">
-            <label class="text-white text-sm font-semibold flex items-center gap-1.5"><i data-lucide="shield" class="w-3.5 h-3.5 text-brand-cyan"></i> 站上均線停損(%)</label>
-            <input id="reclaim-stop-input" type="number" min="1" max="20" step="0.5" class="w-full mt-1.5 bg-brand-bg border border-brand-border text-white px-2 py-1.5 rounded-lg text-center">
-            <p class="text-slate-400 text-[11px] mt-1.5 leading-relaxed">用於「站上均線型」買點還沒獲利時的保護停損。例如設3%，買進後只要還沒賺錢，價格跌破買進價3%就出場停損；一旦開始獲利，就會自動改用「跌破前一週低點」移動停利，不再用這個固定%。</p>
+        <div class="mb-3 bg-brand-bg/60 rounded-lg p-3 opacity-60">
+            <label class="text-white text-sm font-semibold flex items-center gap-1.5"><i data-lucide="shield" class="w-3.5 h-3.5 text-brand-cyan"></i> 站上均線停損(%)　<span class="text-amber-300 text-[10px] font-normal">(已停用)</span></label>
+            <input id="reclaim-stop-input" type="number" min="1" max="20" step="0.5" class="w-full mt-1.5 bg-brand-bg border border-brand-border text-white px-2 py-1.5 rounded-lg text-center" disabled>
+            <p class="text-slate-400 text-[11px] mt-1.5 leading-relaxed">這個固定%數的停損已經不再使用了：長線波段的停損邏輯改成「跌破週20MA」動態判斷(不容易在均線糾結的盤整區被微小波動誤觸發)，這個欄位先保留在畫面上但不會影響策略運算。</p>
         </div>
         <div class="mb-3 bg-brand-bg/60 rounded-lg p-3">
             <label class="text-white text-sm font-semibold flex items-center gap-1.5"><i data-lucide="target" class="w-3.5 h-3.5 text-brand-cyan"></i> 盤整突破停利(%)</label>
@@ -826,11 +826,11 @@
                             <div class="space-y-2">
                                 <div class="info-subcard">
                                     <div class="info-subcard-title"><span class="info-dot"></span> ✅ 進場條件</div>
-                                    <div class="info-subcard-body">我設定了三種合格買點：①「盤整突破」：近期盤整後本週帶量衝出去！ ②「站上均線」：整根 K 棒努力從週 20MA 下方爬上來～ ③「爆量確認」：本來就乖乖待在均線上方，但本週突然爆發帶量。這三種都必須符合「當週成交量大於近 5 週均量」，太冷清的標的我不碰，免得追到假突破。盤整期間（高不過前高、低不過前低）只放行①突破，②③暫停判定，避免在盤整框裡反覆站上又跌破均線、白白被洗來洗去。訊號當週收盤才確認，所以是隔週收盤才真正算進場。</div>
+                                    <div class="info-subcard-body">我設定了三種合格買點：①「盤整突破」：近期盤整後本週帶量衝出去！ ②「站上均線」：整根 K 棒努力從週 20MA 下方爬上來～ ③「爆量確認」：本來就乖乖待在均線上方，但本週突然爆發帶量。這三種都必須符合「當週成交量大於近 5 週均量」，太冷清的標的我不碰，免得追到假突破。盤整期間（高不過前高、低不過前低）只放行①突破，②③暫停判定，避免在盤整框裡反覆站上又跌破均線、白白被洗來洗去。②③這兩種買點還多了一條「均線斜率向上」的濾網——當週20MA要大於等於上週20MA才允許觸發，均線還在下彎時先不進場，免得被隨後的下彎均線雙巴。訊號當週收盤才確認，所以是隔週收盤才真正算進場。</div>
                                 </div>
                                 <div class="info-subcard">
                                     <div class="info-subcard-title"><span class="info-dot"></span> ❌ 出場機制</div>
-                                    <div class="info-subcard-body">如果是「盤整突破」的型態，只要上漲達到我設定的目標（預設是 3%），系統就會提醒我開心停利；其他型態如果還沒賺錢，就會先用停損 % 數（預設 3%）當作保護傘，一旦開始獲利，一樣會啟動「跌破前一週最低價」的移動停利法！要是整根 K 棒摔破週 20MA，我也會果斷出場。這些標記都會畫在長線圖上。</div>
+                                    <div class="info-subcard-body">如果是「盤整突破」的型態，只要上漲達到我設定的目標（預設是 3%），系統就會提醒我開心停利；其他型態（站上均線、爆量確認）如果還沒賺錢，停損已經改用「跌破週20MA」動態判斷，不再是固定%數——這樣可以給股價合理的震盪空間，不容易在均線糾結的盤整區被微小波動誤觸發；一旦開始獲利，一樣會啟動「跌破前一週最低價」的移動停利法，盡量把利潤留住！這些標記都會畫在長線圖上。</div>
                                 </div>
                             </div>
                             <p class="text-slate-400 text-[12px] leading-relaxed">⚙️ 小叮嚀：上面提到的所有門檻（像是盤整的寬鬆度、爆量要幾倍、停損/停利的 % 數），我都有把它們做成彈性的參數！隨時可以點擊網頁最上方導覽列的「⚙️ 設定」齒輪，依照我當下的心情跟市況自由微調喔。</p>
@@ -2256,6 +2256,9 @@
             if (low2.x <= low1.x) return { completed: false };
             const diffPct = Math.abs(low2.y - low1.y) / low1.y;
             if (diffPct > 0.05) return { completed: false };
+            // 防破底機制：右側低點(low2)必須大於等於左側低點(low1)的0.98倍，只容許2%內的極微小誤差，
+            // 否則代表右邊又跌出新低，這是失敗的W型態(左低右更低)，不能算數，要回傳completed:false。
+            if (low2.y < low1.y * 0.98) return { completed: false };
             let neckline = -Infinity;
             for (let i = low1.x; i <= low2.x; i++) neckline = Math.max(neckline, highs[i]);
             const completed = closes[idx] > neckline;
@@ -2315,7 +2318,6 @@
             const consolidationBoxes = [];
             let position = null;
             let pendingEntry = null; // 訊號週收盤才確認，下一週收盤才是真正進場日
-            const reclaimStopPct = (settings.reclaimStopPct ?? 5) / 100;
             const breakoutTakeProfitPct = (settings.breakoutTakeProfitPct ?? 5) / 100;
             const volMultiple = settings.volumeMultiple ?? 1.3;
             const weekVols = weeks.map(w => w.volume);
@@ -2358,9 +2360,9 @@
                 if (position) {
                     // 盤整突破進場：較快出場——上漲到設定的停利%數(預設5%)就先賣，避免之後又跌破均線白做工；
                     //   沒到目標但跌破均線一樣停損出場。
-                    // 站上均線(回踩/收復)、爆量確認進場：訊號較弱，還沒獲利時用-5%停損當保險網；
-                    //   一旦有獲利，改用「跌破前一週K棒最低價」移動停利，盡量把獲利留住(大賺小賠)，
-                    //   不再放任它一路漲回去又跌破均線才出場。
+                    // 站上均線(回踩/收復)、爆量確認進場：停損已經改用「跌破週20MA」判斷，不再用固定%數
+                    //   (週線上固定%數很容易在均線糾結的盤整區被微小波動誤觸發，改用均線當動態防守比較合理)；
+                    //   一旦有獲利，改用「跌破前一週K棒最低價」移動停利，盡量把獲利留住(大賺小賠)。
                     if (position.entryType === 'breakout') {
                         const targetPrice = position.entryPrice * (1 + breakoutTakeProfitPct);
                         if (w.high >= targetPrice) { closePosition(w.time, targetPrice); return; }
@@ -2371,10 +2373,9 @@
                             const prevLow = weeks[wi - 1] ? weeks[wi - 1].low : null;
                             if (prevLow !== null && w.close < prevLow) { closePosition(w.time, w.close); return; }
                         } else {
-                            const stopPrice = position.entryPrice * (1 - reclaimStopPct);
-                            if (w.low <= stopPrice) { closePosition(w.time, stopPrice); return; }
+                            // 用週20MA當動態停損價：當週收盤實質跌破週20MA就出場，取代原本的固定%數停損
+                            if (w.close < ma) { closePosition(w.time, w.close); return; }
                         }
-                        if (w.high < ma) { closePosition(w.time, w.close); return; }
                     } else {
                         if (w.high < ma) { closePosition(w.time, w.close); return; }
                     }
@@ -2396,12 +2397,16 @@
                 const volQualified = weekVolMa5 !== null && w.volume > weekVolMa5;
                 // 高點不過前高、低點不過前低的盤整框內，只放行①突破，②③暫停，避免框內反覆站上/跌破均線洗價
                 const inActiveConsolidation = cb.isConsolidation && !cb.breakout;
+                // 均線斜率濾網：當週20MA要大於等於上週20MA(代表均線走平或翻揚向上)，才允許②站上均線、③爆量確認這兩種買點觸發。
+                // 如果均線還在下彎，代表趨勢還沒真正止跌，這時候進場很容易被隨後的下彎均線雙巴洗出場。
+                const prevMa = wi > 0 ? wMa20[wi - 1] : null;
+                const isMaRising = prevMa !== null && ma >= prevMa;
 
                 if (cb.breakout && volQualified) {
                     pendingEntry = { signalIdx: wi, entryType: 'breakout', reason: '盤整突破' };
-                } else if (!inActiveConsolidation && justReclaimed && volQualified) {
+                } else if (!inActiveConsolidation && justReclaimed && volQualified && isMaRising) {
                     pendingEntry = { signalIdx: wi, entryType: 'reclaim', reason: '站上均線' };
-                } else if (!inActiveConsolidation && nowAboveMa && volumeSurgeNow) {
+                } else if (!inActiveConsolidation && nowAboveMa && volumeSurgeNow && isMaRising) {
                     pendingEntry = { signalIdx: wi, entryType: 'volumesurge', reason: '爆量確認' };
                 }
             });
@@ -3002,7 +3007,7 @@
                 : (wv.pendingEntry ? `<br><span class="text-brand-cyan">🔔 本週剛出現買進訊號(${wv.pendingEntry.reason})，依規則下週收盤才算正式進場</span>` : '');
             const bbHtml = (wv.lastBbUpper !== null) ? ` ｜ 布林上緣${fmt(wv.lastBbUpper)} 下緣${fmt(wv.lastBbLower)}` : '';
             const thisWeekVolLots = lastW ? (lastW.volume / 1000).toFixed(0) : '--';
-            const entryVerdict = evaluateWeeklyBuySuitability(wv);
+            const entryVerdict = evaluateWeeklyBuySuitability(wv, symbol);
             document.getElementById('weekly-ma-info').innerHTML =
                 `<span class="text-blue-400">週20MA ${fmt(wv.lastMa20)}</span>${diff !== null ? ` (乖離 ${diff >= 0 ? '+' : ''}${diff.toFixed(2)}%)` : ''}${bbHtml}${stopHtml}<br>本週成交量 <span class="text-base font-bold text-brand-cyan">${thisWeekVolLots}張</span>` +
                 `<br>建議進場時機：<span class="font-bold">${entryVerdict.light} ${entryVerdict.label}</span>`;
@@ -3102,12 +3107,18 @@
             document.getElementById('daily-stop-info').innerHTML = `停損參考：前日收盤 <span class="text-orange-400">${fmt(prevClose2)}</span> ／ 每股風險 <span class="text-orange-400">${fmt(riskPerShareRef)}元(${riskPctRef.toFixed(1)}%)</span> ｜ 綜合評分：${scoreEl}`;
         }
 
-        function evaluateWeeklyBuySuitability(wv) {
+        function evaluateWeeklyBuySuitability(wv, symbol) {
             const ft = wv.fourTreasures;
             const lastIdx = wv.weeks.length - 1;
             const cb = detectConsolidationBreakout(wv.weeks, lastIdx);
             const aboveMa = wv.lastMa20 !== null && wv.lastClose > wv.lastMa20;
             const inConsolidation = cb.isConsolidation && !cb.breakout;
+            // 大盤濾網：先看大盤，再看個股。如果大盤目前不是多頭(同時站上日20MA、日100MA)，
+            // 代表大盤本身可能還在盤整或偏弱，這時候即使個股條件符合，也先降級成觀望，不直接給可以買。
+            const marketIsBullish = !!(marketLightCache && marketLightCache.state === 'red');
+            // 個股日均線多頭排列濾網：日20MA(短)要在日100MA(長)上方，代表短期動能強過長期、結構比較不容易震盪雙巴。
+            const dv = symbol && analysisCache[symbol] && analysisCache[symbol].dailyView;
+            const dailyMaAligned = !!(dv && dv.lastMa20 !== null && dv.lastMa100 !== null && dv.lastMa20 > dv.lastMa100);
             let light, label, advice;
             if (inConsolidation) {
                 light = '🟡'; label = '請觀望';
@@ -3115,12 +3126,18 @@
             } else if (!aboveMa) {
                 light = '🔴'; label = '不能買';
                 advice = '收盤還在週20MA之下，長線趨勢還沒站穩，不是建議的進場時機。';
+            } else if (!marketIsBullish) {
+                light = '🟡'; label = '請觀望';
+                advice = '個股條件雖然符合，但目前大盤不是多頭(沒有同時站上日20MA、日100MA)，先看大盤、再看個股——大盤偏弱或盤整時，個股漲勢較不穩定，先觀望比較保守。';
+            } else if (!dailyMaAligned) {
+                light = '🟡'; label = '請觀望';
+                advice = '個股條件雖然符合，但日線均線還不是多頭排列(日20MA未在日100MA之上)，短期動能還沒明確強過長期，先觀望比較保守。';
             } else if (ft.count >= 3) {
                 light = '🟢'; label = '可以買';
-                advice = `本週符合${ft.count}/4項長線條件，且站上週20MA，趨勢結構較完整。`;
+                advice = `本週符合${ft.count}/4項長線條件，且站上週20MA，加上大盤多頭、個股日均線多頭排列，趨勢結構較完整。`;
             } else if (ft.count >= 2) {
                 light = '🟡'; label = '可以少量買';
-                advice = `本週符合${ft.count}/4項條件，站上週20MA，但條件還不算齊全，建議小量或繼續觀察，不要重倉。`;
+                advice = `本週符合${ft.count}/4項條件，站上週20MA，大盤跟均線結構都OK，但條件還不算齊全，建議小量或繼續觀察，不要重倉。`;
             } else {
                 light = '🔴'; label = '不能買';
                 advice = `本週只符合${ft.count}/4項條件，站上均線但結構條件不足，暫不建議進場。`;
@@ -3146,7 +3163,7 @@
                 ['③ W型態完成', ft.wPattern.completed],
                 ['④ 底部位階爆量', ft.volSurge.surge],
             ];
-            const v = evaluateWeeklyBuySuitability(wv);
+            const v = evaluateWeeklyBuySuitability(wv, symbol);
             panel.innerHTML = `
                 <div class="bg-gray-800 border ${tierStyle} rounded p-2.5">
                     <div class="flex justify-between items-center mb-1.5">
