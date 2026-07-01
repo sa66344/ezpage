@@ -791,9 +791,8 @@
                         <span class="chevron text-slate-400 text-xs shrink-0 mt-1">▾</span>
                     </button>
                     <div id="about-section-0a" class="hidden px-4 pb-4 space-y-2.5">
-                        <p class="text-slate-300 text-[13px]">我是一名35歲的上班族，平常喜歡研究新東西、自己動手解決問題。會做這個小工具，純粹是因為自己在交易時常常卡關——面對複雜線圖會不知從何下手，也常常在「該不該買」跟「捨不得停損」之間反覆猶豫。與其每次都重新想一遍，不如把判斷邏輯寫成程式，讓系統幫我守紀律。</p>
-                        <p class="text-slate-300 text-[13px]">這是一個免安裝的Web小程式，可以加入手機桌面（支援PWA），平常通勤、午休都能隨手打開看一下。</p>
-                        <p class="text-slate-300 text-[13px]">考量到每個人的交易步調不同，系統裡設計了三個模式：</p>
+                        <p class="text-slate-300 text-[13px]">我喜歡研究新東西，也喜歡自己動手解決問題。這個工具，其實是為了我自己而做。 以前我總花很多時間研究個股、看線圖，卻忽略了生活。於是，我把自己的交易邏輯寫成程式，做出這個小工具。它不是為了預測市場，而是希望用更少的時間做出更有紀律的決策，把更多時間留給生活，以及真正對我重要的人。  這個小工具。加入手機桌面（PWA），就像一個安靜陪伴你的 App。</p>
+                      <p class="text-slate-300 text-[15px]">考量到每個人的交易步調不同，系統裡設計了三個模式：</p>
 
                         <div class="info-subcard">
                             <div class="info-subcard-title"><span class="info-dot"></span> 新手無腦模式</div>
@@ -1056,34 +1055,48 @@
  <!-- 掃描分頁 -->
         <div id="panel-scan" class="absolute inset-0 hidden overflow-y-auto p-4 hide-scroll bg-brand-bg">
             <div class="max-w-3xl mx-auto space-y-4">
-                <div class="glass-panel rounded-xl overflow-hidden text-xs text-slate-300 leading-relaxed">
-                    <button class="collapse-toggle w-full flex justify-between items-center gap-3 p-4 text-left" data-target="scan-tip-1">
-                        <span class="flex items-center gap-1 font-bold text-white"><i data-lucide="bell-ring" class="w-4 h-4 text-brand-cyan"></i> 觸發買點圖例 ／ 雷達評分小秘訣</span>
-                        <span class="chevron text-slate-400 text-xs shrink-0">▾</span>
+                <div class="tide-card mb-4">
+                    <button class="collapse-toggle w-full flex justify-between items-center p-4 text-left" data-target="scan-tip-advanced">
+                        <h3 class="info-heading-lg flex items-center gap-2"><i data-lucide="radar" class="w-4 h-4 text-brand-cyan"></i> 雷達評分與海象型態解析</h3>
+                        <span class="chevron text-slate-400 text-xs">▾</span>
                     </button>
-                    <div id="scan-tip-1" class="hidden px-4 pb-4">
-                        <div class="flex flex-wrap gap-3 mb-3">
-                            <span class="flex items-center gap-1"><span class="px-1.5 py-0.5 rounded bg-brand-down/20 text-brand-down border border-brand-down/30">起漲</span> 剛站上均線</span>
-                            <span class="flex items-center gap-1"><span class="px-1.5 py-0.5 rounded bg-brand-teal/20 text-brand-teal border border-brand-teal/30">強勢</span> 贏大盤5%</span>
+                    <div id="scan-tip-advanced" class="hidden px-4 pb-4 space-y-3">
+                        <div class="flex flex-wrap gap-3">
+                            <span class="flex items-center gap-1 text-xs"><span class="px-1.5 py-0.5 rounded bg-brand-down/20 text-brand-down border border-brand-down/30">起漲</span> 剛站上均線</span>
+                            <span class="flex items-center gap-1 text-xs"><span class="px-1.5 py-0.5 rounded bg-brand-teal/20 text-brand-teal border border-brand-teal/30">強勢</span> 贏大盤5%</span>
                         </div>
-                        <p class="text-white font-bold mb-1.5">🌟 【雷達評分小秘訣】（滿分 10 分） 🌟</p>
-                        <p class="mb-1"><b class="text-slate-200">配分大解密：</b>買點訊號 5 分 ＋ 起漲 2 分 ＋ 強勢 2 分 ＋ 流動性 1 分！</p>
-                        <p class="mb-1"><b class="text-slate-200">優等生獎勵：</b>只要拿到 8 分以上，就會幫你蓋上「🎯 短線買入」的榮譽標章！（貼心提醒：雷達僅供參考，還是要自己評估喔 😉）</p>
-                        <p class="mb-1"><b class="text-slate-200">嚴選活力股：</b>清單非常有個性！只會秀出「起漲」或「強勢」的活躍魚兒 🐟，平淡無亮點的就不會出來佔空間啦～</p>
-                        <p><b class="text-slate-200">明日小抄：</b>每一檔股票旁邊，都會貼心附上「隔天可否買入」的判斷小建議，讓你提早做準備！🚀</p>
-                        <p class="text-slate-400 mt-2 pt-2 border-t border-brand-border/50">💡 上面的評分(X/10分)主要是看「長線」(週線)型態；「強勢」標籤跟「隔天可否買入」是看「短線」(日線)時機。兩邊有時候會不一樣(例如長線評分高、但短線寫請觀望)，這是正常的，不是衝突，只是兩個不同時間長度各自的判斷，出現分歧時下面會直接附上原因說明。</p>
+                        <div class="info-subcard">
+                            <div class="info-subcard-title"><span class="info-dot"></span> 評分核心 (滿分 25 分)</div>
+                            <div class="info-subcard-body">買點訊號 5分 + 突破起漲 3分 + 均線多頭 3分 + 波幅收斂 5分...等。只要拿到 8 分以上，就會標記「🎯 短線買入」！（貼心提醒：雷達僅供參考，還是要自己評估喔 😉）</div>
+                        </div>
+                        <div class="info-heading-md mt-3 mb-1"><i data-lucide="waves" class="w-3.5 h-3.5 text-brand-cyan"></i> 進階潮汐海象型態 (額外加分項)</div>
+                        <div class="grid grid-cols-1 gap-2">
+                            <div class="info-subcard">
+                                <div class="info-subcard-title"><span class="info-dot" style="background:#fda4af;box-shadow:0 0 5px #fda4af"></span> 順勢大潮 (+2分)</div>
+                                <div class="info-subcard-body">大、中、短期均線呈多頭排列，長線保護短線，且當日強勢上漲超過 2%，代表趨勢與動能完美共振。</div>
+                            </div>
+                            <div class="info-subcard">
+                                <div class="info-subcard-title"><span class="info-dot info-dot--amber"></span> 破浪起漲 (+2分)</div>
+                                <div class="info-subcard-body">經歷波幅收斂後，近 5 日內出現連續高過高、低不破低的強勢表態，為主力的點火發動訊號。</div>
+                            </div>
+                            <div class="info-subcard">
+                                <div class="info-subcard-title"><span class="info-dot"></span> 躍空起漲 (+3分)</div>
+                                <div class="info-subcard-body">帶量跳空開高且收紅 K，展現極強的買方企圖心，通常為強勢主升段的起點。</div>
+                            </div>
+                        </div>
+                        <p class="text-slate-400 mt-1 pt-2 border-t border-brand-border/50 text-[12px]">💡 上面的評分(X/25分)主要是看「長線」(週線)型態；「強勢」標籤跟「隔天可否買入」是看「短線」(日線)時機。兩邊有時候會不一樣(例如長線評分高、但短線寫請觀望)，這是正常的，不是衝突，只是兩個不同時間長度各自的判斷，出現分歧時下面會直接附上原因說明。</p>
                     </div>
                 </div>
 
-                <div class="glass-panel rounded-xl overflow-hidden text-xs text-slate-300 leading-relaxed">
-                    <button class="collapse-toggle w-full flex justify-between items-center gap-3 p-4 text-left" data-target="scan-tip-2">
-                        <span class="font-bold text-white">✨ 鯨魚雷達啟動準備</span>
-                        <span class="chevron text-slate-400 text-xs shrink-0">▾</span>
+                <div class="tide-card mb-4">
+                    <button class="collapse-toggle w-full flex justify-between items-center p-4 text-left" data-target="scan-tip-prep">
+                        <h3 class="info-heading-lg flex items-center gap-2"><i data-lucide="anchor" class="w-4 h-4 text-brand-teal"></i> 鯨魚雷達啟動準備</h3>
+                        <span class="chevron text-slate-400 text-xs">▾</span>
                     </button>
-                    <div id="scan-tip-2" class="hidden px-4 pb-4">
-                        <p class="mb-1">第一次按下去，雷達會自動幫你掃描全市場，抓出當天成交金額 Top<span id="scan-list-count-note" class="text-brand-cyan font-bold">150</span> 的中大型股 🐋！</p>
-                        <p class="mb-1 text-slate-400">資料撈取中，要請您耐心等一下下 ⏳</p>
-                        <p class="text-slate-400">👉 小提示：若想掃描名單外的股票，請先到上方把它們加入『我的漁場』，雷達就會幫你一起掃描囉！👀</p>
+                    <div id="scan-tip-prep" class="hidden px-4 pb-4 space-y-2">
+                        <p class="text-[13px] text-slate-300">第一次按下掃描，雷達會自動抓出當天成交金額 Top <span id="scan-list-count-note" class="text-brand-cyan font-bold">150</span> 的中大型股！</p>
+                        <p class="text-[12px] text-slate-400">💡 提示：也可以在上方篩選列切換為「潮汐推力排行」，系統會自動把長、中、短線綜合動能最強的股票推到最前面。</p>
+                        <p class="text-[12px] text-slate-400">👉 小提示：若想掃描名單外的股票，請先到上方把它們加入『我的漁場』，雷達就會幫你一起掃描囉！👀</p>
                     </div>
                 </div>
                 
@@ -1118,6 +1131,7 @@
                     <button class="filter-chip" data-filter="long">僅長線可買</button>
                     <span class="text-[10px] text-slate-500 ml-2 mr-0.5">排序</span>
                     <button class="filter-chip active" data-sort="score">評分高到低</button>
+                    <button class="filter-chip" data-sort="momentum">潮汐推力排行</button>
                     <button class="filter-chip" data-sort="price-desc">股價由高至低</button>
                     <button class="filter-chip" data-sort="price-asc">股價由低至高</button>
                 </div>
@@ -2809,7 +2823,7 @@
         }
 
         function computeVCPScore(daily, ind, idx) {
-            const { ma200, ma150, ma50, closes, highs, lows, volMa5, volMa50, vols } = ind;
+            const { ma200, ma150, ma100, ma50, ma20, closes, highs, lows, volMa5, volMa50, vols } = ind;
             if (ma200[idx] === null || ma150[idx] === null || ma50[idx] === null) return null;
 
             const close = closes[idx];
@@ -2842,6 +2856,31 @@
             detail.breakout = breakout; detail.pivotHigh10 = pivotHigh10; if (breakout) score += 3;
 
             detail.pivotLow10 = minRange(lows, idx - 10, idx - 1);
+
+            // ① 順勢大潮 (strongBull)：大中短均線多頭排列 + 長線保護短線 + 當日強漲 > 2%
+            const prevMa100 = (idx - 20 >= 0) ? ma100[idx - 20] : null;
+            const chgPctToday = (idx > 0 && closes[idx - 1]) ? (close - closes[idx - 1]) / closes[idx - 1] : 0;
+            const strongBull = ma20[idx] > ma50[idx] && ma50[idx] > ma100[idx] &&
+                               close > ma20[idx] && prevMa100 !== null && ma100[idx] > prevMa100 &&
+                               chgPctToday > 0.02;
+            detail.strongBull = strongBull;
+            if (strongBull) score += 2;
+
+            // ② 破浪起漲 (surgeOut)：波幅收斂後，近5日內連續高過高、低不破低
+            let surgeCount = 0;
+            for (let k = idx; k > Math.max(0, idx - 5); k--) {
+                if (highs[k] > highs[k - 1] && lows[k] > lows[k - 1]) surgeCount++;
+            }
+            const surgeOut = detail.contraction === true && surgeCount >= 2;
+            detail.surgeOut = surgeOut;
+            if (surgeOut) score += 2;
+
+            // ③ 躍空起漲 (gapUpHigher)：帶量跳空開高且收紅K
+            const gapUpHigher = (idx > 0) && (lows[idx] > highs[idx - 1]) &&
+                                (close > daily[idx].open) &&
+                                (volMa50[idx] !== null && vols[idx] > volMa50[idx] * 1.5);
+            detail.gapUpHigher = gapUpHigher;
+            if (gapUpHigher) score += 3;
 
             return { score, detail, close, time: daily[idx].time };
         }
@@ -3556,7 +3595,7 @@
             const stopRef = dv.lastMa20 !== null ? Math.max(dv.lastMa20, hardStopRef) : hardStopRef;
             const riskPerShareRef = lastClose2 - stopRef;
             const riskPctRef = lastClose2 ? (riskPerShareRef / lastClose2 * 100) : 0;
-            const scoreEl = dv.latestScore ? `<span class="${dv.latestScore.score >= 8 ? 'text-brand-cyan' : 'text-slate-400'} font-bold">${dv.latestScore.score}/18</span>` : '<span class="text-slate-500">--</span>';
+            const scoreEl = dv.latestScore ? `<span class="${dv.latestScore.score >= 8 ? 'text-brand-cyan' : 'text-slate-400'} font-bold">${dv.latestScore.score}/25</span>` : '<span class="text-slate-500">--</span>';
             document.getElementById('daily-stop-info').innerHTML = `停損參考：前日收盤 <span class="text-orange-400">${fmt(prevClose2)}</span> ／ 每股風險 <span class="text-orange-400">${fmt(riskPerShareRef)}元(${riskPctRef.toFixed(1)}%)</span> ｜ 綜合評分：${scoreEl}`;
         }
 
@@ -3645,12 +3684,14 @@
                 return;
             }
             const rec = result.recommendation;
-            if (badge) badge.innerHTML = `${s.score}<span class="text-[9px]">/18</span>`;
+            if (badge) badge.innerHTML = `${s.score}<span class="text-[9px]">/25</span>`;
             const tierStyle = { gold: 'border-amber-400 bg-amber-900/20', warning: 'border-red-400 bg-red-900/20', edge: 'border-blue-400 bg-blue-900/20', none: 'border-gray-600' }[rec.tier] || 'border-gray-600';
             const rows = [
                 ['① Stage2多頭排列', s.detail.stage2, 3], ['② 近52週高點附近', s.detail.nearHigh52w, 2],
                 ['③ 波幅收斂', s.detail.contraction, 5], ['④ 量縮<50日×0.7', s.detail.volShrink, 3],
                 ['⑤ 10日狹幅<5%', s.detail.tight, 2], ['⑥ 帶量突破10日高', s.detail.breakout, 3],
+                ['⑦ 順勢大潮', s.detail.strongBull, 2], ['⑧ 破浪起漲', s.detail.surgeOut, 2],
+                ['⑨ 躍空起漲', s.detail.gapUpHigher, 3],
             ];
             const pos = result.vcp.openPosition;
             const bt = result.backtest;
@@ -3664,7 +3705,7 @@
             panel.innerHTML = `
                 <div class="bg-gray-800 border ${tierStyle} rounded p-2.5">
                     <div class="flex justify-between items-center mb-1.5">
-                        <span class="text-xl font-bold text-white">${s.score}<span class="text-xs text-gray-400">/18</span></span>
+                        <span class="text-xl font-bold text-white">${s.score}<span class="text-xs text-gray-400">/25</span></span>
                         <span class="text-xs text-right text-gray-200">${rec.label}</span>
                     </div>
                     <div class="grid grid-cols-2 gap-0.5 text-[11px]">
@@ -3807,10 +3848,10 @@
             let light, label, advice;
             if (simpleAligned && vcpGoodScore) {
                 light = '🟢'; label = '可以買';
-                advice = `站上日20MA，且日100MA在下方保護，VCP評分也達標(${vcpScore.score}/18)。屬於條件較齊全的進場點，但仍建議搭配你自己的判斷分批進場，不要all-in。`;
+                advice = `站上日20MA，且日100MA在下方保護，VCP評分也達標(${vcpScore.score}/25)。屬於條件較齊全的進場點，但仍建議搭配你自己的判斷分批進場，不要all-in。`;
             } else if (simpleAligned) {
                 light = '🟡'; label = '可以少量買';
-                advice = `站上日20MA、日100MA在下方保護，型態方向正確，但VCP評分還沒到8分(目前${vcpScore ? vcpScore.score : '資料不足'}/18)，結構不算最完整，建議小量或繼續觀察，不要重倉。`;
+                advice = `站上日20MA、日100MA在下方保護，型態方向正確，但VCP評分還沒到8分(目前${vcpScore ? vcpScore.score : '資料不足'}/25)，結構不算最完整，建議小量或繼續觀察，不要重倉。`;
             } else if (aboveMa20 && !ma100Protects) {
                 light = '🟡'; label = '請觀望';
                 advice = '收盤在日20MA之上，但日100MA還在日20MA上方(還沒形成多頭排列)，這種情況比較像反彈，不是穩定的多頭結構，建議再觀察。';
@@ -5102,20 +5143,19 @@
                 el.innerHTML = '<p class="text-gray-500 text-sm">還沒有資料，先按下面「鯨魚雷達(母清單)」掃描一次。</p>';
                 return;
             }
-            const maxAbs = Math.max(...data.map(d => Math.abs(d.avgRet5)), 1);
             el.innerHTML = data.map((d, idx) => {
-                const cls = d.avgRet5 >= 0 ? 'text-red-400' : 'text-green-400';
-                const barColor = d.avgRet5 >= 0 ? 'bg-red-500/60' : 'bg-green-500/60';
-                const widthPct = Math.max(2, Math.min(100, Math.abs(d.avgRet5) / maxAbs * 100));
+                const barColor = d.avgRet5 >= 0 ? 'from-red-500/80 to-red-400' : 'from-green-500/80 to-green-400';
+                const textCls = d.avgRet5 >= 0 ? 'text-red-400' : 'text-green-400';
+                const sign = d.avgRet5 >= 0 ? '+' : '';
                 const ret20Label = d.avgRet20 !== null ? `(20日${d.avgRet20 >= 0 ? '+' : ''}${d.avgRet20.toFixed(1)}%)` : '';
                 return `
-                <div class="flex items-center gap-2 text-sm">
-                    <span class="w-5 text-gray-500 text-xs shrink-0">${idx + 1}</span>
-                    <span class="w-20 sm:w-24 shrink-0 text-white text-xs sm:text-sm truncate">${d.sector}</span>
-                    <div class="flex-1 bg-gray-800 rounded h-4 relative overflow-hidden min-w-[40px]">
-                        <div class="${barColor} h-full" style="width:${widthPct}%"></div>
+                <div class="flex items-center justify-between text-xs py-1.5">
+                    <span class="w-5 text-gray-500 shrink-0">${idx + 1}</span>
+                    <span class="w-20 text-slate-200 font-bold truncate">${d.sector}</span>
+                    <div class="flex-1 mx-3 bg-brand-bg/50 rounded-full h-2.5 overflow-hidden border border-white/5 relative shadow-inner">
+                        <div class="absolute left-0 top-0 bottom-0 bg-gradient-to-r ${barColor} rounded-full" style="width: ${Math.min(100, Math.abs(d.avgRet5) * 10)}%; box-shadow: 0 0 8px currentColor;"></div>
                     </div>
-                    <span class="w-28 shrink-0 text-right font-mono-num text-xs ${cls}">${d.avgRet5 >= 0 ? '+' : ''}${d.avgRet5.toFixed(1)}% <span class="text-gray-500">${ret20Label}</span></span>
+                    <span class="${textCls} font-mono-num font-bold w-16 text-right">${sign}${d.avgRet5.toFixed(1)}% <span class="text-gray-500 font-normal">${ret20Label}</span></span>
                 </div>`;
             }).join('');
         }
@@ -5171,6 +5211,16 @@
                     const liquidity = avgDailyVolumeLots(daily, 20);
                     const liquidityOk = liquidity !== null && liquidity >= 1000;
                     const score = (isBuy ? 5 : 0) + (justTurning ? 2 : 0) + (isStrong ? 2 : 0) + (liquidityOk ? 1 : 0);
+                    // 潮汐推力排行：綜合長中短期(60/20/5日)漲跌幅動能分數
+                    const n = daily.length;
+                    const closeNow = n > 0 ? daily[n - 1].close : null;
+                    const close5 = daily[n - 6] ? daily[n - 6].close : null;
+                    const close20 = daily[n - 21] ? daily[n - 21].close : null;
+                    const close60 = daily[n - 61] ? daily[n - 61].close : null;
+                    let momentumScore = null;
+                    if (closeNow !== null && close5 && close20 && close60) {
+                        momentumScore = (closeNow - close5) / close5 + (closeNow - close20) / close20 + (closeNow - close60) / close60;
+                    }
                     let buyVerdict = null;
                     try { buyVerdict = evaluateBuySuitability(computeDailyView(daily)); } catch (e) { /* 資料不足時跳過，不影響掃描其他項目 */ }
                     // 長線沒給買點訊號、但短線卻偏正面時，把兩邊的原因都整理出來(各自一句話講重點)，避免看起來互相矛盾卻不知道為什麼
@@ -5179,9 +5229,9 @@
                         const shortReason = buyVerdict.advice.split('。')[0]; // 只取第一句講重點，後面的補充說明不放進來
                         divergenceNote = { longReason: explainWeeklyNoBuy(cb, nowAboveMa, prevAboveMa), shortReason };
                     }
-                    rows.push({ symbol, close: lastClose, ma: lastMa20, diffPct, isBuy, justTurning, isStrong, liquidity, liquidityOk, score, source: dataSourceCache[symbol], buyVerdict, lastDate, alreadyCached, divergenceNote });
+                    rows.push({ symbol, close: lastClose, ma: lastMa20, diffPct, isBuy, justTurning, isStrong, liquidity, liquidityOk, score, momentumScore, source: dataSourceCache[symbol], buyVerdict, lastDate, alreadyCached, divergenceNote });
                 } catch (e) {
-                    rows.push({ symbol, close: null, ma: null, diffPct: null, isBuy: false, justTurning: false, isStrong: false, liquidity: null, liquidityOk: false, score: -1, source: 'mock', lastDate: null, alreadyCached, divergenceNote: null });
+                    rows.push({ symbol, close: null, ma: null, diffPct: null, isBuy: false, justTurning: false, isStrong: false, liquidity: null, liquidityOk: false, score: -1, momentumScore: null, source: 'mock', lastDate: null, alreadyCached, divergenceNote: null });
                 }
                 await new Promise(r => setTimeout(r, 200));
             }
@@ -5236,6 +5286,9 @@
                         <span class="text-[10px] ${r.score >= 8 ? 'text-amber-300 font-bold' : 'text-gray-500'}" style="${r.score >= 8 ? 'text-shadow:0 0 6px rgba(252,211,77,0.7)' : ''}">${r.score}/10${r.score >= 8 ? ' 短線買入' : ''}</span>
                         ${r.justTurning ? '<span class="neon-pill neon-pill--cyan">起漲</span>' : ''}
                         ${r.isStrong ? '<span class="neon-pill neon-pill--violet">強勢</span>' : ''}
+                        ${r.buyVerdict && r.buyVerdict.vcpScore && r.buyVerdict.vcpScore.detail && r.buyVerdict.vcpScore.detail.strongBull ? '<span class="neon-pill neon-pill--rose">順勢大潮</span>' : ''}
+                        ${r.buyVerdict && r.buyVerdict.vcpScore && r.buyVerdict.vcpScore.detail && r.buyVerdict.vcpScore.detail.surgeOut ? '<span class="neon-pill neon-pill--amber">破浪起漲</span>' : ''}
+                        ${r.buyVerdict && r.buyVerdict.vcpScore && r.buyVerdict.vcpScore.detail && r.buyVerdict.vcpScore.detail.gapUpHigher ? '<span class="neon-pill neon-pill--cyan">躍空起漲</span>' : ''}
                         ${r.liquidity !== null && !r.liquidityOk ? '<span class="text-[10px] text-red-400">量&lt;1000張</span>' : ''}
                         ${r.source === 'mock' ? '<span class="text-red-500 text-[10px]">模擬</span>' : ''}
                     </div>
@@ -5270,6 +5323,7 @@
             else if (scanFilterMode === 'long') rows = rows.filter(r => r.isBuy);
             if (scanSortMode === 'price-desc') rows.sort((a, b) => (b.close ?? -1) - (a.close ?? -1));
             else if (scanSortMode === 'price-asc') rows.sort((a, b) => (a.close ?? Infinity) - (b.close ?? Infinity));
+            else if (scanSortMode === 'momentum') rows.sort((a, b) => (b.momentumScore ?? -Infinity) - (a.momentumScore ?? -Infinity));
             else rows.sort((a, b) => (b.score - a.score) || ((a.diffPct ?? 999) - (b.diffPct ?? 999)));
 
             if (lastScanVisibleRows.length === 0) {
