@@ -317,6 +317,7 @@
             color: #94a3b8; background: rgba(15,33,59,0.5); transition: all .2s ease; white-space: nowrap;
         }
         .filter-chip.active { color: #061224; background: linear-gradient(90deg,#00f2fe,#4facfe); border-color: transparent; font-weight: 700; box-shadow: 0 0 10px -1px rgba(0,242,254,0.6); }
+        .sector-mode-btn.active { color: #061224; background: linear-gradient(90deg,#00f2fe,#4facfe); box-shadow: 0 0 8px -1px rgba(0,242,254,0.5); }
         /* 清單卡片切換時的平滑轉場 */
         #scan-list .scan-card-anim { transition: opacity .25s ease, transform .25s ease; }
         #scan-list .scan-card-hidden { opacity: 0; transform: scale(0.97); height: 0; margin: 0; padding: 0; overflow: hidden; }
@@ -1057,34 +1058,22 @@
             <div class="max-w-3xl mx-auto space-y-4">
                 <div class="tide-card mb-4">
                     <button class="collapse-toggle w-full flex justify-between items-center p-4 text-left" data-target="scan-tip-advanced">
-                        <h3 class="info-heading-lg flex items-center gap-2"><i data-lucide="radar" class="w-4 h-4 text-brand-cyan"></i> 雷達評分與海象型態解析</h3>
+                        <h3 class="info-heading-lg flex items-center gap-2"><i data-lucide="cpu" class="w-4 h-4 text-brand-cyan"></i> 核心運算機制說明</h3>
                         <span class="chevron text-slate-400 text-xs">▾</span>
                     </button>
                     <div id="scan-tip-advanced" class="hidden px-4 pb-4 space-y-3">
-                        <div class="flex flex-wrap gap-3">
-                            <span class="flex items-center gap-1 text-xs"><span class="px-1.5 py-0.5 rounded bg-brand-down/20 text-brand-down border border-brand-down/30">起漲</span> 剛站上均線</span>
-                            <span class="flex items-center gap-1 text-xs"><span class="px-1.5 py-0.5 rounded bg-brand-teal/20 text-brand-teal border border-brand-teal/30">強勢</span> 贏大盤5%</span>
+                        <div class="info-subcard">
+                            <div class="info-subcard-title"><span class="info-dot"></span> 雙重濾網機制</div>
+                            <div class="info-subcard-body text-[12px]">系統預先執行「均線結構校準」(20MA/100MA)，確保標的位於多頭趨勢安全區間。此濾網作為進入觀察名單的基準。</div>
                         </div>
                         <div class="info-subcard">
-                            <div class="info-subcard-title"><span class="info-dot"></span> 評分核心 (滿分 25 分)</div>
-                            <div class="info-subcard-body">買點訊號 5分 + 突破起漲 3分 + 均線多頭 3分 + 波幅收斂 5分...等。只要拿到 8 分以上，就會標記「🎯 短線買入」！（貼心提醒：雷達僅供參考，還是要自己評估喔 😉）</div>
+                            <div class="info-subcard-title"><span class="info-dot"></span> 資金動能演算 (資金動能排行)</div>
+                            <div class="info-subcard-body text-[12px]">透過 5/20/60 日漲幅加權計算「動能慣性指標」。系統會自動將符合均線條件，且短中長期動能加速度最快的標的優先推送至排行前緣，排除無動能震盪之標的。</div>
                         </div>
-                        <div class="info-heading-md mt-3 mb-1"><i data-lucide="waves" class="w-3.5 h-3.5 text-brand-cyan"></i> 進階潮汐海象型態 (額外加分項)</div>
-                        <div class="grid grid-cols-1 gap-2">
-                            <div class="info-subcard">
-                                <div class="info-subcard-title"><span class="info-dot" style="background:#fda4af;box-shadow:0 0 5px #fda4af"></span> 順勢大潮 (+2分)</div>
-                                <div class="info-subcard-body">大、中、短期均線呈多頭排列，長線保護短線，且當日強勢上漲超過 2%，代表趨勢與動能完美共振。</div>
-                            </div>
-                            <div class="info-subcard">
-                                <div class="info-subcard-title"><span class="info-dot info-dot--amber"></span> 破浪起漲 (+2分)</div>
-                                <div class="info-subcard-body">經歷波幅收斂後，近 5 日內出現連續高過高、低不破低的強勢表態，為主力的點火發動訊號。</div>
-                            </div>
-                            <div class="info-subcard">
-                                <div class="info-subcard-title"><span class="info-dot"></span> 躍空起漲 (+3分)</div>
-                                <div class="info-subcard-body">帶量跳空開高且收紅 K，展現極強的買方企圖心，通常為強勢主升段的起點。</div>
-                            </div>
+                        <div class="bg-brand-bg/50 border border-brand-cyan/20 rounded-lg p-3">
+                            <p class="text-[11px] text-slate-400 leading-relaxed">💡 <b class="text-white">最高 CP 值戰法：</b>優先過濾均線多頭排列之標的，再透過「資金動能排行」鎖定即將突破臨界點之高爆發標的，確保買在趨勢與動能同步發散之精準節奏。</p>
                         </div>
-                        <p class="text-slate-400 mt-1 pt-2 border-t border-brand-border/50 text-[12px]">💡 上面的評分(X/25分)主要是看「長線」(週線)型態；「強勢」標籤跟「隔天可否買入」是看「短線」(日線)時機。兩邊有時候會不一樣(例如長線評分高、但短線寫請觀望)，這是正常的，不是衝突，只是兩個不同時間長度各自的判斷，出現分歧時下面會直接附上原因說明。</p>
+                        <p class="text-slate-500 text-[11px] pt-1 border-t border-brand-border/50">評分滿分 25 分，8 分以上會標記「🎯 短線買入」；雷達僅供參考，還是要自己評估喔 😉</p>
                     </div>
                 </div>
 
@@ -1095,7 +1084,7 @@
                     </button>
                     <div id="scan-tip-prep" class="hidden px-4 pb-4 space-y-2">
                         <p class="text-[13px] text-slate-300">第一次按下掃描，雷達會自動抓出當天成交金額 Top <span id="scan-list-count-note" class="text-brand-cyan font-bold">150</span> 的中大型股！</p>
-                        <p class="text-[12px] text-slate-400">💡 提示：也可以在上方篩選列切換為「潮汐推力排行」，系統會自動把長、中、短線綜合動能最強的股票推到最前面。</p>
+                        <p class="text-[12px] text-slate-400">💡 提示：也可以在上方篩選列切換為「資金動能排行」，系統會自動把長、中、短線綜合動能最強的股票推到最前面。</p>
                         <p class="text-[12px] text-slate-400">👉 小提示：若想掃描名單外的股票，請先到上方把它們加入『我的漁場』，雷達就會幫你一起掃描囉！👀</p>
                     </div>
                 </div>
@@ -1119,7 +1108,11 @@
                         <span class="chevron text-slate-400 text-xs">▾</span>
                     </button>
                     <div id="sector-rotation-body" class="hidden px-4 pb-4">
-                        <p class="text-slate-500 text-[11px] mb-3">用「鯨魚雷達(母清單)」掃描過的股票，依產業分類算近5日/20日平均漲幅，看現在資金往哪個產業輪動。要先按下方「鯨魚雷達」掃描一次才有資料(掃自選清單不會更新這裡，因為樣本太少)。</p>
+                        <div class="flex bg-brand-bg/60 p-1 rounded-lg border border-brand-border mb-3 w-fit">
+                            <button class="sector-mode-btn active text-[11px] px-3 py-1.5 rounded-md font-bold transition-all" data-mode="return">近期漲幅</button>
+                            <button class="sector-mode-btn text-[11px] px-3 py-1.5 rounded-md font-medium transition-all text-slate-400" data-mode="momentum">資金動能</button>
+                        </div>
+                        <p id="sector-rotation-desc" class="text-slate-500 text-[11px] mb-3">用「鯨魚雷達(母清單)」掃描過的股票，依產業分類算近5日/20日平均漲幅，看現在資金往哪個產業輪動。要先按下方「鯨魚雷達」掃描一次才有資料(掃自選清單不會更新這裡，因為樣本太少)。</p>
                         <div id="sector-rotation-list" class="space-y-1.5"></div>
                     </div>
                 </div>
@@ -1131,9 +1124,10 @@
                     <button class="filter-chip" data-filter="long">僅長線可買</button>
                     <span class="text-[10px] text-slate-500 ml-2 mr-0.5">排序</span>
                     <button class="filter-chip active" data-sort="score">評分高到低</button>
-                    <button class="filter-chip" data-sort="momentum">潮汐推力排行</button>
+                    <button class="filter-chip" data-sort="momentum">資金動能排行</button>
                     <button class="filter-chip" data-sort="price-desc">股價由高至低</button>
                     <button class="filter-chip" data-sort="price-asc">股價由低至高</button>
+                    <div class="text-[10px] text-brand-cyan/80 w-full mt-1.5 mb-1 pl-1">※ 資金動能排行：彙整近 5 日、20 日、60 日綜合漲幅動能</div>
                 </div>
 
                 <div id="scan-list" class="space-y-3 pb-8 mt-2"></div>
@@ -2857,7 +2851,7 @@
 
             detail.pivotLow10 = minRange(lows, idx - 10, idx - 1);
 
-            // ① 順勢大潮 (strongBull)：大中短均線多頭排列 + 長線保護短線 + 當日強漲 > 2%
+            // ① 多頭強勢噴出 (strongBull)：大中短均線多頭排列 + 長線保護短線 + 當日強漲 > 2%
             const prevMa100 = (idx - 20 >= 0) ? ma100[idx - 20] : null;
             const chgPctToday = (idx > 0 && closes[idx - 1]) ? (close - closes[idx - 1]) / closes[idx - 1] : 0;
             const strongBull = ma20[idx] > ma50[idx] && ma50[idx] > ma100[idx] &&
@@ -2866,7 +2860,7 @@
             detail.strongBull = strongBull;
             if (strongBull) score += 2;
 
-            // ② 破浪起漲 (surgeOut)：波幅收斂後，近5日內連續高過高、低不破低
+            // ② 波段壓縮突破 (surgeOut)：波幅收斂後，近5日內連續高過高、低不破低
             let surgeCount = 0;
             for (let k = idx; k > Math.max(0, idx - 5); k--) {
                 if (highs[k] > highs[k - 1] && lows[k] > lows[k - 1]) surgeCount++;
@@ -2875,7 +2869,7 @@
             detail.surgeOut = surgeOut;
             if (surgeOut) score += 2;
 
-            // ③ 躍空起漲 (gapUpHigher)：帶量跳空開高且收紅K
+            // ③ 跳空主力攻擊 (gapUpHigher)：帶量跳空開高且收紅K
             const gapUpHigher = (idx > 0) && (lows[idx] > highs[idx - 1]) &&
                                 (close > daily[idx].open) &&
                                 (volMa50[idx] !== null && vols[idx] > volMa50[idx] * 1.5);
@@ -3690,8 +3684,8 @@
                 ['① Stage2多頭排列', s.detail.stage2, 3], ['② 近52週高點附近', s.detail.nearHigh52w, 2],
                 ['③ 波幅收斂', s.detail.contraction, 5], ['④ 量縮<50日×0.7', s.detail.volShrink, 3],
                 ['⑤ 10日狹幅<5%', s.detail.tight, 2], ['⑥ 帶量突破10日高', s.detail.breakout, 3],
-                ['⑦ 順勢大潮', s.detail.strongBull, 2], ['⑧ 破浪起漲', s.detail.surgeOut, 2],
-                ['⑨ 躍空起漲', s.detail.gapUpHigher, 3],
+                ['⑦ 多頭強勢噴出', s.detail.strongBull, 2], ['⑧ 波段壓縮突破', s.detail.surgeOut, 2],
+                ['⑨ 跳空主力攻擊', s.detail.gapUpHigher, 3],
             ];
             const pos = result.vcp.openPosition;
             const bt = result.backtest;
@@ -3828,43 +3822,91 @@
         }
         function evaluateBuySuitability(dv) {
             const ind = dv.ind;
-            const i = ind.closes.length - 1;
+            const i = ind.closes.length - 1, i1 = i - 1;
             const lastClose = ind.closes[i], ma20 = ind.ma20[i], ma100 = ind.ma100[i];
             const lastDate = dv.dailyTimes[i];
 
+            // --- 趨勢與型態 ---
             const aboveMa20 = ma20 !== null && lastClose > ma20;
             const ma100Protects = ma100 !== null && ma20 !== null && ma100 < ma20;
             const simpleAligned = aboveMa20 && ma100Protects;
-            const vcpHolding = !!dv.vcp.openPosition;
             const vcpScore = dv.latestScore;
             const vcpGoodScore = vcpScore && vcpScore.score >= 8;
+            const vcpHolding = !!dv.vcp.openPosition;
 
-            // 停損估算：用日20MA、或-7%硬停損，取較高(較貼近現價、較保守)的那個當參考價
+            // --- 資金動能分數：綜合近5/20/60日漲跌幅，跟「資金動能排行」用同一套公式，數值互通 ---
+            const getP = (offset) => (i - offset >= 0) ? ind.closes[i - offset] : ind.closes[0];
+            const c5 = getP(5), c20 = getP(20), c60 = getP(60);
+            const momentumScore = ((lastClose - c5) / c5 + (lastClose - c20) / c20 + (lastClose - c60) / c60) * 100;
+
+            // --- 短線技術指標擷取 ---
+            const k = ind.kd.k[i], d = ind.kd.d[i], kPrev = ind.kd.k[i1], dPrev = ind.kd.d[i1];
+            const rsi = ind.rsi14[i], pb = ind.percentB[i];
+            const kdGolden = (k !== null && d !== null && kPrev !== null && dPrev !== null) && k > d && kPrev <= dPrev;
+            const kdDead = (k !== null && d !== null && kPrev !== null && dPrev !== null) && k < d && kPrev >= dPrev;
+            const rsiOversold = rsi !== null && rsi < 30;
+            const rsiOverbought = rsi !== null && rsi > 70;
+            const bbBreakUp = pb !== null && pb > 1;
+
+            let shortSignals = [];
+            let shortWarnings = [];
+            if (kdGolden) shortSignals.push('KD黃金交叉');
+            if (rsiOversold) shortSignals.push('RSI超賣區');
+            if (kdDead) shortWarnings.push('KD死亡交叉');
+            if (rsiOverbought) shortWarnings.push('RSI過熱(>70)');
+            if (bbBreakUp) shortWarnings.push('股價穿出布林上軌(防追高)');
+
+            // --- 停損與風險估算：用日20MA、或-7%硬停損，取較高(較貼近現價、較保守)的那個當參考價 ---
             const hardStop = lastClose * 0.93;
             const stopPrice = ma20 !== null ? Math.max(ma20, hardStop) : hardStop;
             const riskPerShare = lastClose - stopPrice;
             const riskPct = riskPerShare / lastClose * 100;
 
+            // --- 綜合決策邏輯：同時看長線(大均線)、型態(海象標籤)、短線(KD/RSI/布林) ---
             let light, label, advice;
-            if (simpleAligned && vcpGoodScore) {
-                light = '🟢'; label = '可以買';
-                advice = `站上日20MA，且日100MA在下方保護，VCP評分也達標(${vcpScore.score}/25)。屬於條件較齊全的進場點，但仍建議搭配你自己的判斷分批進場，不要all-in。`;
+            if (vcpHolding) {
+                if (lastClose <= dv.vcp.openPosition.stopPrice * 1.02) {
+                    light = '🔴'; label = '防守警戒';
+                    advice = '股價已逼近VCP系統的停損/移動停利線，請嚴格執行紀律，隨時準備出場。';
+                } else if (shortWarnings.length >= 2) {
+                    light = '🟠'; label = '留意獲利了結';
+                    advice = `持倉中，但短線出現過熱訊號(${shortWarnings.join('、')})，建議可考慮分批停利，鎖住獲利。`;
+                } else {
+                    light = '🔵'; label = '安心續抱';
+                    advice = '目前持倉中且趨勢健康，未見明顯轉弱訊號，請依循移動停利機制續抱。';
+                }
+            } else if (simpleAligned && vcpGoodScore) {
+                if (shortWarnings.length > 0) {
+                    light = '🟡'; label = '趨勢佳，但短線過熱';
+                    advice = `型態與分數均優(${vcpScore.score}/25)，但短線指標顯示過熱(${shortWarnings[0]})。建議不要急著追高，等待拉回量縮或指標降溫時再進場。`;
+                } else {
+                    light = '🟢'; label = '強勢進場';
+                    advice = `趨勢多頭排列且VCP分數達標(${vcpScore.score}/25)，短線亦無過熱跡象。屬於勝率極高的發動點，建議可規劃資金分批佈局，仍不要all-in。`;
+                }
             } else if (simpleAligned) {
-                light = '🟡'; label = '可以少量買';
-                advice = `站上日20MA、日100MA在下方保護，型態方向正確，但VCP評分還沒到8分(目前${vcpScore ? vcpScore.score : '資料不足'}/25)，結構不算最完整，建議小量或繼續觀察，不要重倉。`;
+                if (shortSignals.length > 0) {
+                    light = '🟢'; label = '短線轉強試單';
+                    advice = `VCP分數雖未滿8分(目前${vcpScore ? vcpScore.score : '資料不足'}/25)，但均線具備保護，且短線出現買訊(${shortSignals[0]})。可考慮使用較小資金(試單)進場搶短。`;
+                } else {
+                    light = '🟡'; label = '建議觀望';
+                    advice = '均線雖呈多頭，但型態分數不足且缺乏短線點火訊號，建議先加入自選觀察，等待帶量突破。';
+                }
             } else if (aboveMa20 && !ma100Protects) {
                 light = '🟡'; label = '請觀望';
                 advice = '收盤在日20MA之上，但日100MA還在日20MA上方(還沒形成多頭排列)，這種情況比較像反彈，不是穩定的多頭結構，建議再觀察。';
+            } else if (shortSignals.length >= 2) {
+                light = '🟡'; label = '跌深反彈(搶短)';
+                advice = `趨勢偏空，但短線指標出現強烈超賣反彈訊號(${shortSignals.join('、')})。僅適合極短線高手搶反彈，手腳需快。`;
             } else {
-                light = '🔴'; label = '不能買';
-                advice = '收盤還在日20MA之下，沒有站上短期均線，目前不是建議的進場時機。';
+                light = '🔴'; label = '嚴禁買進';
+                advice = '均線空頭排列，趨勢偏弱且無反轉訊號，此時進場極易套牢，請耐心保留現金。';
             }
             if (vcpHolding) {
                 const entryT = dv.vcp.openPosition.entryTime;
                 const entryP = dv.vcp.openPosition.entryPrice;
-                advice += `(備註：VCP系統另外自己模擬了一筆從${entryT}開始、進場價${fmt(entryP)}的持倉，跟上面這個燈號是兩套獨立判斷，不影響燈號結果；如果你還沒買，這不是叫你買的訊號，如果已經買了可以參考上方VCP卡片的停損價繼續觀察。)`;
+                advice += `(備註：VCP系統另外自己模擬了一筆從${entryT}開始、進場價${fmt(entryP)}的持倉，跟上面這個燈號是同一套持倉狀態的判斷；如果你還沒買，這不是叫你買的訊號，如果已經買了可以參考上方VCP卡片的停損價繼續觀察。)`;
             }
-            return { lastClose, ma20, lastDate, stopPrice, riskPerShare, riskPct, light, label, advice, vcpScore };
+            return { lastClose, ma20, lastDate, stopPrice, riskPerShare, riskPct, light, label, advice, vcpScore, shortSignals, shortWarnings, vcpHolding, momentumScore };
         }
         function renderTodaySignal(symbol) {
             const panel = document.getElementById('predict-panel');
@@ -3872,20 +3914,59 @@
             if (!a) { panel.innerHTML = '<p class="text-gray-500 text-sm">資料尚未載入</p>'; return; }
             const r = evaluateBuySuitability(a.dailyView);
 
+            // 海象型態標籤與白話說明
+            let oceanTags = '';
+            if (r.vcpScore && r.vcpScore.detail) {
+                if (r.vcpScore.detail.strongBull) oceanTags += `<div class="bg-rose-900/20 border border-rose-500/30 rounded p-1.5 mt-1.5 flex items-start gap-1.5"><span class="neon-pill neon-pill--rose shrink-0 mt-0.5">多頭強勢噴出</span><span class="text-slate-300 text-[10px] leading-tight">均線多頭+主力強漲：大中短均線多頭排列且強漲，趨勢與動能完美共振。</span></div>`;
+                if (r.vcpScore.detail.surgeOut) oceanTags += `<div class="bg-amber-900/20 border border-amber-500/30 rounded p-1.5 mt-1.5 flex items-start gap-1.5"><span class="neon-pill neon-pill--amber shrink-0 mt-0.5">波段壓縮突破</span><span class="text-slate-300 text-[10px] leading-tight">波幅收斂+點火發動：波幅收斂後連續高過高，主力點火發動訊號。</span></div>`;
+                if (r.vcpScore.detail.gapUpHigher) oceanTags += `<div class="bg-cyan-900/20 border border-cyan-500/30 rounded p-1.5 mt-1.5 flex items-start gap-1.5"><span class="neon-pill neon-pill--cyan shrink-0 mt-0.5">跳空主力攻擊</span><span class="text-slate-300 text-[10px] leading-tight">帶量跳空+收紅：帶量跳空開高收紅，強勢主升段起點。</span></div>`;
+            }
+            if (!oceanTags) oceanTags = '<div class="text-slate-500 text-[11px] mt-1.5">目前無特殊海象型態</div>';
+
+            // 短線指標字串
+            let shortTechHtml = '';
+            if (r.shortSignals.length > 0) shortTechHtml += `<div class="text-green-400 text-[11px]">🟢 ${r.shortSignals.join('、')}</div>`;
+            if (r.shortWarnings.length > 0) shortTechHtml += `<div class="text-orange-400 text-[11px]">🔴 ${r.shortWarnings.join('、')}</div>`;
+            if (!shortTechHtml) shortTechHtml = '<div class="text-slate-500 text-[11px]">中性，無極端訊號</div>';
+
             panel.innerHTML = `
-                <div class="bg-gray-800 rounded p-3">
-                    <div class="text-[11px] text-brand-cyan/90 mb-2 bg-brand-cyan/10 border border-brand-cyan/20 rounded px-2 py-1.5">💡 這裡是用「最新一個交易日的收盤資料」試算的買點建議，用來決定「下一次有機會交易時」(收盤後看＝明天開盤；交易時間中看＝今天當下)要不要進場，不是只限定明天。每次重新打開才會用最新資料算一次。</div>
-                    <div class="text-[11px] text-gray-500 mb-1">依最新一天收盤資料(${r.lastDate})試算，僅供參考，不是即時報價；隔天/下週開盤如果價格有變動，建議重新打開確認一次。</div>
-                    <div class="text-xl font-bold mb-1">${r.light} ${r.label}</div>
-                    <div class="text-[12px] text-gray-300 mb-3">${r.advice}</div>
-                    <div class="grid grid-cols-2 gap-2 text-[11px] font-mono-num bg-gray-900/40 rounded p-2">
-                        <div>收盤價：<span class="text-white font-bold">${fmt(r.lastClose)}</span></div>
-                        <div>日20MA：<span class="text-blue-400">${fmt(r.ma20)}</span></div>
-                        <div>建議停損價：<span class="text-orange-400 font-bold">${fmt(r.stopPrice)}</span></div>
-                        <div>每股風險：<span class="text-orange-400 font-bold">${fmt(r.riskPerShare)}元(${r.riskPct.toFixed(1)}%)</span></div>
+                <div class="bg-brand-bg/50 border border-brand-cyan/20 rounded-xl p-4">
+                    <div class="text-[11px] text-brand-cyan/90 mb-3 bg-brand-cyan/10 border border-brand-cyan/20 rounded px-2 py-1.5">💡 這裡是用「最新一個交易日的收盤資料」試算的綜合建議，用來決定「下一次有機會交易時」要不要進場，每次重新打開才會用最新資料算一次。</div>
+                    <div class="flex items-center justify-between mb-3 border-b border-white/10 pb-3">
+                        <div>
+                            <div class="text-2xl font-bold tracking-wide">${r.light} ${r.label}</div>
+                            <div class="text-[10px] text-slate-400 mt-1">依 ${r.lastDate} 收盤資料運算</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-xs text-slate-400 mb-0.5">資金動能</div>
+                            <div class="text-lg font-bold font-mono-num ${r.momentumScore > 0 ? 'text-red-400' : 'text-green-400'}">
+                                ${r.momentumScore > 0 ? '+' : ''}${r.momentumScore.toFixed(1)}<span class="text-[10px] text-slate-500 ml-1">分</span>
+                            </div>
+                        </div>
                     </div>
-                    <div class="mt-2 text-[10px] text-gray-500">停損價＝日20MA跟「收盤價×0.93」兩者取較高(較靠近現價)的一個，這是用來抓「萬一買了之後不對，最多大概要虧多少」的概估，不是精準的下單指令。</div>
+                    <div class="text-[13px] text-slate-200 leading-relaxed mb-4 p-2.5 bg-brand-card/50 rounded-lg border border-white/5">${r.advice}</div>
+                    <div class="grid grid-cols-1 gap-3 mb-4">
+                        <div class="bg-gray-900/60 rounded-lg p-2.5">
+                            <div class="text-brand-teal font-bold text-[11px] flex items-center gap-1"><i data-lucide="waves" class="w-3 h-3"></i> 潮汐型態解析</div>
+                            ${oceanTags}
+                        </div>
+                        <div class="bg-gray-900/60 rounded-lg p-2.5">
+                            <div class="text-brand-cyan font-bold text-[11px] mb-1.5 flex items-center gap-1"><i data-lucide="zap" class="w-3 h-3"></i> 短線指標 (KD/RSI/布林)</div>
+                            ${shortTechHtml}
+                        </div>
+                    </div>
+                    <div class="bg-red-900/10 border border-red-500/20 rounded-lg p-3">
+                        <div class="text-red-400 font-bold text-[11px] mb-2 flex items-center gap-1"><i data-lucide="shield-alert" class="w-3.5 h-3.5"></i> 風險與防守線試算</div>
+                        <div class="grid grid-cols-2 gap-2 text-[11px] font-mono-num">
+                            <div>目前收盤價：<span class="text-white font-bold">${fmt(r.lastClose)}</span></div>
+                            <div>生命線(日20MA)：<span class="text-blue-400">${fmt(r.ma20)}</span></div>
+                            <div>建議停損價：<span class="text-orange-400 font-bold">${fmt(r.stopPrice)}</span></div>
+                            <div>單股承受風險：<span class="text-orange-400 font-bold">${fmt(r.riskPerShare)}元(${r.riskPct.toFixed(1)}%)</span></div>
+                        </div>
+                        <div class="mt-2 text-[9px] text-slate-500 leading-relaxed">※ 停損價計算邏輯：取「日20MA」與「現價跌7%」兩者中較靠近現價的數值作為防守底線。進場前請先評估此虧損金額是否會影響睡眠。</div>
+                    </div>
                 </div>`;
+            safeLucideIcons({ root: panel });
         }
 
         // ============ 新手模式：快速試算 + 持股提醒清單 ============
@@ -5109,7 +5190,7 @@
         }
 
         // ============ 產業輪動排行 ============
-        // 用已經抓過的stockCache(母清單掃描後就會有)，依SECTOR_MAP分組，算每個產業的近5日/20日平均漲幅做排行。
+        // 用已經抓過的stockCache(母清單掃描後就會有)，依SECTOR_MAP分組，算每個產業的近5日/20日平均漲幅、以及資金動能分數(5/20/60日加權)做排行。
         // 不會額外發API請求，純粹利用掃描時已經抓到的資料，所以一定要先掃過一次「鯨魚雷達(母清單)」才有東西可以算。
         function computeSectorRotation() {
             const bySector = {};
@@ -5120,42 +5201,60 @@
                 const closeNow = daily[n - 1].close;
                 const close5 = daily[n - 6] ? daily[n - 6].close : null;
                 const close20 = daily[n - 21] ? daily[n - 21].close : null;
+                const close60 = daily[n - 61] ? daily[n - 61].close : null;
                 const ret5 = (close5 && close5 > 0) ? (closeNow - close5) / close5 * 100 : null;
                 const ret20 = (close20 && close20 > 0) ? (closeNow - close20) / close20 * 100 : null;
+                // 資金動能分數：跟個股「資金動能排行」用同一套5/20/60日加權公式，讓產業視角跟個股視角互相呼應
+                const momentum = (close5 && close5 > 0 && close20 && close20 > 0 && close60 && close60 > 0)
+                    ? ((closeNow - close5) / close5 + (closeNow - close20) / close20 + (closeNow - close60) / close60) * 100
+                    : null;
                 const sector = SECTOR_MAP[symbol] || '其他';
-                if (!bySector[sector]) bySector[sector] = { ret5: [], ret20: [], symbols: [] };
+                if (!bySector[sector]) bySector[sector] = { ret5: [], ret20: [], momentum: [], symbols: [] };
                 if (ret5 !== null) bySector[sector].ret5.push(ret5);
                 if (ret20 !== null) bySector[sector].ret20.push(ret20);
+                if (momentum !== null) bySector[sector].momentum.push(momentum);
                 bySector[sector].symbols.push(symbol);
             });
             const avg = arr => arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : null;
             const result = Object.entries(bySector).map(([sector, v]) => ({
-                sector, count: v.symbols.length, avgRet5: avg(v.ret5), avgRet20: avg(v.ret20),
+                sector, count: v.symbols.length, avgRet5: avg(v.ret5), avgRet20: avg(v.ret20), avgMomentum: avg(v.momentum),
             })).filter(r => r.avgRet5 !== null);
-            result.sort((a, b) => b.avgRet5 - a.avgRet5);
             return result;
         }
+        let sectorRotationMode = 'return'; // 'return'=近期漲幅視角(5/20日) ／ 'momentum'=獨立的資金動能視角(5/20/60日加權)
+        const SECTOR_ROTATION_DESC = {
+            return: '本統計基於鯨魚雷達母清單，依據近 5 日/20 日漲幅動能加權排行。此為動能資金流向之先行指標，反映市場當前之主力偏好。要先按下方「鯨魚雷達」掃描一次才有資料(掃自選清單不會更新這裡，因為樣本太少)。',
+            momentum: '獨立的資金動能視角：依「資金動能排行」同一套 5/20/60 日加權公式，計算每個產業的平均動能分數，找出目前資金動能最集中湧入的產業，跟近期漲幅榜的排序邏輯不同，可互相對照參考。',
+        };
         function renderSectorRotation() {
             const el = document.getElementById('sector-rotation-list');
+            const descEl = document.getElementById('sector-rotation-desc');
             if (!el) return;
+            if (descEl) descEl.textContent = SECTOR_ROTATION_DESC[sectorRotationMode];
             const data = computeSectorRotation();
-            if (data.length === 0) {
+            const metricKey = sectorRotationMode === 'momentum' ? 'avgMomentum' : 'avgRet5';
+            const rows = data.filter(r => r[metricKey] !== null).sort((a, b) => b[metricKey] - a[metricKey]);
+            if (rows.length === 0) {
                 el.innerHTML = '<p class="text-gray-500 text-sm">還沒有資料，先按下面「鯨魚雷達(母清單)」掃描一次。</p>';
                 return;
             }
-            el.innerHTML = data.map((d, idx) => {
-                const barColor = d.avgRet5 >= 0 ? 'from-red-500/80 to-red-400' : 'from-green-500/80 to-green-400';
-                const textCls = d.avgRet5 >= 0 ? 'text-red-400' : 'text-green-400';
-                const sign = d.avgRet5 >= 0 ? '+' : '';
-                const ret20Label = d.avgRet20 !== null ? `(20日${d.avgRet20 >= 0 ? '+' : ''}${d.avgRet20.toFixed(1)}%)` : '';
+            el.innerHTML = rows.map((d, idx) => {
+                const val = d[metricKey];
+                const barColor = val >= 0 ? 'from-red-500/80 to-red-400' : 'from-green-500/80 to-green-400';
+                const textCls = val >= 0 ? 'text-red-400' : 'text-green-400';
+                const sign = val >= 0 ? '+' : '';
+                const subLabel = sectorRotationMode === 'momentum'
+                    ? (d.avgRet5 !== null ? `(5日${d.avgRet5 >= 0 ? '+' : ''}${d.avgRet5.toFixed(1)}%)` : '')
+                    : (d.avgRet20 !== null ? `(20日${d.avgRet20 >= 0 ? '+' : ''}${d.avgRet20.toFixed(1)}%)` : '');
+                const valLabel = sectorRotationMode === 'momentum' ? `${sign}${val.toFixed(1)}分` : `${sign}${val.toFixed(1)}%`;
                 return `
                 <div class="flex items-center justify-between text-xs py-1.5">
                     <span class="w-5 text-gray-500 shrink-0">${idx + 1}</span>
                     <span class="w-20 text-slate-200 font-bold truncate">${d.sector}</span>
                     <div class="flex-1 mx-3 bg-brand-bg/50 rounded-full h-2.5 overflow-hidden border border-white/5 relative shadow-inner">
-                        <div class="absolute left-0 top-0 bottom-0 bg-gradient-to-r ${barColor} rounded-full" style="width: ${Math.min(100, Math.abs(d.avgRet5) * 10)}%; box-shadow: 0 0 8px currentColor;"></div>
+                        <div class="absolute left-0 top-0 bottom-0 bg-gradient-to-r ${barColor} rounded-full" style="width: ${Math.min(100, Math.abs(val) * 10)}%; box-shadow: 0 0 8px currentColor;"></div>
                     </div>
-                    <span class="${textCls} font-mono-num font-bold w-16 text-right">${sign}${d.avgRet5.toFixed(1)}% <span class="text-gray-500 font-normal">${ret20Label}</span></span>
+                    <span class="${textCls} font-mono-num font-bold w-20 text-right">${valLabel} <span class="text-gray-500 font-normal">${subLabel}</span></span>
                 </div>`;
             }).join('');
         }
@@ -5211,7 +5310,7 @@
                     const liquidity = avgDailyVolumeLots(daily, 20);
                     const liquidityOk = liquidity !== null && liquidity >= 1000;
                     const score = (isBuy ? 5 : 0) + (justTurning ? 2 : 0) + (isStrong ? 2 : 0) + (liquidityOk ? 1 : 0);
-                    // 潮汐推力排行：綜合長中短期(60/20/5日)漲跌幅動能分數
+                    // 資金動能排行：綜合長中短期(60/20/5日)漲跌幅動能分數
                     const n = daily.length;
                     const closeNow = n > 0 ? daily[n - 1].close : null;
                     const close5 = daily[n - 6] ? daily[n - 6].close : null;
@@ -5219,7 +5318,7 @@
                     const close60 = daily[n - 61] ? daily[n - 61].close : null;
                     let momentumScore = null;
                     if (closeNow !== null && close5 && close20 && close60) {
-                        momentumScore = (closeNow - close5) / close5 + (closeNow - close20) / close20 + (closeNow - close60) / close60;
+                        momentumScore = ((closeNow - close5) / close5 + (closeNow - close20) / close20 + (closeNow - close60) / close60) * 100;
                     }
                     let buyVerdict = null;
                     try { buyVerdict = evaluateBuySuitability(computeDailyView(daily)); } catch (e) { /* 資料不足時跳過，不影響掃描其他項目 */ }
@@ -5284,11 +5383,12 @@
                         ${r.isBuy ? '<i data-lucide="bell" class="w-4 h-4 text-amber-400"></i>' : ''}
                         <span class="font-bold text-white">${stockLabel(r.symbol)}</span>
                         <span class="text-[10px] ${r.score >= 8 ? 'text-amber-300 font-bold' : 'text-gray-500'}" style="${r.score >= 8 ? 'text-shadow:0 0 6px rgba(252,211,77,0.7)' : ''}">${r.score}/10${r.score >= 8 ? ' 短線買入' : ''}</span>
+                        ${scanSortMode === 'momentum' && r.momentumScore !== null && r.momentumScore !== undefined ? `<span class="text-[10px] text-slate-500 font-mono-num ml-1">推力:${r.momentumScore.toFixed(1)}</span>` : ''}
                         ${r.justTurning ? '<span class="neon-pill neon-pill--cyan">起漲</span>' : ''}
                         ${r.isStrong ? '<span class="neon-pill neon-pill--violet">強勢</span>' : ''}
-                        ${r.buyVerdict && r.buyVerdict.vcpScore && r.buyVerdict.vcpScore.detail && r.buyVerdict.vcpScore.detail.strongBull ? '<span class="neon-pill neon-pill--rose">順勢大潮</span>' : ''}
-                        ${r.buyVerdict && r.buyVerdict.vcpScore && r.buyVerdict.vcpScore.detail && r.buyVerdict.vcpScore.detail.surgeOut ? '<span class="neon-pill neon-pill--amber">破浪起漲</span>' : ''}
-                        ${r.buyVerdict && r.buyVerdict.vcpScore && r.buyVerdict.vcpScore.detail && r.buyVerdict.vcpScore.detail.gapUpHigher ? '<span class="neon-pill neon-pill--cyan">躍空起漲</span>' : ''}
+                        ${r.buyVerdict && r.buyVerdict.vcpScore && r.buyVerdict.vcpScore.detail && r.buyVerdict.vcpScore.detail.strongBull ? '<span class="neon-pill neon-pill--rose">多頭強勢噴出</span> <span class="text-[10px] text-slate-500 ml-1 mr-2">均線多頭+主力強漲</span>' : ''}
+                        ${r.buyVerdict && r.buyVerdict.vcpScore && r.buyVerdict.vcpScore.detail && r.buyVerdict.vcpScore.detail.surgeOut ? '<span class="neon-pill neon-pill--amber">波段壓縮突破</span> <span class="text-[10px] text-slate-500 ml-1 mr-2">波幅收斂+點火發動</span>' : ''}
+                        ${r.buyVerdict && r.buyVerdict.vcpScore && r.buyVerdict.vcpScore.detail && r.buyVerdict.vcpScore.detail.gapUpHigher ? '<span class="neon-pill neon-pill--cyan">跳空主力攻擊</span> <span class="text-[10px] text-slate-500 ml-1 mr-2">帶量跳空+收紅</span>' : ''}
                         ${r.liquidity !== null && !r.liquidityOk ? '<span class="text-[10px] text-red-400">量&lt;1000張</span>' : ''}
                         ${r.source === 'mock' ? '<span class="text-red-500 text-[10px]">模擬</span>' : ''}
                     </div>
@@ -5363,6 +5463,17 @@
                 }
                 renderScanCards();
             });
+            const sectorBody = document.getElementById('sector-rotation-body');
+            if (sectorBody) {
+                sectorBody.addEventListener('click', (e) => {
+                    const btn = e.target.closest('.sector-mode-btn');
+                    if (!btn) return;
+                    sectorBody.querySelectorAll('.sector-mode-btn').forEach(b => { b.classList.remove('active'); b.classList.add('text-slate-400'); });
+                    btn.classList.add('active'); btn.classList.remove('text-slate-400');
+                    sectorRotationMode = btn.dataset.mode;
+                    renderSectorRotation();
+                });
+            }
         });
 
         // ============ 事件綁定 ============
