@@ -3134,30 +3134,41 @@
                 });
 
                 const areaSeries = chart.addAreaSeries({
-                    lineColor: '#00f2fe', topColor: 'rgba(0, 242, 254, 0.35)', bottomColor: 'rgba(0, 242, 254, 0.0)', lineWidth: 2, crosshairMarkerVisible: false
+                    lineColor: '#00f2fe', topColor: 'rgba(0, 242, 254, 0.35)', bottomColor: 'rgba(0, 242, 254, 0.0)', lineWidth: 2, crosshairMarkerVisible: false, priceLineVisible: false, lastValueVisible: false
                 });
-                const ma20Series = chart.addLineSeries({ color: '#3b82f6', lineWidth: 1.5, crosshairMarkerVisible: false });
-                const ma100Series = chart.addLineSeries({ color: '#fbbf24', lineWidth: 1.5, crosshairMarkerVisible: false });
+                const ma20Series = chart.addLineSeries({ color: '#3b82f6', lineWidth: 1.5, crosshairMarkerVisible: false, priceLineVisible: false, lastValueVisible: false });
+                const ma100Series = chart.addLineSeries({ color: '#fbbf24', lineWidth: 1.5, crosshairMarkerVisible: false, priceLineVisible: false, lastValueVisible: false });
 
                 const data = marketLightCache.historyData;
                 const ma20 = marketLightCache.historyMa20;
                 const ma100 = marketLightCache.historyMa100;
 
+                const VISIBLE_DAYS = 120; // 只顯示約 6 個月的資料，讓圖表疏密適中並能呈現 100MA 弧度
+                const startIndex = Math.max(0, data.length - VISIBLE_DAYS);
+
                 const areaData = [], ma20Data = [], ma100Data = [];
-                data.forEach((d, i) => {
+                for (let i = startIndex; i < data.length; i++) {
+                    const d = data[i];
                     areaData.push({ time: d.time, value: d.close });
                     if (ma20[i] !== null) ma20Data.push({ time: d.time, value: ma20[i] });
                     if (ma100[i] !== null) ma100Data.push({ time: d.time, value: ma100[i] });
-                });
+                }
 
                 areaSeries.setData(areaData);
                 ma20Series.setData(ma20Data);
                 ma100Series.setData(ma100Data);
-                chart.timeScale().fitContent();
 
+                // 加入 isFitted 標記，確保只在視窗打開、首次獲得寬度時執行一次 fitContent
+                let isFitted = false;
                 const ro = new ResizeObserver(entries => {
                     if (entries.length === 0 || entries[0].contentRect.width === 0) return;
                     chart.applyOptions({ width: chartContainer.clientWidth, height: chartContainer.clientHeight });
+
+                    // 當彈跳視窗打開，圖表獲得實際寬度後，再執行填滿畫面
+                    if (!isFitted) {
+                        chart.timeScale().fitContent();
+                        isFitted = true;
+                    }
                 });
                 ro.observe(chartContainer);
             }
