@@ -2220,7 +2220,7 @@
         // 用證交所「基本市況報導網站」即時系統，tse_t00.tw是加權指數專用代碼(這個代碼是社群長期使用、已驗證過的寫法)。
         // 這個只用來「顯示當下這一刻的數字」給你參考；大盤燈號的多空判斷還是用收盤資料算MA20/MA100，
         // 不會改用即時跳動的價格來判斷，避免燈號因為盤中價格小波動而一直閃爍不穩定。
-        async function fetchTaiexRealtime() {
+        async function fetchTaiexRealtimeTwse() {
             const url = 'https://mis.twse.com.tw/stock/api/getStockInfo.jsp?ex_ch=tse_t00.tw&json=1&delay=0';
             const res = await corsFetch(url);
             const json = await res.json();
@@ -2230,12 +2230,36 @@
             if (!isFinite(price) || price <= 0) price = parseFloat(item.o); // z是'-'代表還沒成交，退回開盤價
             const prevClose = parseFloat(item.y);
             const updateMs = parseInt(item.tlong);
-            if (!isFinite(price) || price <= 0) throw new Error('即時報價格式異常');
+            if (!isFinite(price) || price <= 0) throw new Error('即時報價格式異常(可能是非交易時間，證交所這時候還沒有當天的報價)');
             return {
                 price,
                 prevClose: isFinite(prevClose) ? prevClose : null,
                 updateTime: isFinite(updateMs) ? new Date(updateMs) : null,
             };
+        }
+        // 證交所的MIS即時系統在「非交易時間」(開盤前/收盤後一段時間)常常整組欄位都是'-'，會直接讓上面那支函式丟錯，
+        // 而且這支即時系統本身也比歷史資料的API更常抽風/被擋。這裡改用Yahoo Finance的chart API當備援：
+        // 這支API的meta欄位平常都會帶「最近一次成交價/收盤價」，就算現在沒開盤也抓得到東西，而且跟抓歷史收盤資料是同一套(已經驗證過能用)。
+        async function fetchTaiexRealtimeYahoo() {
+            const url = 'https://query1.finance.yahoo.com/v8/finance/chart/%5ETWII?range=5d&interval=1d';
+            const res = await corsFetch(url);
+            const json = await res.json();
+            const result = json.chart && json.chart.result && json.chart.result[0];
+            const meta = result && result.meta;
+            const price = meta && meta.regularMarketPrice;
+            if (!meta || !isFinite(price) || price <= 0) throw new Error('Yahoo Finance即時報價無資料');
+            const prevCloseRaw = meta.chartPreviousClose != null ? meta.chartPreviousClose : meta.previousClose;
+            const prevClose = isFinite(prevCloseRaw) ? prevCloseRaw : null;
+            const updateTime = isFinite(meta.regularMarketTime) ? new Date(meta.regularMarketTime * 1000) : null;
+            return { price, prevClose, updateTime };
+        }
+        async function fetchTaiexRealtime() {
+            try {
+                return await fetchTaiexRealtimeTwse();
+            } catch (e) {
+                console.warn('加權指數即時報價(證交所MIS)抓不到，改用Yahoo Finance備援', e.message);
+                return await fetchTaiexRealtimeYahoo();
+            }
         }
 
         // ============ 盤中型態判斷 ============
