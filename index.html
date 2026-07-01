@@ -571,7 +571,7 @@
                             <div class="text-white font-bold text-[13px] mb-1.5 flex items-center gap-1.5"><i data-lucide="wind" class="w-3.5 h-3.5 text-amber-300"></i> 什麼是美股連動風力？</div>
                             <p class="mb-1.5">針對台股高度依賴外資的「淺碟市場」特性，所量身打造的風險預警指標。</p>
                             <div class="grid gap-1.5">
-                                <div class="flex items-start gap-1.5"><span class="geo-dot mt-1.5"></span><span><b class="text-white">運算核心：</b>VIX恐慌指數(40%) + SOX/QQQ/SPY跌幅(50%) + USD/TWD匯率(10%)，只有市場出現風險時才會加分。</span></div>
+                                <div class="flex items-start gap-1.5"><span class="geo-dot mt-1.5"></span><span><b class="text-white">運算核心：</b>VIX恐慌指數(40%) + SOX/NDX/SPX跌幅(50%) + USD/TWD匯率(10%)，只有市場出現風險時才會加分。</span></div>
                                 <div class="flex items-start gap-1.5"><span class="geo-dot mt-1.5"></span><span><b class="text-white">風力飆高(避險提款)：</b>美股動盪，外資隔日極大概率將台股作為提款機，此時進場極易接刀，應拉高現金水位。</span></div>
                                 <div class="flex items-start gap-1.5"><span class="geo-dot mt-1.5"></span><span><b class="text-white">風力降溫(訊號回穩)：</b>美股止跌、恐慌回落。外資情緒穩定後，才是動用保留現金進場佈局的高勝率時機。</span></div>
                             </div>
@@ -622,7 +622,7 @@
                     <button id="wind-index-modal-close" class="text-slate-400 hover:text-white p-1"><i data-lucide="x" class="w-5 h-5"></i></button>
                 </div>
                 <div id="wind-index-content" class="p-4">
-                    <p class="text-slate-500 text-xs">正在抓VIX/SPY/QQQ的歷史資料並計算Z-Score，第一次載入要花幾秒鐘...</p>
+                    <p class="text-slate-500 text-xs">正在抓VIX/SPX/NDX的歷史資料並計算Z-Score，第一次載入要花幾秒鐘...</p>
                 </div>
             </div>
         </div>
@@ -2033,7 +2033,7 @@
             return { price, chgPct };
         }
         async function fetchUsMarketSnapshot() {
-            const tickers = { vix: '^VIX', spy: 'SPY', qqq: 'QQQ', sox: '^SOX' };
+            const tickers = { vix: '^VIX', spy: '^GSPC', qqq: '^NDX', sox: '^SOX' };
             const result = {};
             await Promise.all(Object.entries(tickers).map(async ([key, t]) => {
                 try { result[key] = await fetchUsTicker(t); } catch (e) { result[key] = null; }
@@ -2117,8 +2117,8 @@
         async function computeWindIndex() {
             const [vixCloses, spyCloses, qqqCloses, soxCloses, usdtwdCloses] = await Promise.all([
                 fetchUsTickerHistory('^VIX'),
-                fetchUsTickerHistory('SPY'),
-                fetchUsTickerHistory('QQQ'),
+                fetchUsTickerHistory('^GSPC'),
+                fetchUsTickerHistory('^NDX'),
                 fetchUsTickerHistory('^SOX'),
                 fetchUsTickerHistory('TWD=X'), // Yahoo Finance的USD/TWD匯率代碼；數值上升=1美元能換更多台幣=台幣貶值
             ]);
@@ -2212,7 +2212,7 @@
                         <div class="flex items-center gap-1.5 text-white font-bold text-[13px] mb-1.5"><i data-lucide="wind" class="w-3.5 h-3.5 text-amber-300"></i> 風力：解析市場「短線情緒與波動」</div>
                         本指標透過監測美股關鍵指數與恐慌情緒，預判外部資金對台股可能產生的短期衝擊。當美股科技股出現顯著拉回，或 VIX 恐慌指數異常飆升時，風力分數將隨之提高。此機制如同海面上的「陣風與亂流」，旨在區隔長線趨勢與短期波動，協助您在市場震盪時，靈活調整短線部位的風險曝險。
                     </div>
-                    <p class="text-[10px] text-slate-500 leading-relaxed font-mono-num">運算邏輯：VIX(40%) + SOX費半(25%) + QQQ那斯達克(15%) + SPY標普500(10%) + USD/TWD匯率(10%)。每項數據皆轉換為近250日Z-Score，且只有「VIX上升／美股下跌／新台幣貶值」這種風險增加的方向才會轉成正的風力分數，反方向一律歸零，不會倒扣。美股任一指數單日跌幅超過${WIND_PANIC_DROP_THRESHOLD}%時，當天的風險分數會再乘上${WIND_PANIC_MULTIPLIER}倍恐慌加乘。此外若當日VIX實際數值低於${WIND_VIX_ABS_FLOOR}，即使Z-Score偏高，最終分數也會封頂在${WIND_VIX_ABS_CAP.toFixed(1)}分(強風上限)，不會誤判成疾風/颱風。最後對近5日分數做EMA平滑，過濾單日極端雜訊。此為輔助決策模型，非絕對預測。${lastWindIndexResult && lastWindIndexResult.usedVixFilter ? `<br><span class="text-amber-400">⚠️ 目前VIX(${fmt(lastWindIndexResult.vixToday)})低於${WIND_VIX_ABS_FLOOR}，本次分數已套用VIX絕對值濾網封頂。</span>` : ''}</p>
+                    <p class="text-[10px] text-slate-500 leading-relaxed font-mono-num">運算邏輯：VIX(40%) + SOX費半(25%) + NDX那斯達克(15%) + SPX標普500(10%) + USD/TWD匯率(10%)。每項數據皆轉換為近250日Z-Score，且只有「VIX上升／美股下跌／新台幣貶值」這種風險增加的方向才會轉成正的風力分數，反方向一律歸零，不會倒扣。美股任一指數單日跌幅超過${WIND_PANIC_DROP_THRESHOLD}%時，當天的風險分數會再乘上${WIND_PANIC_MULTIPLIER}倍恐慌加乘。此外若當日VIX實際數值低於${WIND_VIX_ABS_FLOOR}，即使Z-Score偏高，最終分數也會封頂在${WIND_VIX_ABS_CAP.toFixed(1)}分(強風上限)，不會誤判成疾風/颱風。最後對近5日分數做EMA平滑，過濾單日極端雜訊。此為輔助決策模型，非絕對預測。${lastWindIndexResult && lastWindIndexResult.usedVixFilter ? `<br><span class="text-amber-400">⚠️ 目前VIX(${fmt(lastWindIndexResult.vixToday)})低於${WIND_VIX_ABS_FLOOR}，本次分數已套用VIX絕對值濾網封頂。</span>` : ''}</p>
                     <table class="w-full text-[10px] text-slate-400 mt-2 border-t border-brand-border/50 pt-2">
                         <tr class="text-slate-500"><td class="py-0.5">0~2.5</td><td>微風(平穩)</td><td class="text-right">可加碼</td></tr>
                         <tr class="text-slate-500"><td class="py-0.5">2.6~5.0</td><td>強風(警戒)</td><td class="text-right">暫停加碼</td></tr>
@@ -4496,15 +4496,15 @@
         let lastUsSnapshot = null; // 快取美股資料，避免大盤燈號算完後重畫台股區塊時，重複再打一次美股API
         const US_INDICATOR_META = {
             sox: { title: 'SOX 費半指數', sub: '台股的生命線', icon: 'cpu' },
-            qqq: { title: 'QQQ 那斯達克100', sub: '科技股風向球', icon: 'zap' },
-            spy: { title: 'SPY 標普500', sub: '全球經濟晴雨表', icon: 'globe' },
+            qqq: { title: 'NDX 那斯達克100', sub: '科技股風向球', icon: 'zap' },
+            spy: { title: 'SPX 標普500', sub: '全球經濟晴雨表', icon: 'globe' },
             vix: { title: 'VIX 恐慌指數', sub: '外資的風險溫度計', icon: 'thermometer' },
         };
         // 四大指標教學文案：[技術定位]＋[解讀心法]，點卡片右上角的說明圖示才會彈出，預設只顯示標題/副標題/數據
         const US_INDICATOR_TEACHING = {
             sox: { position: '台股的生命線', insight: '台灣半導體產業鏈與 SOX 高度正相關。費半漲跌直接聯動台股電子權值股，對市值型資產 (如 0050) 影響劇烈。' },
-            qqq: { position: '科技股風向球', insight: '反映全球科技巨頭動能。QQQ 強勢代表電子代工與零組件需求穩健，為純科技主題資產 (如 00929) 的核心驅動力。' },
-            spy: { position: '全球經濟晴雨表', insight: '標誌美國整體經濟健康度。SPY 穩定向上代表資金面充裕，有利外資回流台股，並支撐大型權值與高股息資產 (如 00878)。' },
+            qqq: { position: '科技股風向球', insight: '反映全球科技巨頭動能。NDX 強勢代表電子代工與零組件需求穩健，為純科技主題資產 (如 00929) 的核心驅動力。' },
+            spy: { position: '全球經濟晴雨表', insight: '標誌美國整體經濟健康度。SPX 穩定向上代表資金面充裕，有利外資回流台股，並支撐大型權值與高股息資產 (如 00878)。' },
             vix: { position: '外資風險溫度計', insight: '衡量市場波動預期。VIX 飆高 (如 >20) 象徵市場恐慌，外資通常會優先抽離台股等新興市場，導致台股無差別下跌。' },
         };
         function openUsIndicatorInfoModal(key) {
