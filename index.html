@@ -571,7 +571,7 @@
                             <div class="text-white font-bold text-[13px] mb-1.5 flex items-center gap-1.5"><i data-lucide="wind" class="w-3.5 h-3.5 text-amber-300"></i> 什麼是美股連動風力？</div>
                             <p class="mb-1.5">針對台股高度依賴外資的「淺碟市場」特性，所量身打造的風險預警指標。</p>
                             <div class="grid gap-1.5">
-                                <div class="flex items-start gap-1.5"><span class="geo-dot mt-1.5"></span><span><b class="text-white">運算核心：</b>VIX恐慌指數(40%) + SPY/QQQ漲跌幅與乖離率(60%)。</span></div>
+                                <div class="flex items-start gap-1.5"><span class="geo-dot mt-1.5"></span><span><b class="text-white">運算核心：</b>VIX恐慌指數(40%) + SOX/QQQ/SPY跌幅(50%) + USD/TWD匯率(10%)，只有市場出現風險時才會加分。</span></div>
                                 <div class="flex items-start gap-1.5"><span class="geo-dot mt-1.5"></span><span><b class="text-white">風力飆高(避險提款)：</b>美股動盪，外資隔日極大概率將台股作為提款機，此時進場極易接刀，應拉高現金水位。</span></div>
                                 <div class="flex items-start gap-1.5"><span class="geo-dot mt-1.5"></span><span><b class="text-white">風力降溫(訊號回穩)：</b>美股止跌、恐慌回落。外資情緒穩定後，才是動用保留現金進場佈局的高勝率時機。</span></div>
                             </div>
@@ -2042,12 +2042,19 @@
         }
 
         // ============ 量化風力指數模型 ============
-        // 設計依你提供的四大心法做的：
-        // ①指標互補性：VIX(情緒)+台股乖離率(趨勢)+SPY/QQQ單日漲跌(美股動能)一起看，不只看單一指標
+        // 設計依你提供的心法做的：
+        // ①指標互補性：VIX(情緒)+美股三大指數單日漲跌(動能)+USD/TWD(外資動向)一起看，不只看單一指標
         // ②標準化：每個指標都先轉成Z-Score(跟自己過去250個交易日的平均/標準差比，看現在算不算歷史極端值)，
-        //   這樣不同單位(VIX是數值、乖離率跟漲跌幅是百分比)才能公平合併，不會因為單位不同而失去意義
-        // ③存股特殊性：最後對最近5天的原始分數做EMA平滑，不會因為單日盤中跳動就讓風力分數整個跳掉
-        // ④決策層級化：分數對應到微風/強風/疾風/颱風四級，每級都有明確的建議動作
+        //   這樣不同單位(VIX是數值、匯率跟漲跌幅是百分比)才能公平合併，不會因為單位不同而失去意義
+        // ③方向一致性：所有指標都先轉換成「風險分數」再合併——只有「VIX上升」「美股下跌」「新台幣貶值」這種
+        //   代表風險增加的方向，才會產生正的分數；反方向(VIX走低/美股上漲/新台幣升值)一律歸零，不會倒扣風力，
+        //   確保風力分數只會因為「市場出現風險」而墊高，不會因為「行情平靜或走好」而被拉低到不合理的程度
+        // ④不對稱急跌加權：美股任一指數單日跌幅超過門檻時，代表急跌帶來的恐慌不是線性的，
+        //   會對當天那個指數的風險分數乘上一個額外的恐慌加乘倍數，再進行EMA平滑
+        // ⑤VIX絕對值濾網：就算Z-Score算出來很極端，只要「當日VIX絕對數值」還在低檔，代表市場氣氛本質上並不恐慌，
+        //   此時把最終分數封頂在「強風」上限，避免因為短期波動被過度放大成「疾風/颱風」等級的錯誤訊號
+        // ⑥存股特殊性：最後對最近5天的分數做EMA平滑，不會因為單日盤中跳動就讓風力分數整個跳掉
+        // ⑦決策層級化：分數對應到微風/強風/疾風/颱風四級，每級都有明確的建議動作
         function zscore(value, series) {
             const n = series.length;
             if (n < 10) return 0;
@@ -2078,12 +2085,42 @@
             { max: 7.5, label: '疾風(減碼)', action: '啟動風險控制，賣出20%-30%', cls: 'text-amber-400', barCls: 'bg-amber-400' },
             { max: 10, label: '颱風(恐慌)', action: '嚴格執行止損/避險，轉入防禦性資產', cls: 'text-red-400', barCls: 'bg-red-400' },
         ];
+
+        // ---- 以下是幾個可以隨時調整的參數，抽出來獨立命名，之後要改門檻/倍數/權重都只要改這裡 ----
+        const WIND_WEIGHTS = { vix: 0.40, sox: 0.25, qqq: 0.15, spy: 0.10, usdtwd: 0.10 }; // 權重總和=1
+        const WIND_SCALE = 10 / 3;      // 把「風險分數」線性映射到0~10分：假設Z-Score落在0~3算合理範圍，3分就對應到滿分10分
+        const WIND_VIX_ABS_FLOOR = 18;  // VIX絕對值濾網門檻：當日VIX實際數值低於這個門檻，代表市場本質上不恐慌
+        const WIND_VIX_ABS_CAP = 5.0;   // 觸發上面濾網時，最終分數的封頂上限(等於「強風」上限，不會跳進「疾風」等級)
+        const WIND_PANIC_DROP_THRESHOLD = 3; // 「不對稱急跌加權」的觸發門檻(%)：單日跌幅超過這個百分比才加乘
+        const WIND_PANIC_MULTIPLIER = 1.5;   // 「不對稱急跌加權」的恐慌加乘倍數，未來要調整參數改這個數字就好
+
+        // 把「原始漲跌幅」轉成「風險分數」：只有下跌(相對於自己歷史的下跌幅度)才算風險，
+        // 上漲的日子一律歸零，不會讓風力分數因為美股上漲而被往下拉。
+        function equityRiskZ(returnToday, returnsBaseline) {
+            const negToday = -returnToday;
+            const negBaseline = returnsBaseline.map(v => -v);
+            const z = zscore(negToday, negBaseline);
+            return Math.max(0, z);
+        }
+        // 「不對稱急跌加權」：如果當日跌幅(絕對值)超過門檻，代表急跌，恐慌不是線性的，
+        // 把這根指數當天的風險分數乘上恐慌加乘倍數，再拿去跟其他天一起做EMA平滑。
+        function applyPanicMultiplier(riskZ, returnPct) {
+            if (returnPct <= -WIND_PANIC_DROP_THRESHOLD) return riskZ * WIND_PANIC_MULTIPLIER;
+            return riskZ;
+        }
+        // VIX/匯率不是「漲跌幅」而是「數值本身」，數值越高代表風險越大，一樣只取正的那一半。
+        function levelRiskZ(valueToday, valueBaseline) {
+            const z = zscore(valueToday, valueBaseline);
+            return Math.max(0, z);
+        }
+
         async function computeWindIndex() {
-            const [vixCloses, spyCloses, qqqCloses, soxCloses] = await Promise.all([
+            const [vixCloses, spyCloses, qqqCloses, soxCloses, usdtwdCloses] = await Promise.all([
                 fetchUsTickerHistory('^VIX'),
                 fetchUsTickerHistory('SPY'),
                 fetchUsTickerHistory('QQQ'),
                 fetchUsTickerHistory('^SOX'),
+                fetchUsTickerHistory('TWD=X'), // Yahoo Finance的USD/TWD匯率代碼；數值上升=1美元能換更多台幣=台幣貶值
             ]);
             const spyReturns = spyCloses.slice(1).map((c, i) => (c - spyCloses[i]) / spyCloses[i] * 100);
             const qqqReturns = qqqCloses.slice(1).map((c, i) => (c - qqqCloses[i]) / qqqCloses[i] * 100);
@@ -2096,21 +2133,31 @@
                 const spyRetIdx = spyReturns.length - 1 - k;
                 const qqqRetIdx = qqqReturns.length - 1 - k;
                 const soxRetIdx = soxReturns.length - 1 - k;
-                if (vixIdx < 10 || spyRetIdx < 10 || qqqRetIdx < 10 || soxRetIdx < 10) continue;
+                const usdtwdIdx = usdtwdCloses.length - 1 - k;
+                if (vixIdx < 10 || spyRetIdx < 10 || qqqRetIdx < 10 || soxRetIdx < 10 || usdtwdIdx < 10) continue;
 
                 const vixBase = vixCloses.slice(Math.max(0, vixIdx - baseN), vixIdx);
-                const spyRetBase = spyReturns.slice(Math.max(0, spyRetIdx - baseN), spyRetIdx).map(v => -v);
-                const qqqRetBase = qqqReturns.slice(Math.max(0, qqqRetIdx - baseN), qqqRetIdx).map(v => -v);
-                const soxRetBase = soxReturns.slice(Math.max(0, soxRetIdx - baseN), soxRetIdx).map(v => -v);
+                const spyRetBase = spyReturns.slice(Math.max(0, spyRetIdx - baseN), spyRetIdx);
+                const qqqRetBase = qqqReturns.slice(Math.max(0, qqqRetIdx - baseN), qqqRetIdx);
+                const soxRetBase = soxReturns.slice(Math.max(0, soxRetIdx - baseN), soxRetIdx);
+                const usdtwdBase = usdtwdCloses.slice(Math.max(0, usdtwdIdx - baseN), usdtwdIdx);
 
-                const zVix = zscore(vixCloses[vixIdx], vixBase);
-                const zSpy = zscore(-spyReturns[spyRetIdx], spyRetBase);
-                const zQqq = zscore(-qqqReturns[qqqRetIdx], qqqRetBase);
-                const zSox = zscore(-soxReturns[soxRetIdx], soxRetBase);
+                // VIX：數值上升(高於自己歷史均值)才是風險增加
+                const vixRisk = levelRiskZ(vixCloses[vixIdx], vixBase);
+                // 美股三指數：只有「下跌」才算風險，上漲歸零；跌幅超過門檻的加上恐慌加乘倍數
+                let spyRisk = equityRiskZ(spyReturns[spyRetIdx], spyRetBase);
+                spyRisk = applyPanicMultiplier(spyRisk, spyReturns[spyRetIdx]);
+                let qqqRisk = equityRiskZ(qqqReturns[qqqRetIdx], qqqRetBase);
+                qqqRisk = applyPanicMultiplier(qqqRisk, qqqReturns[qqqRetIdx]);
+                let soxRisk = equityRiskZ(soxReturns[soxRetIdx], soxRetBase);
+                soxRisk = applyPanicMultiplier(soxRisk, soxReturns[soxRetIdx]);
+                // USD/TWD匯率：數值上升(台幣貶值)代表外資動向偏risk-off，才算風險增加
+                const usdtwdRisk = levelRiskZ(usdtwdCloses[usdtwdIdx], usdtwdBase);
 
-                // 非對稱權重：VIX(40%) + 美股指數單日漲跌幅，依台股產業結構配重 SOX費半(30%)+QQQ那斯達克(20%)+SPY標普500(10%)
-                const raw = 0.40 * zVix + 0.30 * zSox + 0.20 * zQqq + 0.10 * zSpy;
-                rawScores.push(Math.max(0, Math.min(10, ((raw + 3) / 6) * 10)));
+                // 權重：VIX 40% + SOX費半 25% + QQQ那斯達克 15% + SPY標普500 10% + USD/TWD匯率 10%
+                const raw = WIND_WEIGHTS.vix * vixRisk + WIND_WEIGHTS.sox * soxRisk + WIND_WEIGHTS.qqq * qqqRisk
+                    + WIND_WEIGHTS.spy * spyRisk + WIND_WEIGHTS.usdtwd * usdtwdRisk;
+                rawScores.push(Math.max(0, Math.min(10, raw * WIND_SCALE)));
             }
             if (rawScores.length === 0) throw new Error('資料不足，無法計算風力指數');
 
@@ -2118,8 +2165,17 @@
             let ema = rawScores[0];
             for (let i = 1; i < rawScores.length; i++) ema = alpha * rawScores[i] + (1 - alpha) * ema;
 
+            // VIX絕對值濾網：不管Z-Score算出來多極端，只要「當日VIX實際數值」還在低檔(<18)，
+            // 代表市場本質上並不恐慌，此時強制把最終分數封頂在強風上限(5.0)，不讓它跳進疾風/颱風等級。
+            const vixToday = vixCloses[vixCloses.length - 1];
+            let usedVixFilter = false;
+            if (isFinite(vixToday) && vixToday < WIND_VIX_ABS_FLOOR && ema > WIND_VIX_ABS_CAP) {
+                ema = WIND_VIX_ABS_CAP;
+                usedVixFilter = true;
+            }
+
             const tier = WIND_TIERS.find(t => ema <= t.max) || WIND_TIERS[WIND_TIERS.length - 1];
-            return { score: ema, rawToday: rawScores[rawScores.length - 1], ...tier };
+            return { score: ema, rawToday: rawScores[rawScores.length - 1], vixToday, usedVixFilter, ...tier };
         }
         let lastWindIndexResult = null;
         async function renderWindIndexCard() {
@@ -2156,7 +2212,7 @@
                         <div class="flex items-center gap-1.5 text-white font-bold text-[13px] mb-1.5"><i data-lucide="wind" class="w-3.5 h-3.5 text-amber-300"></i> 風力：解析市場「短線情緒與波動」</div>
                         本指標透過監測美股關鍵指數與恐慌情緒，預判外部資金對台股可能產生的短期衝擊。當美股科技股出現顯著拉回，或 VIX 恐慌指數異常飆升時，風力分數將隨之提高。此機制如同海面上的「陣風與亂流」，旨在區隔長線趨勢與短期波動，協助您在市場震盪時，靈活調整短線部位的風險曝險。
                     </div>
-                    <p class="text-[10px] text-slate-500 leading-relaxed font-mono-num">運算邏輯：採用 VIX (40% 權重) ＋ 美股指數單日漲跌幅 (60% 權重)。為精準對齊台股產業結構，美股漲跌幅採非對稱權重：SOX 費半 (30%) + QQQ 那斯達克 (20%) + SPY 標普500 (10%)。每項數據皆轉換為近250日Z-Score合併，並對近5日分數進行EMA平滑處理，過濾單日極端雜訊。此為輔助決策模型，非絕對預測。</p>
+                    <p class="text-[10px] text-slate-500 leading-relaxed font-mono-num">運算邏輯：VIX(40%) + SOX費半(25%) + QQQ那斯達克(15%) + SPY標普500(10%) + USD/TWD匯率(10%)。每項數據皆轉換為近250日Z-Score，且只有「VIX上升／美股下跌／新台幣貶值」這種風險增加的方向才會轉成正的風力分數，反方向一律歸零，不會倒扣。美股任一指數單日跌幅超過${WIND_PANIC_DROP_THRESHOLD}%時，當天的風險分數會再乘上${WIND_PANIC_MULTIPLIER}倍恐慌加乘。此外若當日VIX實際數值低於${WIND_VIX_ABS_FLOOR}，即使Z-Score偏高，最終分數也會封頂在${WIND_VIX_ABS_CAP.toFixed(1)}分(強風上限)，不會誤判成疾風/颱風。最後對近5日分數做EMA平滑，過濾單日極端雜訊。此為輔助決策模型，非絕對預測。${lastWindIndexResult && lastWindIndexResult.usedVixFilter ? `<br><span class="text-amber-400">⚠️ 目前VIX(${fmt(lastWindIndexResult.vixToday)})低於${WIND_VIX_ABS_FLOOR}，本次分數已套用VIX絕對值濾網封頂。</span>` : ''}</p>
                     <table class="w-full text-[10px] text-slate-400 mt-2 border-t border-brand-border/50 pt-2">
                         <tr class="text-slate-500"><td class="py-0.5">0~2.5</td><td>微風(平穩)</td><td class="text-right">可加碼</td></tr>
                         <tr class="text-slate-500"><td class="py-0.5">2.6~5.0</td><td>強風(警戒)</td><td class="text-right">暫停加碼</td></tr>
