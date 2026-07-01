@@ -3047,6 +3047,9 @@
                     patchedWithRealtime,
                     source: usedProxy ? `0050(代理)・${dataSourceCache['0050']}` : taiexSourceLabel,
                     realtime,
+                    historyData: daily,
+                    historyMa20: ma20,
+                    historyMa100: ma100
                 };
             } catch (e) {
                 console.warn('大盤燈號計算失敗', e);
@@ -3102,6 +3105,7 @@
                         <div>日100MA：<span class="text-amber-400">${fmt(marketLightCache.ma100Now)}</span></div>
                     </div>
                     ${rtHtml}
+                    <div id="taiex-mini-chart" style="height: 140px; width: 100%; margin-top: 12px; border-radius: 8px; overflow: hidden; position: relative;"></div>
                     <div class="mt-1.5 text-[10px] text-slate-500">資料來源：${marketLightCache.source}</div>
                     ${proxyWarn}
                     ${patchWarn}
@@ -3115,6 +3119,48 @@
             safeLucideIcons({ root: detail });
             document.getElementById('market-light-retry').addEventListener('click', () => { loadMarketLight(); });
             renderTodayTomorrowModule();
+
+            const chartContainer = document.getElementById('taiex-mini-chart');
+            if (chartContainer && marketLightCache && marketLightCache.historyData) {
+                chartContainer.innerHTML = '';
+                const chart = LightweightCharts.createChart(chartContainer, {
+                    layout: { background: { type: 'solid', color: 'transparent' }, textColor: '#94a3b8' },
+                    grid: { vertLines: { visible: false }, horzLines: { visible: false } },
+                    timeScale: { visible: false },
+                    rightPriceScale: { visible: false },
+                    crosshair: { mode: LightweightCharts.CrosshairMode.Magnet },
+                    handleScroll: false,
+                    handleScale: false
+                });
+
+                const areaSeries = chart.addAreaSeries({
+                    lineColor: '#00f2fe', topColor: 'rgba(0, 242, 254, 0.35)', bottomColor: 'rgba(0, 242, 254, 0.0)', lineWidth: 2, crosshairMarkerVisible: false
+                });
+                const ma20Series = chart.addLineSeries({ color: '#3b82f6', lineWidth: 1.5, crosshairMarkerVisible: false });
+                const ma100Series = chart.addLineSeries({ color: '#fbbf24', lineWidth: 1.5, crosshairMarkerVisible: false });
+
+                const data = marketLightCache.historyData;
+                const ma20 = marketLightCache.historyMa20;
+                const ma100 = marketLightCache.historyMa100;
+
+                const areaData = [], ma20Data = [], ma100Data = [];
+                data.forEach((d, i) => {
+                    areaData.push({ time: d.time, value: d.close });
+                    if (ma20[i] !== null) ma20Data.push({ time: d.time, value: ma20[i] });
+                    if (ma100[i] !== null) ma100Data.push({ time: d.time, value: ma100[i] });
+                });
+
+                areaSeries.setData(areaData);
+                ma20Series.setData(ma20Data);
+                ma100Series.setData(ma100Data);
+                chart.timeScale().fitContent();
+
+                const ro = new ResizeObserver(entries => {
+                    if (entries.length === 0 || entries[0].contentRect.width === 0) return;
+                    chart.applyOptions({ width: chartContainer.clientWidth, height: chartContainer.clientHeight });
+                });
+                ro.observe(chartContainer);
+            }
         }
 
         // ============ 今日/明日動態評估模組(Y2K終端機風格)：大盤燈號 x 風力分數 交叉組合，輸出對應操作策略 ============
