@@ -871,7 +871,7 @@
                         </div>
                         <div class="info-subcard">
                             <div class="info-subcard-title"><span class="info-dot"></span> 戰術魚池</div>
-                            <div class="info-subcard-body">上面三個模式負責回答「要不要進場」，魚池負責「進場之後怎麼顧」。已經買進的部位放進「持倉魚池」，系統會自動用均線跟波動率算出建議停損停利價位(也可以自己輸入%數)；還沒進場但想追蹤的代號先丟進「潛在觀測槽」孵化，系統給「長線佈局／短線點火」的智能建議，孵化夠久再決定要不要正式出手。</div>
+                            <div class="info-subcard-body">上面三個模式負責回答「要不要進場」，魚池負責「進場之後怎麼顧」。已經買進的部位放進「持倉魚池」，系統會自動用均線跟波動率算出建議停損停利價位(也可以自己輸入%數)；還沒進場但想追蹤的代號先丟進「潛在觀測槽」，系統會即時檢查「均線多頭排列／VCP評分達標／帶量突破」三項條件，進度條反映達成幾項，全部達成才是訊號真正亮起的時候。</div>
                         </div>
 
                         <p class="text-slate-300 text-[13px]">介面看起來簡單，背後其實有一個會自動交叉比對VCP型態、均線、基本面和籌碼數據的運算核心，把複雜的分析轉換成清楚的買賣點和防守價位。希望這個工具能在決策時幫上忙，陪自己克服人性裡的弱點，乖乖守紀律，朝「大賺小賠」的方向努力。</p>
@@ -1049,7 +1049,7 @@
  </div>
  <div class="info-subcard">
  <div class="info-subcard-title"><span class="info-dot"></span> 戰術魚池</div>
- <div class="info-subcard-body">買進後把部位丟進「持倉魚池」，停損停利可以選「系統建議」(自動套用20MA跟波動率算出的價位)，或自己輸入%數自訂。還沒進場的口袋名單先丟進「潛在觀測槽」孵化，系統會給「長線佈局」或「短線點火」的智能建議，並顯示孵化天數進度條。這裡的通知排在「上午7點」，跟新手模式「下午7點」的持股提醒是各自獨立的兩組排程，互不影響。</div>
+ <div class="info-subcard-body">買進後把部位丟進「持倉魚池」，停損停利可以選「系統建議」(自動套用20MA跟波動率算出的價位)，或自己輸入%數自訂。還沒進場的口袋名單先丟進「潛在觀測槽」，系統會逐項檢查「均線多頭排列」「VCP評分≥8分」「帶量突破近10日高點」三個進場條件，進度條就是達成幾項(0~3項)；三項全數達成時進度條會變成綠色並持續呼吸發光，提醒你訊號已經亮起，可以認真考慮進場了。這裡的通知排在「上午7點」，跟新手模式「下午7點」的持股提醒是各自獨立的兩組排程，互不影響。</div>
  </div>
  <div class="info-subcard">
  <div class="info-subcard-title"><span class="info-dot"></span> 儀表板</div>
@@ -1110,8 +1110,12 @@
  <div class="info-subcard-body">不想用系統算的話，新增持倉時可以分別把停損、停利切成「自訂」，直接輸入%數，系統會以「成本價」為基準算出價位，不套用均線或波動率。</div>
  </div>
  <div class="info-subcard">
- <div class="info-subcard-title"><span class="info-dot"></span> 潛在觀測槽的智能建議</div>
- <div class="info-subcard-body">「短線點火」= KD黃金交叉或RSI跌破30超賣區其中之一出現；「長線佈局」= 沒有短線訊號，但日20MA站上日100MA（均線多頭排列）；兩者都沒有就是「持續觀察」，代表訊號還不夠明確，先繼續孵化。</div>
+ <div class="info-subcard-title"><span class="info-dot"></span> 觀測槽進度條(進場條件達成度)</div>
+ <div class="info-subcard-body">進度條不是算「觀察了幾天」，是逐項檢查三個條件：①均線多頭排列(站上日20MA、日100MA在下方支撐) ②VCP型態評分達標(≥8/25分) ③帶量突破近10日高點(成交量>50日均量1.5倍)。達成幾項就是幾分之三，全部達成(3/3)時進度條會變成綠色並持續呼吸發光，代表訊號真正亮起；沒有全滿之前，都還在「等待」階段，不是進場時機。</div>
+ </div>
+ <div class="info-subcard">
+ <div class="info-subcard-title"><span class="info-dot"></span> 潛在觀測槽的文字建議</div>
+ <div class="info-subcard-body">進度條還沒3/3滿的時候，旁邊文字會用比較粗略的「短線點火」「長線佈局」給個方向參考：「短線點火」= KD黃金交叉或RSI跌破30超賣區其中之一出現；「長線佈局」= 沒有短線訊號，但日20MA站上日100MA；兩者都沒有就是「持續觀察」。這組文字只是輔助參考，不是正式的進場訊號，正式訊號要看上面的進度條是不是3/3滿。</div>
  </div>
  </div>
 
@@ -1360,7 +1364,7 @@
                 <!-- Block 2: 潛在觀測槽 -->
                 <section class="glass-panel rounded-xl p-4">
                     <h3 class="text-brand-cyan font-bold mb-1 flex items-center gap-2 text-sm"><i data-lucide="egg" class="w-4 h-4"></i> 潛在觀測槽</h3>
-                    <p class="text-slate-500 text-[11px] mb-3">還沒進場、但想追蹤的代號先丟進來孵化，系統會給「長線佈局 / 短線點火」智能建議，並顯示孵化進度。</p>
+                    <p class="text-slate-500 text-[11px] mb-3">還沒進場、但想追蹤的代號先丟進來，系統會逐項檢查「均線多頭排列／VCP評分達標／帶量突破」三項進場條件，進度條反映達成幾項；三項全滿才是訊號真正亮起的時候。</p>
                     <div class="grid grid-cols-[1fr_auto] gap-2 mb-3">
                         <input id="aqua-watch-symbol-input" type="text" placeholder="股票代號(例:2330)" class="w-full bg-brand-bg border border-brand-border text-white px-3 py-2.5 rounded-lg text-sm focus:outline-none focus:border-brand-cyan placeholder-slate-500">
                         <button id="aqua-watch-add-btn" class="shrink-0 bg-gradient-to-r from-brand-cyan to-brand-teal text-brand-bg px-4 py-2.5 rounded-lg text-sm font-bold transition shadow flex items-center justify-center gap-1.5">
@@ -4786,6 +4790,26 @@
             };
         }
 
+        // 進場條件達成度：把「均線多頭排列」「VCP型態評分達標」「帶量突破出量確認」三項訊號拆開檢查，
+        // 全部達成(3/3)才算「訊號亮起」，這才是觀測槽進度條真正代表的東西，而不是單純算孵化天數。
+        function computeAquariumEntryReadiness(levels) {
+            const dv = levels.dv, ind = dv.ind;
+            const i = ind.closes.length - 1;
+            const aboveMa20 = ind.ma20[i] !== null && ind.closes[i] > ind.ma20[i];
+            const ma100Protects = ind.ma100[i] !== null && ind.ma20[i] !== null && ind.ma100[i] < ind.ma20[i];
+            const maAligned = aboveMa20 && ma100Protects;
+            const score = dv.latestScore;
+            const vcpGoodScore = !!score && score.score >= 8;
+            const volumeBreakout = !!score && !!score.detail && score.detail.breakout === true;
+            const conditions = [
+                { key: 'ma', label: `均線多頭排列(站上20MA，100MA在下方支撐)`, met: maAligned },
+                { key: 'vcp', label: `VCP型態評分達標(${score ? score.score : '--'}/25，需≥8分)`, met: vcpGoodScore },
+                { key: 'volume', label: '帶量突破近10日高點(出量確認)', met: volumeBreakout },
+            ];
+            const metCount = conditions.filter(c => c.met).length;
+            return { conditions, metCount, total: conditions.length, progressPct: Math.round(metCount / conditions.length * 100), ready: metCount === conditions.length };
+        }
+
         // 依「均線多頭排列(長線體質佳)」與「短線訊號(KD黃金交叉/RSI超賣)是否出現」，判斷觀測槽裡的代號比較適合
         // 「長線佈局」(體質穩，可以慢慢分批)還是「短線點火」(短線出現轉強訊號，可能有較快的表態)。
         function classifyAquariumWatchSuggestion(levels) {
@@ -4896,7 +4920,6 @@
             if (aquariumWatch.length === 0) { el.innerHTML = '<p class="text-slate-500 text-sm text-center py-4">觀測槽目前是空的，丟一個代號進來孵化看看。</p>'; return; }
             el.innerHTML = aquariumWatch.map(item => {
                 const days = Math.max(0, Math.floor((Date.now() - item.addedAt) / 86400000));
-                const progressPct = Math.min(100, Math.round(days / 5 * 100)); // 建議至少觀察5天再決定
                 return `
                 <div class="bg-brand-card border border-brand-border rounded-lg p-3" data-aqua-watch-id="${item.id}">
                     <div class="flex justify-between items-start mb-1.5">
@@ -4904,10 +4927,14 @@
                         <button class="aqua-watch-delete-btn text-slate-500 hover:text-brand-up" data-id="${item.id}"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
                     </div>
                     <div class="aqua-watch-suggestion text-sm mb-1.5" data-id="${item.id}"><i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin inline"></i> 分析中...</div>
+                    <div class="aqua-watch-conditions text-[10px] text-slate-500 mb-1.5 space-y-0.5" data-id="${item.id}"></div>
                     <div class="flex items-center gap-2">
-                        <div class="flex-1 h-1.5 bg-brand-bg rounded-full overflow-hidden"><div class="h-full bg-brand-cyan" style="width:${progressPct}%"></div></div>
-                        <span class="text-[10px] text-slate-500 font-mono-num shrink-0">孵化${days}天</span>
+                        <div class="flex-1 h-1.5 bg-brand-bg rounded-full overflow-hidden">
+                            <div class="aqua-watch-progress-bar h-full bg-brand-cyan transition-all" data-id="${item.id}" style="width:0%"></div>
+                        </div>
+                        <span class="aqua-watch-progress-label text-[10px] text-slate-500 font-mono-num shrink-0" data-id="${item.id}">0/3 條件</span>
                     </div>
+                    <div class="text-[9px] text-slate-600 font-mono-num mt-1">已放入觀察${days}天(僅供參考，達成度以下方條件為準)</div>
                 </div>`;
             }).join('');
             safeLucideIcons({ root: el });
@@ -4918,13 +4945,37 @@
             }));
             aquariumWatch.forEach(async item => {
                 const suggestEl = el.querySelector(`.aqua-watch-suggestion[data-id="${item.id}"]`);
+                const condEl = el.querySelector(`.aqua-watch-conditions[data-id="${item.id}"]`);
+                const barEl = el.querySelector(`.aqua-watch-progress-bar[data-id="${item.id}"]`);
+                const labelEl = el.querySelector(`.aqua-watch-progress-label[data-id="${item.id}"]`);
                 if (!suggestEl) return;
                 try {
                     const daily = stockCache[item.symbol] || await fetchStockDataMulti(item.symbol);
                     if (!daily || daily.length < 30) throw new Error('資料不足');
                     const levels = computeAquariumSystemLevels(daily);
-                    const s = classifyAquariumWatchSuggestion(levels);
-                    suggestEl.innerHTML = `<span class="font-bold ${s.color}">🐟 ${s.tag}</span> <span class="text-slate-400 text-[11px]">現價${fmt(levels.lastClose)} ｜ ${s.desc}</span>`;
+                    const readiness = computeAquariumEntryReadiness(levels);
+                    if (readiness.ready) {
+                        suggestEl.innerHTML = `<span class="font-bold text-emerald-400">✅ 進場條件已滿足</span> <span class="text-slate-400 text-[11px]">現價${fmt(levels.lastClose)} ｜ 均線、VCP評分、出量三項訊號全數達成，可考慮依防守價位規劃進場。</span>`;
+                    } else {
+                        const s = classifyAquariumWatchSuggestion(levels);
+                        suggestEl.innerHTML = `<span class="font-bold ${s.color}">🐟 ${s.tag}</span> <span class="text-slate-400 text-[11px]">現價${fmt(levels.lastClose)} ｜ ${s.desc}</span>`;
+                    }
+                    if (condEl) {
+                        condEl.innerHTML = readiness.conditions.map(c => `<div class="${c.met ? 'text-brand-cyan' : 'text-slate-600'}">${c.met ? '✓' : '○'} ${c.label}</div>`).join('');
+                    }
+                    if (barEl) {
+                        barEl.style.width = `${readiness.progressPct}%`;
+                        barEl.classList.toggle('bg-brand-cyan', !readiness.ready);
+                        barEl.classList.toggle('bg-emerald-400', readiness.ready);
+                        barEl.classList.toggle('animate-pulse', readiness.ready);
+                        barEl.classList.toggle('shadow-[0_0_8px_#34d399]', readiness.ready);
+                    }
+                    if (labelEl) {
+                        labelEl.textContent = `${readiness.metCount}/${readiness.total} 條件${readiness.ready ? ' 🔔' : ''}`;
+                        labelEl.classList.toggle('text-emerald-400', readiness.ready);
+                        labelEl.classList.toggle('font-bold', readiness.ready);
+                        labelEl.classList.toggle('text-slate-500', !readiness.ready);
+                    }
                 } catch (e) {
                     suggestEl.innerHTML = '<span class="text-slate-500 text-[11px]">查不到資料，稍後再試</span>';
                 }
