@@ -551,6 +551,7 @@
             <button class="tab-btn flex-1 min-w-[80px] py-3 text-slate-400 flex justify-center items-center gap-1.5" data-tab="signals"><i data-lucide="pie-chart" class="w-4 h-4"></i>數據</button>
             <button class="tab-btn flex-1 min-w-[80px] py-3 text-slate-400 flex justify-center items-center gap-1.5" data-tab="scan"><i data-lucide="radar" class="w-4 h-4"></i>掃描</button>
             <button class="tab-btn flex-1 min-w-[80px] py-3 text-slate-400 flex justify-center items-center gap-1.5" data-tab="beginner"><i data-lucide="life-buoy" class="w-4 h-4"></i>新手</button>
+            <button class="tab-btn flex-1 min-w-[80px] py-3 text-slate-400 flex justify-center items-center gap-1.5" data-tab="aquarium"><i data-lucide="fish" class="w-4 h-4"></i>魚池</button>
             <button class="tab-btn flex-1 min-w-[80px] py-3 text-slate-400 flex justify-center items-center gap-1.5" data-tab="tutorial"><i data-lucide="graduation-cap" class="w-4 h-4"></i>教學</button>
             <button class="tab-btn flex-1 min-w-[80px] py-3 text-slate-400 flex justify-center items-center gap-1.5" data-tab="about"><i data-lucide="info" class="w-4 h-4"></i>關於</button>
         </div>
@@ -1267,6 +1268,95 @@
                         <button id="rookie-form-save" class="w-full bg-gradient-to-r from-brand-cyan to-brand-teal text-brand-bg px-4 py-2 rounded-lg text-sm font-bold transition shadow mt-1">儲存這筆</button>
                     </div>
                     <div id="rookie-watch-list" class="space-y-2"></div>
+                </section>
+
+            </div>
+        </div>
+
+        <div id="panel-aquarium" class="absolute inset-0 hidden overflow-y-auto p-4 hide-scroll bg-brand-bg">
+            <div class="max-w-2xl mx-auto space-y-4 pb-8">
+
+                <div class="glass-panel rounded-xl p-4 text-xs text-slate-300 leading-relaxed">
+                    <div class="flex items-center gap-1.5 font-bold text-white mb-1"><i data-lucide="fish" class="w-4 h-4 text-brand-cyan"></i> 戰術魚池系統 <span class="text-slate-500 font-mono">(Tactical Aquarium)</span></div>
+                    <div class="text-slate-400">把已經買進的部位放進「持倉魚池」統一管理停損停利；還沒進場、但想觀察的代號先丟進「潛在觀測槽」孵化，系統會自動用均線與波動率模組給出長短線建議，成熟了再考慮出手。</div>
+                </div>
+
+                <!-- Block 1: 持倉魚池 -->
+                <section class="glass-panel rounded-xl p-4">
+                    <h3 class="text-brand-cyan font-bold mb-1 flex items-center gap-2 text-sm"><i data-lucide="waves" class="w-4 h-4"></i> 持倉魚池</h3>
+                    <p class="text-slate-500 text-[11px] mb-3">已買進的部位放這裡，系統會自動比對現價與均線／波動率算出的停損停利建議。</p>
+
+                    <button id="aqua-add-toggle-btn" class="w-full bg-brand-card hover:bg-slate-700 border border-brand-border text-slate-300 rounded-lg py-2.5 text-sm font-semibold flex items-center justify-center gap-2 transition mb-3">
+                        <i data-lucide="plus-circle" class="w-4 h-4"></i> 新增持倉
+                    </button>
+                    <div id="aqua-add-form" class="hidden bg-brand-bg/60 rounded-lg p-3 mb-3 space-y-2 text-sm">
+                        <div class="grid grid-cols-2 gap-2">
+                            <input id="aqua-form-symbol" type="text" placeholder="股票代號" class="bg-brand-bg border border-brand-border text-white px-2.5 py-2 rounded-lg text-center">
+                            <input id="aqua-form-date" type="date" class="bg-brand-bg border border-brand-border text-white px-2.5 py-2 rounded-lg text-center">
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <input id="aqua-form-cost" type="number" step="0.01" min="0" placeholder="成本價" class="bg-brand-bg border border-brand-border text-white px-2.5 py-2 rounded-lg text-center">
+                            <input id="aqua-form-shares" type="number" step="1" min="1" placeholder="股數" class="bg-brand-bg border border-brand-border text-white px-2.5 py-2 rounded-lg text-center">
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="text-slate-400 text-[11px]">停損策略</label>
+                                <select id="aqua-form-sl-mode" class="w-full bg-brand-bg border border-brand-border text-white px-2 py-2 rounded-lg text-center mt-0.5">
+                                    <option value="system">系統建議 (均線/波動率)</option>
+                                    <option value="custom">自訂百分比</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-slate-400 text-[11px]">停利策略</label>
+                                <select id="aqua-form-tp-mode" class="w-full bg-brand-bg border border-brand-border text-white px-2 py-2 rounded-lg text-center mt-0.5">
+                                    <option value="system">系統建議 (均線/波動率)</option>
+                                    <option value="custom">自訂百分比</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="text-slate-400 text-[11px]">自訂停損(%)<span class="text-slate-500">(選自訂才生效)</span></label>
+                                <input id="aqua-form-sl-custom" type="number" step="0.5" min="0" value="7" class="w-full bg-brand-bg border border-brand-border text-white px-2.5 py-2 rounded-lg text-center mt-0.5">
+                            </div>
+                            <div>
+                                <label class="text-slate-400 text-[11px]">自訂停利(%)<span class="text-slate-500">(選自訂才生效)</span></label>
+                                <input id="aqua-form-tp-custom" type="number" step="0.5" min="0" value="15" class="w-full bg-brand-bg border border-brand-border text-white px-2.5 py-2 rounded-lg text-center mt-0.5">
+                            </div>
+                        </div>
+                        <button id="aqua-form-save" class="w-full bg-gradient-to-r from-brand-cyan to-brand-teal text-brand-bg px-4 py-2 rounded-lg text-sm font-bold transition shadow mt-1">放入魚池</button>
+                    </div>
+                    <div id="aqua-holdings-list" class="space-y-2"></div>
+                </section>
+
+                <!-- Block 2: 潛在觀測槽 -->
+                <section class="glass-panel rounded-xl p-4">
+                    <h3 class="text-brand-cyan font-bold mb-1 flex items-center gap-2 text-sm"><i data-lucide="egg" class="w-4 h-4"></i> 潛在觀測槽</h3>
+                    <p class="text-slate-500 text-[11px] mb-3">還沒進場、但想追蹤的代號先丟進來孵化，系統會給「長線佈局 / 短線點火」智能建議，並顯示孵化進度。</p>
+                    <div class="grid grid-cols-[1fr_auto] gap-2 mb-3">
+                        <input id="aqua-watch-symbol-input" type="text" placeholder="股票代號(例:2330)" class="w-full bg-brand-bg border border-brand-border text-white px-3 py-2.5 rounded-lg text-sm focus:outline-none focus:border-brand-cyan placeholder-slate-500">
+                        <button id="aqua-watch-add-btn" class="shrink-0 bg-gradient-to-r from-brand-cyan to-brand-teal text-brand-bg px-4 py-2.5 rounded-lg text-sm font-bold transition shadow flex items-center justify-center gap-1.5">
+                            <i data-lucide="fish-symbol" class="w-4 h-4"></i> 放入觀測
+                        </button>
+                    </div>
+                    <div id="aqua-watch-list" class="space-y-2"></div>
+                </section>
+
+                <!-- Block 3: 提醒設置 -->
+                <section class="glass-panel rounded-xl p-4">
+                    <h3 class="text-brand-cyan font-bold mb-1 flex items-center gap-2 text-sm"><i data-lucide="bell" class="w-4 h-4"></i> 提醒設置</h3>
+                    <div class="bg-brand-bg/60 rounded-lg p-3">
+                        <div class="flex items-center justify-between">
+                            <div class="flex-1 mr-2">
+                                <div class="text-white text-sm font-semibold flex items-center gap-1.5"><i data-lucide="bell-ring" class="w-3.5 h-3.5 text-brand-cyan"></i> 每日上午7點魚池巡檢通知</div>
+                                <p class="text-slate-500 text-[10px] mt-1 leading-relaxed">開啟後，上午7點前後只要打開過這個App(背景分頁也算)，就會跳出通知總結「持倉魚池」目前是否觸發停損/停利建議。<b class="text-amber-300">手機完全沒打開App的話通知不會出現</b>，這是瀏覽器網頁的限制，不是真正的系統推播。</p>
+                            </div>
+                            <button id="aqua-notify-toggle-btn" class="shrink-0 w-12 h-7 rounded-full bg-brand-border relative transition" data-on="false">
+                                <span class="absolute top-1 left-1 w-5 h-5 rounded-full bg-slate-400 transition-transform"></span>
+                            </button>
+                        </div>
+                        <p id="aqua-notify-status" class="text-[10px] mt-2 hidden"></p>
+                    </div>
                 </section>
 
             </div>
@@ -4605,8 +4695,6 @@
             setLastNotifyDateStr(todayStr);
         }
         updateNotifyToggleUI();
-        checkAndSendRookieNotification();
-        setInterval(checkAndSendRookieNotification, 60000); // 每分鐘檢查一次，App開著(含背景分頁)跨過下午7點時就會自動跳通知
 
         document.getElementById('rookie-check-btn').addEventListener('click', handleRookieCheck);
         document.getElementById('rookie-add-toggle-btn').addEventListener('click', () => {
@@ -4632,6 +4720,290 @@
             renderRookieWatchlist();
             showToast('已加入持股提醒清單', 'success');
         });
+
+        // ============ 戰術魚池：持倉魚池 + 潛在觀測槽 ============
+        let aquariumHoldings = loadJSON('trend_aquarium_holdings', []);
+        let aquariumWatch = loadJSON('trend_aquarium_watch', []);
+        function saveAquariumHoldings() { saveJSON('trend_aquarium_holdings', aquariumHoldings); }
+        function saveAquariumWatch() { saveJSON('trend_aquarium_watch', aquariumWatch); }
+
+        // 波動率分析模組(輕量版)：用近N日日報酬率的標準差，估算股價的短期震盪幅度，
+        // 拿來輔助「系統建議停利」的目標距離(震盪愈大，停利目標拉愈遠，避免太早被雜訊洗出場)。
+        function computeVolatilityPct(daily, days = 20) {
+            const closes = daily.map(d => d.close);
+            const recent = closes.slice(-(days + 1));
+            if (recent.length < 5) return 2; // 資料不足時給個保守預設值
+            const rets = [];
+            for (let i = 1; i < recent.length; i++) rets.push((recent[i] - recent[i - 1]) / recent[i - 1]);
+            const mean = rets.reduce((a, b) => a + b, 0) / rets.length;
+            const variance = rets.reduce((a, b) => a + (b - mean) ** 2, 0) / rets.length;
+            return Math.sqrt(variance) * 100; // 日報酬標準差(%)
+        }
+
+        // 整合現有「均線模組(analyzeSymbol/evaluateBuySuitability)」與「波動率模組(computeVolatilityPct)」，
+        // 算出魚池用的系統建議停損價、系統建議停利價。停損沿用新手模式同一套「20MA / 7%硬停損取高者」邏輯，
+        // 停利則用波動率的3倍當作目標乖離幅度(震盪愈大，目標拉愈遠)，下限與20MA保持一致風格。
+        function computeAquariumSystemLevels(daily) {
+            const dv = analyzeSymbol(daily).dailyView;
+            const r = evaluateBuySuitability(dv);
+            const volPct = computeVolatilityPct(daily, 20);
+            const tpDistPct = Math.max(volPct * 3, 8); // 至少抓8%，避免波動太小時目標離現價太近
+            const tpPrice = r.lastClose * (1 + tpDistPct / 100);
+            return {
+                lastClose: r.lastClose, lastDate: r.lastDate, ma20: r.ma20,
+                stopPrice: r.stopPrice, riskPerShare: r.riskPerShare, riskPct: r.riskPct,
+                tpPrice, tpDistPct, volPct, themeColor: r.themeColor, label: r.label, advice: r.advice,
+                simpleAligned: dv.ind.ma20[dv.ind.closes.length - 1] !== null && dv.ind.closes[dv.ind.closes.length - 1] > dv.ind.ma20[dv.ind.closes.length - 1],
+                dv
+            };
+        }
+
+        // 依「均線多頭排列(長線體質佳)」與「短線訊號(KD黃金交叉/RSI超賣)是否出現」，判斷觀測槽裡的代號比較適合
+        // 「長線佈局」(體質穩，可以慢慢分批)還是「短線點火」(短線出現轉強訊號，可能有較快的表態)。
+        function classifyAquariumWatchSuggestion(levels) {
+            const dv = levels.dv, ind = dv.ind;
+            const i = ind.closes.length - 1, i1 = i - 1;
+            const k = ind.kd.k[i], d = ind.kd.d[i], kPrev = ind.kd.k[i1], dPrev = ind.kd.d[i1];
+            const rsi = ind.rsi14[i];
+            const kdGolden = (k !== null && d !== null && kPrev !== null && dPrev !== null) && k > d && kPrev <= dPrev;
+            const rsiOversold = rsi !== null && rsi < 30;
+            const shortIgnition = kdGolden || rsiOversold;
+            if (shortIgnition) return { tag: '短線點火', color: 'text-amber-400', desc: 'KD黃金交叉或RSI超賣區出現，短線可能有較快表態，留意進場時機。' };
+            if (levels.simpleAligned) return { tag: '長線佈局', color: 'text-brand-cyan', desc: '均線呈多頭排列，體質穩健，適合分批慢慢佈局。' };
+            return { tag: '持續觀察', color: 'text-slate-400', desc: '目前均線與短線訊號都還不夠明確，先繼續孵化觀察。' };
+        }
+
+        function aquaSlLevels(item, levels) {
+            if (item.slMode === 'custom' && isFinite(item.slCustomPct)) {
+                const stopPrice = item.cost * (1 - item.slCustomPct / 100);
+                return { stopPrice, pct: item.slCustomPct, label: '自訂' };
+            }
+            return { stopPrice: levels.stopPrice, pct: levels.riskPct, label: '系統' };
+        }
+        function aquaTpLevels(item, levels) {
+            if (item.tpMode === 'custom' && isFinite(item.tpCustomPct)) {
+                const tpPrice = item.cost * (1 + item.tpCustomPct / 100);
+                return { tpPrice, pct: item.tpCustomPct, label: '自訂' };
+            }
+            return { tpPrice: levels.tpPrice, pct: levels.tpDistPct, label: '系統' };
+        }
+
+        function renderAquariumPanel() {
+            renderAquariumHoldings();
+            renderAquariumWatch();
+        }
+
+        // ---- Block 1: 持倉魚池 ----
+        function renderAquariumHoldings() {
+            const el = document.getElementById('aqua-holdings-list');
+            if (!el) return;
+            if (aquariumHoldings.length === 0) { el.innerHTML = '<p class="text-slate-500 text-sm text-center py-4">魚池目前是空的，買進後可以加一筆進來。</p>'; return; }
+            el.innerHTML = aquariumHoldings.map(item => `
+                <div class="bg-brand-card border border-brand-border rounded-lg p-3" data-aqua-id="${item.id}">
+                    <div class="flex justify-between items-start mb-1.5">
+                        <div class="font-bold text-white text-sm">${stockLabel(item.symbol)}</div>
+                        <button class="aqua-holding-delete-btn text-slate-500 hover:text-brand-up" data-id="${item.id}"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+                    </div>
+                    <div class="text-[11px] text-slate-400 font-mono-num mb-1.5">${item.date || '--'} 成本${fmt(item.cost)} ｜ ${item.shares.toLocaleString()}股 ｜ 停損:${item.slMode === 'custom' ? '自訂' : '系統'} 停利:${item.tpMode === 'custom' ? '自訂' : '系統'}</div>
+                    <div class="aqua-holding-status text-sm" data-id="${item.id}"><i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin inline"></i> 比對現價與均線/波動率中...</div>
+                </div>`).join('');
+            safeLucideIcons({ root: el });
+            el.querySelectorAll('.aqua-holding-delete-btn').forEach(btn => btn.addEventListener('click', () => {
+                aquariumHoldings = aquariumHoldings.filter(x => x.id !== btn.dataset.id);
+                saveAquariumHoldings();
+                renderAquariumHoldings();
+            }));
+            aquariumHoldings.forEach(async item => {
+                const statusEl = el.querySelector(`.aqua-holding-status[data-id="${item.id}"]`);
+                if (!statusEl) return;
+                try {
+                    const daily = stockCache[item.symbol] || await fetchStockDataMulti(item.symbol);
+                    if (!daily || daily.length < 30) throw new Error('資料不足');
+                    const levels = computeAquariumSystemLevels(daily);
+                    const sl = aquaSlLevels(item, levels), tp = aquaTpLevels(item, levels);
+                    const lastClose = levels.lastClose;
+                    const pnlPct = (lastClose - item.cost) / item.cost * 100;
+                    let html;
+                    if (lastClose <= sl.stopPrice) html = `<span class="text-red-500 font-bold">🚨 已觸及${sl.label}停損</span> 現價${fmt(lastClose)}(${pnlPct >= 0 ? '+' : ''}${pnlPct.toFixed(1)}%)，建議依紀律出場，${sl.label}停損價${fmt(sl.stopPrice)}。`;
+                    else if (lastClose >= tp.tpPrice) html = `<span class="text-brand-cyan font-bold">🎯 已達${tp.label}停利</span> 現價${fmt(lastClose)}(+${pnlPct.toFixed(1)}%)，可考慮分批獲利了結，${tp.label}停利價${fmt(tp.tpPrice)}。`;
+                    else html = `<span class="text-slate-300">持有中</span> 現價${fmt(lastClose)} <span class="${pnlPct >= 0 ? 'text-brand-up' : 'text-brand-down'}">(${pnlPct >= 0 ? '+' : ''}${pnlPct.toFixed(1)}%)</span> ｜ 停損${fmt(sl.stopPrice)} 停利${fmt(tp.tpPrice)}`;
+                    statusEl.innerHTML = html;
+                } catch (e) {
+                    statusEl.innerHTML = '<span class="text-slate-500">現價查詢失敗</span>';
+                }
+            });
+        }
+        document.getElementById('aqua-add-toggle-btn').addEventListener('click', () => {
+            document.getElementById('aqua-add-form').classList.toggle('hidden');
+        });
+        document.getElementById('aqua-form-save').addEventListener('click', () => {
+            const symbol = document.getElementById('aqua-form-symbol').value.trim();
+            const date = document.getElementById('aqua-form-date').value || new Date().toISOString().split('T')[0];
+            const cost = parseFloat(document.getElementById('aqua-form-cost').value);
+            const shares = parseInt(document.getElementById('aqua-form-shares').value, 10);
+            const slMode = document.getElementById('aqua-form-sl-mode').value;
+            const tpMode = document.getElementById('aqua-form-tp-mode').value;
+            const slCustomPct = parseFloat(document.getElementById('aqua-form-sl-custom').value);
+            const tpCustomPct = parseFloat(document.getElementById('aqua-form-tp-custom').value);
+            if (!symbol || !isFinite(cost) || cost <= 0 || !isFinite(shares) || shares <= 0) { showToast('請填寫股票代號、成本價與股數', 'error'); return; }
+            aquariumHoldings.push({
+                id: Date.now().toString(36),
+                symbol, date, cost, shares,
+                slMode: slMode === 'custom' ? 'custom' : 'system',
+                tpMode: tpMode === 'custom' ? 'custom' : 'system',
+                slCustomPct: isFinite(slCustomPct) ? slCustomPct : 7,
+                tpCustomPct: isFinite(tpCustomPct) ? tpCustomPct : 15,
+            });
+            saveAquariumHoldings();
+            document.getElementById('aqua-add-form').classList.add('hidden');
+            ['aqua-form-symbol', 'aqua-form-cost', 'aqua-form-shares'].forEach(id => document.getElementById(id).value = '');
+            renderAquariumHoldings();
+            showToast('已放入持倉魚池', 'success');
+        });
+
+        // ---- Block 2: 潛在觀測槽 ----
+        function renderAquariumWatch() {
+            const el = document.getElementById('aqua-watch-list');
+            if (!el) return;
+            if (aquariumWatch.length === 0) { el.innerHTML = '<p class="text-slate-500 text-sm text-center py-4">觀測槽目前是空的，丟一個代號進來孵化看看。</p>'; return; }
+            el.innerHTML = aquariumWatch.map(item => {
+                const days = Math.max(0, Math.floor((Date.now() - item.addedAt) / 86400000));
+                const progressPct = Math.min(100, Math.round(days / 5 * 100)); // 建議至少觀察5天再決定
+                return `
+                <div class="bg-brand-card border border-brand-border rounded-lg p-3" data-aqua-watch-id="${item.id}">
+                    <div class="flex justify-between items-start mb-1.5">
+                        <div class="font-bold text-white text-sm">${stockLabel(item.symbol)}</div>
+                        <button class="aqua-watch-delete-btn text-slate-500 hover:text-brand-up" data-id="${item.id}"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+                    </div>
+                    <div class="aqua-watch-suggestion text-sm mb-1.5" data-id="${item.id}"><i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin inline"></i> 分析中...</div>
+                    <div class="flex items-center gap-2">
+                        <div class="flex-1 h-1.5 bg-brand-bg rounded-full overflow-hidden"><div class="h-full bg-brand-cyan" style="width:${progressPct}%"></div></div>
+                        <span class="text-[10px] text-slate-500 font-mono-num shrink-0">孵化${days}天</span>
+                    </div>
+                </div>`;
+            }).join('');
+            safeLucideIcons({ root: el });
+            el.querySelectorAll('.aqua-watch-delete-btn').forEach(btn => btn.addEventListener('click', () => {
+                aquariumWatch = aquariumWatch.filter(x => x.id !== btn.dataset.id);
+                saveAquariumWatch();
+                renderAquariumWatch();
+            }));
+            aquariumWatch.forEach(async item => {
+                const suggestEl = el.querySelector(`.aqua-watch-suggestion[data-id="${item.id}"]`);
+                if (!suggestEl) return;
+                try {
+                    const daily = stockCache[item.symbol] || await fetchStockDataMulti(item.symbol);
+                    if (!daily || daily.length < 30) throw new Error('資料不足');
+                    const levels = computeAquariumSystemLevels(daily);
+                    const s = classifyAquariumWatchSuggestion(levels);
+                    suggestEl.innerHTML = `<span class="font-bold ${s.color}">🐟 ${s.tag}</span> <span class="text-slate-400 text-[11px]">現價${fmt(levels.lastClose)} ｜ ${s.desc}</span>`;
+                } catch (e) {
+                    suggestEl.innerHTML = '<span class="text-slate-500 text-[11px]">查不到資料，稍後再試</span>';
+                }
+            });
+        }
+        document.getElementById('aqua-watch-add-btn').addEventListener('click', () => {
+            const input = document.getElementById('aqua-watch-symbol-input');
+            const symbol = input.value.trim();
+            if (!symbol) { showToast('請先輸入股票代號', 'error'); return; }
+            if (aquariumWatch.some(x => x.symbol === symbol)) { showToast('這檔已經在觀測槽裡了', 'error'); return; }
+            aquariumWatch.push({ id: Date.now().toString(36), symbol, addedAt: Date.now() });
+            saveAquariumWatch();
+            input.value = '';
+            renderAquariumWatch();
+            showToast('已放入潛在觀測槽', 'success');
+        });
+
+        // ---- Block 3: 上午7點魚池巡檢通知 ----
+        const AQUA_NOTIFY_HOUR = 7; // 上午7點
+        function isAquaNotifyEnabled() { try { return localStorage.getItem('trend_aquarium_notify') === '1'; } catch (e) { return false; } }
+        function setAquaNotifyEnabled(v) { try { localStorage.setItem('trend_aquarium_notify', v ? '1' : '0'); } catch (e) {} }
+        function getAquaLastNotifyDateStr() { try { return localStorage.getItem('trend_aquarium_notify_last_date') || ''; } catch (e) { return ''; } }
+        function setAquaLastNotifyDateStr(s) { try { localStorage.setItem('trend_aquarium_notify_last_date', s); } catch (e) {} }
+        function updateAquaNotifyToggleUI() {
+            const btn = document.getElementById('aqua-notify-toggle-btn');
+            const statusEl = document.getElementById('aqua-notify-status');
+            if (!btn) return;
+            const on = isAquaNotifyEnabled();
+            btn.dataset.on = on ? 'true' : 'false';
+            btn.classList.toggle('bg-brand-cyan', on);
+            btn.classList.toggle('bg-brand-border', !on);
+            const dot = btn.querySelector('span');
+            if (dot) dot.style.transform = on ? 'translateX(20px)' : 'translateX(0)';
+            if (statusEl) {
+                if (on && typeof Notification !== 'undefined' && Notification.permission === 'denied') {
+                    statusEl.textContent = '⚠️ 瀏覽器的通知權限被擋住了，要到手機的「設定」裡，把這個網站的通知權限打開才會生效。';
+                    statusEl.classList.remove('hidden');
+                } else if (on) {
+                    statusEl.textContent = `✅ 已開啟，上午${AQUA_NOTIFY_HOUR}點前後打開App就會跳出提醒(App要在前景或背景分頁開著才有效)`;
+                    statusEl.classList.remove('hidden');
+                } else {
+                    statusEl.classList.add('hidden');
+                }
+            }
+        }
+        document.getElementById('aqua-notify-toggle-btn').addEventListener('click', async () => {
+            const willEnable = !isAquaNotifyEnabled();
+            if (willEnable) {
+                if (typeof Notification === 'undefined') {
+                    showToast('這個瀏覽器不支援通知功能', 'error');
+                    return;
+                }
+                let perm = Notification.permission;
+                if (perm === 'default') perm = await Notification.requestPermission();
+                if (perm !== 'granted') {
+                    showToast('沒有取得通知權限，無法開啟提醒', 'error');
+                    updateAquaNotifyToggleUI();
+                    return;
+                }
+            }
+            setAquaNotifyEnabled(willEnable);
+            updateAquaNotifyToggleUI();
+            showToast(willEnable ? '已開啟上午7點魚池巡檢通知' : '已關閉魚池巡檢通知', 'success');
+        });
+        // 巡檢「持倉魚池」是否觸發停損/停利建議，邏輯與新手模式的持股提醒相同架構，
+        // 差別在於停損/停利價位改用aquaSlLevels/aquaTpLevels(系統建議或自訂)計算。
+        async function checkAndSendAquariumNotification() {
+            if (!isAquaNotifyEnabled()) return;
+            if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
+            if (aquariumHoldings.length === 0) return;
+            const now = new Date();
+            const todayStr = now.toISOString().split('T')[0];
+            if (now.getHours() < AQUA_NOTIFY_HOUR) return; // 還沒到上午7點
+            if (getAquaLastNotifyDateStr() === todayStr) return; // 今天已經通知過了
+            const lines = [];
+            for (const item of aquariumHoldings) {
+                try {
+                    const daily = stockCache[item.symbol] || await fetchStockDataMulti(item.symbol);
+                    if (!daily || daily.length < 30) continue;
+                    const levels = computeAquariumSystemLevels(daily);
+                    const sl = aquaSlLevels(item, levels), tp = aquaTpLevels(item, levels);
+                    const lastClose = levels.lastClose;
+                    const pnlPct = (lastClose - item.cost) / item.cost * 100;
+                    let tag = null;
+                    if (lastClose <= sl.stopPrice) tag = `🚨${sl.label}停損`;
+                    else if (lastClose >= tp.tpPrice) tag = `🎯${tp.label}停利`;
+                    if (tag) lines.push(`${stockLabel(item.symbol)} ${tag}(${pnlPct >= 0 ? '+' : ''}${pnlPct.toFixed(1)}%)`);
+                } catch (e) { /* 單檔查詢失敗就跳過，不影響其他檔的通知 */ }
+            }
+            const title = lines.length > 0 ? `🐟 魚池巡檢：${lines.length}檔觸及停利/停損建議` : '🐟 持倉魚池目前都正常持有中';
+            const body = lines.length > 0 ? lines.join('\n') : `魚池追蹤中的${aquariumHoldings.length}檔都還沒碰到停利/停損價位`;
+            try {
+                new Notification(title, { body, icon: 'data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2024%2024%22%3E%3Ccircle%20cx%3D%2212%22%20cy%3D%2212%22%20r%3D%2212%22%20fill%3D%22%2300f2fe%22/%3E%3C/svg%3E' });
+            } catch (e) { console.warn('通知發送失敗', e.message); }
+            setAquaLastNotifyDateStr(todayStr);
+        }
+        updateAquaNotifyToggleUI();
+
+        // ---- 統一巡檢排程器：整合「新手模式」持股提醒(下午7點)與「戰術魚池」巡檢(上午7點) ----
+        // 兩邊各自維護自己的開關/時間點/最後通知日期，這裡只是共用同一個每分鐘輪詢的入口，
+        // App只要開著(含背景分頁)，跨過各自設定的時間點時就會自動觸發對應的通知檢查。
+        async function runDailyNotificationChecks() {
+            await checkAndSendRookieNotification();
+            await checkAndSendAquariumNotification();
+        }
+        runDailyNotificationChecks();
+        setInterval(runDailyNotificationChecks, 60000);
 
         // ============ 訊號分頁 ============
         function filterRecentTrades(trades, years = 2) {
@@ -5606,6 +5978,7 @@
             target.classList.remove('hidden');
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tabName));
             if (tabName === 'beginner') renderRookieWatchlist();
+            if (tabName === 'aquarium') renderAquariumPanel();
             if (tabName === 'scan') renderSectorRotation();
             if (tabName === 'dashboard') renderDashboard();
             requestAnimationFrame(() => {
@@ -6178,7 +6551,7 @@
         document.getElementById('clear-storage-btn').addEventListener('click', () => {
             const ok = confirm('確定要清除手機裡存的所有App資料嗎？\n\n會清掉：追蹤清單、自訂股票名稱、參數設定、新手模式持股提醒清單、全市場代碼名稱快取。\n\n這個動作沒辦法復原，清除後會自動重新整理頁面。');
             if (!ok) return;
-            const keysToRemove = ['trend_watchlist', 'trend_settings', 'trend_user_names', 'trend_rookie_watchlist', 'trend_all_stock_info', 'trend_all_stock_info_ts', 'trend_rookie_notify', 'trend_rookie_notify_last_date'];
+            const keysToRemove = ['trend_watchlist', 'trend_settings', 'trend_user_names', 'trend_rookie_watchlist', 'trend_all_stock_info', 'trend_all_stock_info_ts', 'trend_rookie_notify', 'trend_rookie_notify_last_date', 'trend_aquarium_holdings', 'trend_aquarium_watch', 'trend_aquarium_notify', 'trend_aquarium_notify_last_date'];
             keysToRemove.forEach(k => { try { localStorage.removeItem(k); } catch (e) { console.warn('清除失敗', k, e); } });
             showToast('已清除，正在重新整理...', 'success');
             setTimeout(() => location.reload(), 800);
