@@ -380,28 +380,11 @@
             <button id="settings-open-btn" class="flex items-center justify-center gap-1 bg-brand-cyan/15 hover:bg-brand-cyan/25 text-brand-cyan border border-brand-cyan/40 rounded-lg px-2 py-2 transition shrink-0 text-[10px] font-bold tracking-wide" title="系統參數設定">
                 <i data-lucide="sliders" class="w-4 h-4"></i>
             </button>
-            <button id="add-stock-toggle-btn" class="flex items-center justify-center gap-1 bg-brand-bg border border-brand-border rounded-lg px-2 py-2 text-slate-300 hover:border-brand-cyan transition shrink-0 text-[10px] font-bold tracking-wide" title="新增追蹤股票">
-                <i data-lucide="search" class="w-4 h-4"></i>
+            <button id="add-stock-toggle-btn" class="flex items-center justify-center gap-1.5 bg-brand-bg border border-brand-border rounded-lg px-3 py-2 text-slate-300 hover:border-brand-cyan transition shrink-0 text-[12px] font-bold tracking-wide">
+                <i data-lucide="search" class="w-4 h-4"></i> 找股
             </button>
         </div>
     </header>
-
-    <!-- 新增追蹤股票：預設收起來，點頭部的「+」才展開 -->
-    <div id="add-stock-row" class="hidden bg-brand-card border-b border-brand-border px-3 py-2 shrink-0 w-full" style="padding-left: max(0.75rem, env(safe-area-inset-left)); padding-right: max(0.75rem, env(safe-area-inset-right));">
-        <form id="add-stock-form" class="flex gap-1.5">
-            <div class="relative w-20 shrink-0">
-                <i data-lucide="search" class="absolute left-2 top-2.5 w-3.5 h-3.5 text-slate-400"></i>
-                <input type="text" id="stock-input" placeholder="代號" autocomplete="off"
-                       class="w-full bg-brand-bg border border-brand-border text-white pl-[26px] pr-1 py-2 rounded-lg focus:outline-none focus:border-brand-cyan placeholder-slate-500 text-sm transition">
-                <div id="stock-suggest-dropdown" class="hidden absolute left-0 top-full mt-1 w-64 max-h-72 overflow-y-auto bg-brand-card border border-brand-border rounded-lg shadow-2xl z-50"></div>
-            </div>
-            <input type="text" id="stock-name-input" placeholder="名稱(選填)"
-                   class="flex-1 min-w-0 bg-brand-bg border border-brand-border text-white px-2 py-2 rounded-lg focus:outline-none focus:border-brand-cyan placeholder-slate-500 text-sm transition">
-            <button type="submit" class="shrink-0 bg-gradient-to-r from-brand-cyan to-brand-teal text-brand-bg hover:opacity-90 px-3 py-2 rounded-lg transition-colors shadow-md flex items-center justify-center font-bold text-sm" title="新增到追蹤清單">
-                <i data-lucide="plus" class="w-4 h-4"></i>
-            </button>
-        </form>
-    </div>
 
     <!-- 大盤儀表板詳細資料彈出視窗 -->
     <div id="dashboard-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-brand-bg/80 backdrop-blur-sm">
@@ -498,7 +481,6 @@
             <button class="tab-btn flex-1 min-w-[80px] py-3 text-slate-400 flex justify-center items-center gap-1.5" data-tab="weekly"><i data-lucide="calendar-range" class="w-4 h-4"></i>週線</button>
             <button class="tab-btn flex-1 min-w-[80px] py-3 text-slate-400 flex justify-center items-center gap-1.5" data-tab="signals"><i data-lucide="pie-chart" class="w-4 h-4"></i>數據</button>
             <button class="tab-btn flex-1 min-w-[80px] py-3 text-slate-400 flex justify-center items-center gap-1.5" data-tab="scan"><i data-lucide="radar" class="w-4 h-4"></i>掃描</button>
-            <button class="tab-btn flex-1 min-w-[80px] py-3 text-slate-400 flex justify-center items-center gap-1.5" data-tab="findstock"><i data-lucide="search" class="w-4 h-4"></i>找股</button>
             <button class="tab-btn flex-1 min-w-[80px] py-3 text-slate-400 flex justify-center items-center gap-1.5" data-tab="beginner"><i data-lucide="life-buoy" class="w-4 h-4"></i>新手</button>
             <button class="tab-btn flex-1 min-w-[80px] py-3 text-slate-400 flex justify-center items-center gap-1.5" data-tab="tutorial"><i data-lucide="graduation-cap" class="w-4 h-4"></i>教學</button>
             <button class="tab-btn flex-1 min-w-[80px] py-3 text-slate-400 flex justify-center items-center gap-1.5" data-tab="about"><i data-lucide="info" class="w-4 h-4"></i>關於</button>
@@ -506,6 +488,21 @@
     </div>
 
     <div id="toast-container" class="fixed top-20 left-1/2 transform -translate-x-1/2 z-50 w-[90%] max-w-sm flex flex-col items-center"></div>
+
+    <div id="search-modal" class="hidden fixed inset-0 z-[100] bg-brand-bg flex flex-col">
+        <div class="flex items-center gap-3 p-4 border-b border-brand-border bg-brand-card" style="padding-top: max(1rem, env(safe-area-inset-top));">
+            <div class="relative flex-1">
+                <i data-lucide="search" class="absolute left-3 top-2.5 w-5 h-5 text-brand-cyan"></i>
+                <input id="findstock-input" type="text" inputmode="search" placeholder="輸入代號或中文名稱 (例: 2330 或 台積電)"
+                    class="w-full bg-brand-bg border border-brand-border text-white pl-10 pr-3 py-2.5 rounded-xl text-sm focus:outline-none focus:border-brand-cyan">
+            </div>
+            <button id="search-modal-close" class="text-slate-400 hover:text-white text-sm font-bold px-2 py-2 transition">取消</button>
+        </div>
+        <div class="flex-1 overflow-y-auto p-4 hide-scroll">
+            <p class="text-slate-500 text-[11px] mb-3">支援股票代號或中文名稱搜尋。找到後可直接加入追蹤，或點擊看圖表。</p>
+            <div id="findstock-list" class="space-y-1.5 pb-8"></div>
+        </div>
+    </div>
 
     <main class="flex-1 relative w-full h-full bg-brand-bg overflow-hidden">
 
@@ -1135,18 +1132,6 @@
         </div>
 
         <!-- 找股分頁：用代號或名稱搜尋，快速跳到日線/週線或加入追蹤 -->
-        <div id="panel-findstock" class="absolute inset-0 hidden overflow-y-auto p-4 hide-scroll bg-brand-bg">
-            <div class="max-w-3xl mx-auto space-y-3">
-                <div class="flex items-center gap-2">
-                    <i data-lucide="search" class="w-5 h-5 text-brand-cyan shrink-0"></i>
-                    <input id="findstock-input" type="text" inputmode="search" placeholder="輸入股票代號或名稱，例如 2330 或 台積電"
-                        class="flex-1 bg-brand-card border border-brand-border text-white px-3 py-2.5 rounded-xl text-sm focus:outline-none focus:border-brand-cyan">
-                </div>
-                <p class="text-slate-500 text-[11px]">搜尋範圍是系統已知的股票代號與名稱清單，找到後可以直接加入追蹤，或跳去看日線/週線圖。</p>
-                <div id="findstock-list" class="space-y-1.5 pb-8"></div>
-            </div>
-        </div>
-
         <!-- 新手分頁：快速試算 + 持股提醒 -->
         <div id="panel-beginner" class="absolute inset-0 hidden overflow-y-auto p-4 hide-scroll bg-brand-bg">
             <div class="max-w-2xl mx-auto space-y-4 pb-8">
@@ -3820,13 +3805,17 @@
             else if (aboveMa20) light = '🟡';
             btn.textContent = light;
         }
+        // themeColor(emerald/amber/blue/slate/rose) -> 對應的燈號emoji，給還沒改成純色系設計的舊版UI(新手模式等)沿用
+        const THEME_COLOR_EMOJI = { emerald: '🟢', amber: '🟡', blue: '🔵', slate: '⚪', rose: '🔴' };
+        function themeColorEmoji(themeColor) { return THEME_COLOR_EMOJI[themeColor] || '⚪'; }
+        // themeColor是否屬於「短線可留意/可操作」的正向分類(對照舊版 light==='🟢'||'🟡' 但排除持倉中的安心續抱/blue)
+        function isShortTermOk(verdict) { return !!verdict && (verdict.themeColor === 'emerald' || verdict.themeColor === 'amber'); }
         function evaluateBuySuitability(dv) {
             const ind = dv.ind;
             const i = ind.closes.length - 1, i1 = i - 1;
             const lastClose = ind.closes[i], ma20 = ind.ma20[i], ma100 = ind.ma100[i];
             const lastDate = dv.dailyTimes[i];
 
-            // --- 趨勢與型態 ---
             const aboveMa20 = ma20 !== null && lastClose > ma20;
             const ma100Protects = ma100 !== null && ma20 !== null && ma100 < ma20;
             const simpleAligned = aboveMa20 && ma100Protects;
@@ -3834,12 +3823,6 @@
             const vcpGoodScore = vcpScore && vcpScore.score >= 8;
             const vcpHolding = !!dv.vcp.openPosition;
 
-            // --- 資金動能分數：綜合近5/20/60日漲跌幅，跟「資金動能排行」用同一套公式，數值互通 ---
-            const getP = (offset) => (i - offset >= 0) ? ind.closes[i - offset] : ind.closes[0];
-            const c5 = getP(5), c20 = getP(20), c60 = getP(60);
-            const momentumScore = ((lastClose - c5) / c5 + (lastClose - c20) / c20 + (lastClose - c60) / c60) * 100;
-
-            // --- 短線技術指標擷取 ---
             const k = ind.kd.k[i], d = ind.kd.d[i], kPrev = ind.kd.k[i1], dPrev = ind.kd.d[i1];
             const rsi = ind.rsi14[i], pb = ind.percentB[i];
             const kdGolden = (k !== null && d !== null && kPrev !== null && dPrev !== null) && k > d && kPrev <= dPrev;
@@ -3848,122 +3831,143 @@
             const rsiOverbought = rsi !== null && rsi > 70;
             const bbBreakUp = pb !== null && pb > 1;
 
+            // 動能分數計算
+            const getP = (offset) => (i - offset >= 0) ? ind.closes[i - offset] : ind.closes[0];
+            const cNow = ind.closes[i], c5 = getP(5), c20 = getP(20), c60 = getP(60);
+            const momentumScore = ((cNow - c5) / c5 + (cNow - c20) / c20 + (cNow - c60) / c60) * 100;
+
+            // 將短線訊號改為物件，包含備註解釋
             let shortSignals = [];
             let shortWarnings = [];
-            if (kdGolden) shortSignals.push('KD黃金交叉');
-            if (rsiOversold) shortSignals.push('RSI超賣區');
-            if (kdDead) shortWarnings.push('KD死亡交叉');
-            if (rsiOverbought) shortWarnings.push('RSI過熱(>70)');
-            if (bbBreakUp) shortWarnings.push('股價穿出布林上軌(防追高)');
+            if (kdGolden) shortSignals.push({ name: 'KD黃金交叉', desc: '短期買盤轉強，有利多方發動' });
+            if (rsiOversold) shortSignals.push({ name: 'RSI超賣區', desc: '跌深乖離過大，醞釀技術性反彈' });
+            if (kdDead) shortWarnings.push({ name: 'KD死亡交叉', desc: '短期動能轉弱，留意回檔風險' });
+            if (rsiOverbought) shortWarnings.push({ name: 'RSI過熱', desc: '指標進入超買區，慎防追高套牢' });
+            if (bbBreakUp) shortWarnings.push({ name: '布林突破上軌', desc: '股價強勢表態，但須防乖離過大拉回' });
 
-            // --- 停損與風險估算：用日20MA、或-7%硬停損，取較高(較貼近現價、較保守)的那個當參考價 ---
             const hardStop = lastClose * 0.93;
             const stopPrice = ma20 !== null ? Math.max(ma20, hardStop) : hardStop;
             const riskPerShare = lastClose - stopPrice;
             const riskPct = riskPerShare / lastClose * 100;
 
-            // --- 綜合決策邏輯：同時看長線(大均線)、型態(海象標籤)、短線(KD/RSI/布林) ---
-            let light, label, advice;
+            // 決策邏輯 (拿掉 Emoji，改用顏色與邊框定義)
+            let themeColor, label, advice;
+
             if (vcpHolding) {
                 if (lastClose <= dv.vcp.openPosition.stopPrice * 1.02) {
-                    light = '🔴'; label = '防守警戒';
-                    advice = '股價已逼近VCP系統的停損/移動停利線，請嚴格執行紀律，隨時準備出場。';
+                    themeColor = 'rose'; label = '防守警戒'; advice = '股價已逼近系統的停損線，請嚴格執行紀律，隨時準備出場。';
                 } else if (shortWarnings.length >= 2) {
-                    light = '🟠'; label = '留意獲利了結';
-                    advice = `持倉中，但短線出現過熱訊號(${shortWarnings.join('、')})，建議可考慮分批停利，鎖住獲利。`;
+                    themeColor = 'amber'; label = '留意獲利了結'; advice = `持倉中，但短線出現過熱訊號，建議可考慮分批停利，鎖住獲利。`;
                 } else {
-                    light = '🔵'; label = '安心續抱';
-                    advice = '目前持倉中且趨勢健康，未見明顯轉弱訊號，請依循移動停利機制續抱。';
+                    themeColor = 'blue'; label = '安心續抱'; advice = '目前持倉中且趨勢健康，未見明顯轉弱訊號，請依循移動停利機制續抱。';
                 }
-            } else if (simpleAligned && vcpGoodScore) {
-                if (shortWarnings.length > 0) {
-                    light = '🟡'; label = '趨勢佳，但短線過熱';
-                    advice = `型態與分數均優(${vcpScore.score}/25)，但短線指標顯示過熱(${shortWarnings[0]})。建議不要急著追高，等待拉回量縮或指標降溫時再進場。`;
-                } else {
-                    light = '🟢'; label = '強勢進場';
-                    advice = `趨勢多頭排列且VCP分數達標(${vcpScore.score}/25)，短線亦無過熱跡象。屬於勝率極高的發動點，建議可規劃資金分批佈局，仍不要all-in。`;
-                }
-            } else if (simpleAligned) {
-                if (shortSignals.length > 0) {
-                    light = '🟢'; label = '短線轉強試單';
-                    advice = `VCP分數雖未滿8分(目前${vcpScore ? vcpScore.score : '資料不足'}/25)，但均線具備保護，且短線出現買訊(${shortSignals[0]})。可考慮使用較小資金(試單)進場搶短。`;
-                } else {
-                    light = '🟡'; label = '建議觀望';
-                    advice = '均線雖呈多頭，但型態分數不足且缺乏短線點火訊號，建議先加入自選觀察，等待帶量突破。';
-                }
-            } else if (aboveMa20 && !ma100Protects) {
-                light = '🟡'; label = '請觀望';
-                advice = '收盤在日20MA之上，但日100MA還在日20MA上方(還沒形成多頭排列)，這種情況比較像反彈，不是穩定的多頭結構，建議再觀察。';
-            } else if (shortSignals.length >= 2) {
-                light = '🟡'; label = '跌深反彈(搶短)';
-                advice = `趨勢偏空，但短線指標出現強烈超賣反彈訊號(${shortSignals.join('、')})。僅適合極短線高手搶反彈，手腳需快。`;
             } else {
-                light = '🔴'; label = '嚴禁買進';
-                advice = '均線空頭排列，趨勢偏弱且無反轉訊號，此時進場極易套牢，請耐心保留現金。';
+                if (simpleAligned && vcpGoodScore) {
+                    if (shortWarnings.length > 0) {
+                        themeColor = 'amber'; label = '趨勢佳，但短線過熱'; advice = `型態與分數均優 (${vcpScore.score}/25)，但短線指標顯示過熱。建議不要急著追高，等待拉回量縮時再進場。`;
+                    } else {
+                        themeColor = 'emerald'; label = '強勢進場'; advice = `趨勢多頭排列且 VCP 分數達標 (${vcpScore.score}/25)，短線無過熱跡象。屬於勝率極高的發動點，建議可規劃資金分批佈局。`;
+                    }
+                } else if (simpleAligned) {
+                    if (shortSignals.length > 0) {
+                        themeColor = 'emerald'; label = '短線轉強試單'; advice = `VCP 分數雖未滿8分，但均線具備保護，且短線出現買訊。可考慮使用較小資金試單搶短。`;
+                    } else {
+                        themeColor = 'slate'; label = '建議觀望'; advice = '均線雖呈多頭，但型態分數不足且缺乏短線點火訊號，建議先加入自選觀察。';
+                    }
+                } else {
+                    if (shortSignals.length >= 2) {
+                        themeColor = 'amber'; label = '跌深反彈 (搶短)'; advice = `趨勢偏空，但短線指標出現強烈超賣反彈訊號。僅適合極短線高手搶反彈，手腳需快。`;
+                    } else {
+                        themeColor = 'rose'; label = '嚴禁買進'; advice = '均線空頭排列，趨勢偏弱且無反轉訊號，此時進場極易套牢，請耐心保留現金。';
+                    }
+                }
             }
-            if (vcpHolding) {
-                const entryT = dv.vcp.openPosition.entryTime;
-                const entryP = dv.vcp.openPosition.entryPrice;
-                advice += `(備註：VCP系統另外自己模擬了一筆從${entryT}開始、進場價${fmt(entryP)}的持倉，跟上面這個燈號是同一套持倉狀態的判斷；如果你還沒買，這不是叫你買的訊號，如果已經買了可以參考上方VCP卡片的停損價繼續觀察。)`;
-            }
-            return { lastClose, ma20, lastDate, stopPrice, riskPerShare, riskPct, light, label, advice, vcpScore, shortSignals, shortWarnings, vcpHolding, momentumScore };
+
+            return { lastClose, ma20, lastDate, stopPrice, riskPerShare, riskPct, themeColor, label, advice, vcpScore, shortSignals, shortWarnings, vcpHolding, momentumScore };
         }
         function renderTodaySignal(symbol) {
             const panel = document.getElementById('predict-panel');
             const a = analysisCache[symbol];
-            if (!a) { panel.innerHTML = '<p class="text-gray-500 text-sm">資料尚未載入</p>'; return; }
+            if (!a) { panel.innerHTML = '<p class="text-slate-500 text-sm">資料尚未載入</p>'; return; }
             const r = evaluateBuySuitability(a.dailyView);
 
-            // 海象型態標籤與白話說明
+            // 顏色映射系統 (取代 Emoji)
+            const colorMap = {
+                'emerald': { bg: 'bg-emerald-500', text: 'text-emerald-400', border: 'border-emerald-500/50', shadow: 'shadow-[0_0_12px_rgba(16,185,129,0.4)]' },
+                'rose': { bg: 'bg-rose-500', text: 'text-rose-400', border: 'border-rose-500/50', shadow: 'shadow-[0_0_12px_rgba(244,63,94,0.4)]' },
+                'amber': { bg: 'bg-amber-500', text: 'text-amber-400', border: 'border-amber-500/50', shadow: 'shadow-[0_0_12px_rgba(245,158,11,0.4)]' },
+                'blue': { bg: 'bg-blue-500', text: 'text-blue-400', border: 'border-blue-500/50', shadow: 'shadow-[0_0_12px_rgba(59,130,246,0.4)]' },
+                'slate': { bg: 'bg-slate-400', text: 'text-slate-300', border: 'border-slate-500/50', shadow: 'shadow-[0_0_12px_rgba(148,163,184,0.3)]' }
+            };
+            const c = colorMap[r.themeColor];
+
+            // 海象型態標籤 (極簡化，已套用新名稱)
             let oceanTags = '';
             if (r.vcpScore && r.vcpScore.detail) {
-                if (r.vcpScore.detail.strongBull) oceanTags += `<div class="bg-rose-900/20 border border-rose-500/30 rounded p-1.5 mt-1.5 flex items-start gap-1.5"><span class="neon-pill neon-pill--rose shrink-0 mt-0.5">多頭強勢噴出</span><span class="text-slate-300 text-[10px] leading-tight">均線多頭+主力強漲：大中短均線多頭排列且強漲，趨勢與動能完美共振。</span></div>`;
-                if (r.vcpScore.detail.surgeOut) oceanTags += `<div class="bg-amber-900/20 border border-amber-500/30 rounded p-1.5 mt-1.5 flex items-start gap-1.5"><span class="neon-pill neon-pill--amber shrink-0 mt-0.5">波段壓縮突破</span><span class="text-slate-300 text-[10px] leading-tight">波幅收斂+點火發動：波幅收斂後連續高過高，主力點火發動訊號。</span></div>`;
-                if (r.vcpScore.detail.gapUpHigher) oceanTags += `<div class="bg-cyan-900/20 border border-cyan-500/30 rounded p-1.5 mt-1.5 flex items-start gap-1.5"><span class="neon-pill neon-pill--cyan shrink-0 mt-0.5">跳空主力攻擊</span><span class="text-slate-300 text-[10px] leading-tight">帶量跳空+收紅：帶量跳空開高收紅，強勢主升段起點。</span></div>`;
+                if (r.vcpScore.detail.strongBull) oceanTags += `<div class="flex items-start gap-2"><span class="w-1.5 h-1.5 rounded-full bg-rose-400 mt-1.5 shrink-0 shadow-[0_0_5px_#fb7185]"></span><div><span class="text-rose-300 font-bold text-[11px]">多頭強勢噴出</span><div class="text-slate-400 text-[10px]">均線多頭+主力強漲：長短期均線多頭排列，動能完美共振。</div></div></div>`;
+                if (r.vcpScore.detail.surgeOut) oceanTags += `<div class="flex items-start gap-2"><span class="w-1.5 h-1.5 rounded-full bg-amber-400 mt-1.5 shrink-0 shadow-[0_0_5px_#fbbf24]"></span><div><span class="text-amber-300 font-bold text-[11px]">波段壓縮突破</span><div class="text-slate-400 text-[10px]">波幅收斂+點火發動：經歷收斂後連續高過高，主力點火。</div></div></div>`;
+                if (r.vcpScore.detail.gapUpHigher) oceanTags += `<div class="flex items-start gap-2"><span class="w-1.5 h-1.5 rounded-full bg-cyan-400 mt-1.5 shrink-0 shadow-[0_0_5px_#22d3ee]"></span><div><span class="text-cyan-300 font-bold text-[11px]">跳空主力攻擊</span><div class="text-slate-400 text-[10px]">帶量跳空+收紅：跳空開高且收紅K，強勢主升段起點。</div></div></div>`;
             }
-            if (!oceanTags) oceanTags = '<div class="text-slate-500 text-[11px] mt-1.5">目前無特殊海象型態</div>';
+            if (!oceanTags) oceanTags = '<div class="text-slate-500 text-[11px] pl-3">目前無觸發特殊型態</div>';
 
-            // 短線指標字串
+            // 短線指標字串 (包含備註)
             let shortTechHtml = '';
-            if (r.shortSignals.length > 0) shortTechHtml += `<div class="text-green-400 text-[11px]">🟢 ${r.shortSignals.join('、')}</div>`;
-            if (r.shortWarnings.length > 0) shortTechHtml += `<div class="text-orange-400 text-[11px]">🔴 ${r.shortWarnings.join('、')}</div>`;
-            if (!shortTechHtml) shortTechHtml = '<div class="text-slate-500 text-[11px]">中性，無極端訊號</div>';
+            if (r.shortSignals.length > 0) shortTechHtml += r.shortSignals.map(s => `<div class="flex items-start gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mt-1.5 shrink-0"></span><div><span class="text-emerald-400 font-bold text-[11px]">${s.name}</span><div class="text-slate-400 text-[10px]">${s.desc}</div></div></div>`).join('');
+            if (r.shortWarnings.length > 0) shortTechHtml += r.shortWarnings.map(s => `<div class="flex items-start gap-2"><span class="w-1.5 h-1.5 rounded-full bg-rose-400 mt-1.5 shrink-0"></span><div><span class="text-rose-400 font-bold text-[11px]">${s.name}</span><div class="text-slate-400 text-[10px]">${s.desc}</div></div></div>`).join('');
+            if (!shortTechHtml) shortTechHtml = '<div class="text-slate-500 text-[11px] pl-3">各項指標處於中性區間</div>';
 
             panel.innerHTML = `
-                <div class="bg-brand-bg/50 border border-brand-cyan/20 rounded-xl p-4">
-                    <div class="text-[11px] text-brand-cyan/90 mb-3 bg-brand-cyan/10 border border-brand-cyan/20 rounded px-2 py-1.5">💡 這裡是用「最新一個交易日的收盤資料」試算的綜合建議，用來決定「下一次有機會交易時」要不要進場，每次重新打開才會用最新資料算一次。</div>
-                    <div class="flex items-center justify-between mb-3 border-b border-white/10 pb-3">
-                        <div>
-                            <div class="text-2xl font-bold tracking-wide">${r.light} ${r.label}</div>
-                            <div class="text-[10px] text-slate-400 mt-1">依 ${r.lastDate} 收盤資料運算</div>
+                <div class="bg-brand-bg/80 border border-slate-700/50 rounded-xl overflow-hidden shadow-2xl backdrop-blur-md">
+                    <div class="p-5 border-l-4 ${c.border} bg-gradient-to-r from-brand-card to-transparent">
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="flex items-center gap-2.5">
+                                <div class="w-3 h-3 rounded-full ${c.bg} ${c.shadow}"></div>
+                                <h2 class="text-2xl font-bold tracking-wide text-white">${r.label}</h2>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-[10px] text-slate-400 uppercase tracking-widest">動能指數</div>
+                                <div class="text-lg font-mono-num font-bold ${r.momentumScore > 0 ? 'text-red-400' : 'text-green-400'}">${r.momentumScore > 0 ? '+' : ''}${r.momentumScore.toFixed(1)}</div>
+                            </div>
                         </div>
-                        <div class="text-right">
-                            <div class="text-xs text-slate-400 mb-0.5">資金動能</div>
-                            <div class="text-lg font-bold font-mono-num ${r.momentumScore > 0 ? 'text-red-400' : 'text-green-400'}">
-                                ${r.momentumScore > 0 ? '+' : ''}${r.momentumScore.toFixed(1)}<span class="text-[10px] text-slate-500 ml-1">分</span>
+                        <div class="text-[12px] text-slate-300 leading-relaxed mb-1">${r.advice}</div>
+                        <div class="text-[9px] text-slate-500 font-mono-num">DATE: ${r.lastDate}</div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-px bg-slate-700/30 border-y border-slate-700/50">
+                        <div class="bg-brand-bg/60 p-4">
+                            <div class="text-brand-cyan font-bold text-[11px] mb-3 flex items-center gap-1.5 uppercase tracking-widest"><i data-lucide="scan-line" class="w-3.5 h-3.5"></i> 型態解析</div>
+                            <div class="space-y-2.5">
+                                ${oceanTags}
+                            </div>
+                        </div>
+                        <div class="bg-brand-bg/60 p-4">
+                            <div class="text-brand-cyan font-bold text-[11px] mb-3 flex items-center gap-1.5 uppercase tracking-widest"><i data-lucide="activity" class="w-3.5 h-3.5"></i> 短線技術指標</div>
+                            <div class="space-y-2.5">
+                                ${shortTechHtml}
                             </div>
                         </div>
                     </div>
-                    <div class="text-[13px] text-slate-200 leading-relaxed mb-4 p-2.5 bg-brand-card/50 rounded-lg border border-white/5">${r.advice}</div>
-                    <div class="grid grid-cols-1 gap-3 mb-4">
-                        <div class="bg-gray-900/60 rounded-lg p-2.5">
-                            <div class="text-brand-teal font-bold text-[11px] flex items-center gap-1"><i data-lucide="waves" class="w-3 h-3"></i> 潮汐型態解析</div>
-                            ${oceanTags}
+
+                    <div class="p-4 bg-brand-card/30">
+                        <div class="text-slate-400 font-bold text-[11px] mb-2 flex items-center gap-1.5 uppercase tracking-widest"><i data-lucide="shield" class="w-3.5 h-3.5"></i> 風險防禦基準</div>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-[11px] font-mono-num">
+                            <div class="bg-black/20 p-2 rounded border border-white/5">
+                                <div class="text-slate-500 mb-0.5 text-[9px]">目前收盤價</div>
+                                <div class="text-white font-bold text-sm">${fmt(r.lastClose)}</div>
+                            </div>
+                            <div class="bg-black/20 p-2 rounded border border-white/5">
+                                <div class="text-slate-500 mb-0.5 text-[9px]">生命線 (20MA)</div>
+                                <div class="text-blue-400 font-bold text-sm">${fmt(r.ma20)}</div>
+                            </div>
+                            <div class="bg-black/20 p-2 rounded border border-red-500/20">
+                                <div class="text-slate-500 mb-0.5 text-[9px]">建議停損價</div>
+                                <div class="text-orange-400 font-bold text-sm">${fmt(r.stopPrice)}</div>
+                            </div>
+                            <div class="bg-black/20 p-2 rounded border border-red-500/20">
+                                <div class="text-slate-500 mb-0.5 text-[9px]">單股承受風險</div>
+                                <div class="text-orange-400 font-bold text-sm">${fmt(r.riskPerShare)} <span class="text-[10px]">(${r.riskPct.toFixed(1)}%)</span></div>
+                            </div>
                         </div>
-                        <div class="bg-gray-900/60 rounded-lg p-2.5">
-                            <div class="text-brand-cyan font-bold text-[11px] mb-1.5 flex items-center gap-1"><i data-lucide="zap" class="w-3 h-3"></i> 短線指標 (KD/RSI/布林)</div>
-                            ${shortTechHtml}
-                        </div>
-                    </div>
-                    <div class="bg-red-900/10 border border-red-500/20 rounded-lg p-3">
-                        <div class="text-red-400 font-bold text-[11px] mb-2 flex items-center gap-1"><i data-lucide="shield-alert" class="w-3.5 h-3.5"></i> 風險與防守線試算</div>
-                        <div class="grid grid-cols-2 gap-2 text-[11px] font-mono-num">
-                            <div>目前收盤價：<span class="text-white font-bold">${fmt(r.lastClose)}</span></div>
-                            <div>生命線(日20MA)：<span class="text-blue-400">${fmt(r.ma20)}</span></div>
-                            <div>建議停損價：<span class="text-orange-400 font-bold">${fmt(r.stopPrice)}</span></div>
-                            <div>單股承受風險：<span class="text-orange-400 font-bold">${fmt(r.riskPerShare)}元(${r.riskPct.toFixed(1)}%)</span></div>
-                        </div>
-                        <div class="mt-2 text-[9px] text-slate-500 leading-relaxed">※ 停損價計算邏輯：取「日20MA」與「現價跌7%」兩者中較靠近現價的數值作為防守底線。進場前請先評估此虧損金額是否會影響睡眠。</div>
                     </div>
                 </div>`;
             safeLucideIcons({ root: panel });
@@ -4010,7 +4014,7 @@
                 resultEl.innerHTML = `
                     <div class="bg-gray-800 rounded p-3">
                         <div class="text-sm font-bold text-white mb-1">${stockLabel(symbol)} <span class="text-slate-400 font-normal text-xs">(${r.lastDate}收盤 ${fmt(r.lastClose)}元)</span></div>
-                        <div class="text-xl font-bold mb-1">${r.light} ${r.label}</div>
+                        <div class="text-xl font-bold mb-1">${themeColorEmoji(r.themeColor)} ${r.label}</div>
                         <div class="text-[12px] text-gray-300 mb-1">${r.advice}</div>
                         ${sizingHtml}
                         <div class="text-[10px] text-gray-500 mt-2">建議停損價：${fmt(r.stopPrice)}元(每股風險${fmt(r.riskPerShare)}元/${r.riskPct.toFixed(1)}%)。${hasCapital ? '' : '輸入想投入的金額，可以幫你算出可買張數跟最多會賠多少錢。'}</div>
@@ -5103,6 +5107,7 @@
             document.querySelectorAll('.findstock-view-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
                     const sym = btn.getAttribute('data-symbol');
+                    document.getElementById('search-modal').classList.add('hidden'); // 關閉彈窗
                     loadStock(sym);
                     switchTab('daily');
                 });
@@ -5149,7 +5154,6 @@
             if (tabName === 'beginner') renderRookieWatchlist();
             if (tabName === 'scan') renderSectorRotation();
             if (tabName === 'dashboard') renderDashboard();
-            if (tabName === 'findstock') renderFindStockResults('');
             requestAnimationFrame(() => {
                 syncChartSize(weeklyChart, document.getElementById('weekly-chart-container'));
                 syncChartSize(dailyChart, document.getElementById('daily-chart-container'));
@@ -5324,7 +5328,7 @@
                     try { buyVerdict = evaluateBuySuitability(computeDailyView(daily)); } catch (e) { /* 資料不足時跳過，不影響掃描其他項目 */ }
                     // 長線沒給買點訊號、但短線卻偏正面時，把兩邊的原因都整理出來(各自一句話講重點)，避免看起來互相矛盾卻不知道為什麼
                     let divergenceNote = null;
-                    if (!isBuy && buyVerdict && (buyVerdict.light === '🟢' || buyVerdict.light === '🟡')) {
+                    if (!isBuy && buyVerdict && isShortTermOk(buyVerdict)) {
                         const shortReason = buyVerdict.advice.split('。')[0]; // 只取第一句講重點，後面的補充說明不放進來
                         divergenceNote = { longReason: explainWeeklyNoBuy(cb, nowAboveMa, prevAboveMa), shortReason };
                     }
@@ -5371,7 +5375,7 @@
         let scanSortMode = 'score';
         function buildScanCard(r) {
             const longOk = r.isBuy;
-            const shortOk = !!(r.buyVerdict && (r.buyVerdict.light === '🟢' || r.buyVerdict.light === '🟡'));
+            const shortOk = isShortTermOk(r.buyVerdict);
             let combo = null;
             if (longOk && shortOk) combo = { text: '長短線都可以買', cls: 'neon-pill--amber' };
             else if (longOk) combo = { text: '長線可以買', cls: 'neon-pill--cyan' };
@@ -5419,7 +5423,7 @@
             const list = document.getElementById('scan-list');
             if (!list) return;
             let rows = lastScanVisibleRows.slice();
-            if (scanFilterMode === 'short') rows = rows.filter(r => r.buyVerdict && (r.buyVerdict.light === '🟢' || r.buyVerdict.light === '🟡'));
+            if (scanFilterMode === 'short') rows = rows.filter(r => isShortTermOk(r.buyVerdict));
             else if (scanFilterMode === 'long') rows = rows.filter(r => r.isBuy);
             if (scanSortMode === 'price-desc') rows.sort((a, b) => (b.close ?? -1) - (a.close ?? -1));
             else if (scanSortMode === 'price-asc') rows.sort((a, b) => (a.close ?? Infinity) - (b.close ?? Infinity));
@@ -5477,42 +5481,14 @@
         });
 
         // ============ 事件綁定 ============
-        document.getElementById('add-stock-form').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const input = document.getElementById('stock-input');
-            const nameInput = document.getElementById('stock-name-input');
-            let symbol = input.value.trim().toUpperCase().replace('.TW', '');
-            if (!symbol) return;
-            const nameVal = nameInput.value.trim();
-            if (nameVal) {
-                const names = getUserNames();
-                names[symbol] = nameVal;
-                saveJSON('trend_user_names', names);
-            }
-            if (!watchlist.includes(symbol)) { watchlist.unshift(symbol); showToast(`已追蹤 ${stockLabel(symbol)}`, 'success'); }
-            input.value = ''; nameInput.value = ''; input.blur();
-            document.getElementById('stock-suggest-dropdown').classList.add('hidden');
-            document.getElementById('add-stock-row').classList.add('hidden');
-            renderWatchlist(); loadStock(symbol);
-        });
         document.getElementById('add-stock-toggle-btn').addEventListener('click', () => {
-            const row = document.getElementById('add-stock-row');
-            row.classList.toggle('hidden');
-            if (!row.classList.contains('hidden')) document.getElementById('stock-input').focus();
+            document.getElementById('search-modal').classList.remove('hidden');
+            document.getElementById('findstock-input').focus();
+            // 打開時自動顯示全部或上次搜尋結果
+            renderFindStockResults(document.getElementById('findstock-input').value);
         });
-        // 代號輸入自動完成：打代號或公司名稱都會跳出建議清單，選了會自動帶入名稱欄位，不用再手動打名稱
-        document.getElementById('stock-input').addEventListener('input', (e) => {
-            const val = e.target.value.trim();
-            const exactName = val ? stockName(val.toUpperCase()) : '';
-            if (exactName) document.getElementById('stock-name-input').value = exactName;
-            renderStockSuggestDropdown(searchStockSuggestions(val));
-        });
-        document.getElementById('stock-input').addEventListener('focus', (e) => {
-            if (e.target.value.trim()) renderStockSuggestDropdown(searchStockSuggestions(e.target.value));
-        });
-        document.addEventListener('click', (e) => {
-            const dd = document.getElementById('stock-suggest-dropdown');
-            if (dd && !dd.contains(e.target) && e.target.id !== 'stock-input') dd.classList.add('hidden');
+        document.getElementById('search-modal-close').addEventListener('click', () => {
+            document.getElementById('search-modal').classList.add('hidden');
         });
         document.querySelectorAll('.tab-btn').forEach(btn => btn.addEventListener('click', () => switchTab(btn.dataset.tab)));
 
