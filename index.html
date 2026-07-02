@@ -648,11 +648,8 @@
                 <button id="predict-btn" class="shrink-0 flex items-center gap-1.5 bg-gradient-to-r from-brand-cyan to-brand-teal text-brand-bg font-bold px-3 py-1.5 rounded-lg shadow whitespace-nowrap active:scale-95 transition">
                     <i data-lucide="compass" class="w-4 h-4"></i> 明日策略 <span id="predict-float-badge"></span>
                 </button>
-                <button id="vcp-float-btn" class="shrink-0 flex items-center gap-1.5 bg-indigo-900/30 text-indigo-300 border border-indigo-500/30 px-3 py-1.5 rounded-lg transition hover:bg-indigo-900/50 whitespace-nowrap">
-                    <i data-lucide="activity" class="w-3.5 h-3.5"></i> VCP <span id="vcp-float-badge" class="font-bold text-white bg-indigo-500/40 px-1 rounded text-[10px]">--</span>
-                </button>
-                <button id="shortterm-float-btn" class="shrink-0 flex items-center gap-1.5 bg-blue-900/30 text-blue-300 border border-blue-500/30 px-3 py-1.5 rounded-lg transition hover:bg-blue-900/50 whitespace-nowrap">
-                    <i data-lucide="zap" class="w-3.5 h-3.5"></i> 短線
+                <button id="resonance-float-btn" class="shrink-0 flex items-center gap-1.5 bg-indigo-900/30 text-indigo-300 border border-indigo-500/30 px-3 py-1.5 rounded-lg transition hover:bg-indigo-900/50 whitespace-nowrap">
+                    <i data-lucide="git-merge" class="w-3.5 h-3.5"></i> 共振 <span id="resonance-float-badge" class="font-bold text-white bg-indigo-500/40 px-1 rounded text-[10px]">--</span>
                 </button>
                 <button id="intraday-btn" class="shrink-0 flex items-center gap-1.5 bg-pink-900/30 text-pink-300 border border-pink-500/30 px-3 py-1.5 rounded-lg transition hover:bg-pink-900/50 whitespace-nowrap">
                     <i data-lucide="radio" class="w-3.5 h-3.5"></i> 盤中
@@ -704,8 +701,7 @@
                     <button id="modal-close-btn" class="text-slate-400 hover:text-brand-cyan p-1 rounded-lg transition"><i data-lucide="x" class="w-6 h-6"></i></button>
                 </div>
                 <div class="overflow-y-auto p-4 hide-scroll bg-brand-bg/50">
-                    <div id="vcp-panel" class="space-y-3"></div>
-                    <div id="shortterm-panel" class="space-y-3"></div>
+                    <div id="resonance-panel" class="space-y-3"></div>
                     <div id="predict-panel" class="space-y-3 hidden"></div>
                     <div id="four-treasures-panel" class="space-y-3 hidden"></div>
                     <div id="intraday-panel" class="space-y-3 hidden"></div>
@@ -960,7 +956,7 @@
  <div id="tutorial-section-1" class="hidden px-4 pb-4 space-y-2">
  <div class="info-subcard">
  <div class="info-subcard-title"><span class="info-dot"></span> 日線戰術板</div>
- <div class="info-subcard-body">找出「站上 20MA、底下有 100MA 撐腰保護」的強勢股，進場給 3 天觀察期，開始賺錢就啟動移動停利幫我鎖住獲利。K 棒配有日 20/100MA 均線和布林通道，上方「VCP」「短線」「明日策略」三個按鈕，可以看 0~18 分的量化評分儀表板，還能試算「明天適不適合進場、停損該設多少」，完全不佔圖表空間，畫面清爽。</div>
+ <div class="info-subcard-body">找出「站上 20MA、底下有 100MA 撐腰保護」的強勢股，進場給 3 天觀察期，開始賺錢就啟動移動停利幫我鎖住獲利。K 棒配有日 20/100MA 均線和布林通道，上方「共振」「明日策略」兩個按鈕，可以一次看完 0~25 分的型態評分加上短線技術指標，還能試算「明天適不適合進場、停損該設多少」，完全不佔圖表空間，畫面清爽。</div>
  </div>
  <div class="info-subcard">
  <div class="info-subcard-title"><span class="info-dot"></span> 長線波段看盤</div>
@@ -3387,10 +3383,9 @@
                 renderWeeklyChart(symbol, daily, result.weeklyView);
                 renderDailyChart(symbol, daily, result.dailyView, result.weeklyView);
                 renderSignalsTab(symbol);
-                renderVcpPanel(symbol);
+                renderResonancePanel(symbol);
                 renderFourTreasuresPanel(symbol);
                 updateTodaySignalBadge(symbol);
-                renderShortTermPanel(symbol);
                 renderDispositionWarning(symbol);
 
                 // 保險措施：部分瀏覽器在圖表第一次建立時，容器還沒有最終版面尺寸，導致標記畫不出來(要切換股票才會恢復)。
@@ -3636,82 +3631,42 @@
                 </div>`;
         }
 
-        function renderVcpPanel(symbol) {
+        // ============ 共振綜合觀測：合併 VCP 型態結構 + 短線點火時機 ============
+        // 就像氣象局的綜合儀表板：左側「型態結構(VCP)」看體質好不好，右側「點火時機(短線)」看現在買會不會太晚/追高
+        function renderResonancePanel(symbol) {
             const result = analysisCache[symbol] && analysisCache[symbol].dailyView;
-            const panel = document.getElementById('vcp-panel');
-            const badge = document.getElementById('vcp-float-badge');
-            if (!result) { panel.innerHTML = ''; if (badge) badge.textContent = '--'; return; }
-            const s = result.latestScore;
-            if (!s) {
-                panel.innerHTML = `<div class="bg-gray-800 rounded p-3 text-xs text-gray-400">歷史資料不足200日，尚無法計算 VCP 分數</div>`;
-                if (badge) badge.textContent = '不足';
+            const panel = document.getElementById('resonance-panel');
+            const badge = document.getElementById('resonance-float-badge');
+
+            if (!result) {
+                panel.innerHTML = '<p class="text-slate-500 text-sm">資料尚未載入</p>';
+                if (badge) badge.textContent = '--';
                 return;
             }
-            const rec = result.recommendation;
-            if (badge) badge.innerHTML = `${s.score}<span class="text-[9px]">/25</span>`;
-            const tierStyle = { gold: 'border-amber-400 bg-amber-900/20', warning: 'border-red-400 bg-red-900/20', edge: 'border-blue-400 bg-blue-900/20', none: 'border-gray-600' }[rec.tier] || 'border-gray-600';
-            const rows = [
-                ['① Stage2多頭排列', s.detail.stage2, 3], ['② 近52週高點附近', s.detail.nearHigh52w, 2],
-                ['③ 波幅收斂', s.detail.contraction, 5], ['④ 量縮<50日×0.7', s.detail.volShrink, 3],
-                ['⑤ 10日狹幅<5%', s.detail.tight, 2], ['⑥ 帶量突破10日高', s.detail.breakout, 3],
-                ['⑦ 多頭強勢噴出', s.detail.strongBull, 2], ['⑧ 波段壓縮突破', s.detail.surgeOut, 2],
-                ['⑨ 跳空主力攻擊', s.detail.gapUpHigher, 3],
-            ];
-            const pos = result.vcp.openPosition;
-            const bt = result.backtest;
-            const tierLabels = { gold: '🏆 SEPA黃金組合', warning: '🎯 單純高分VCP', edge: '⏸️ 邊緣訊號' };
-            const btRows = Object.entries(tierLabels).map(([tier, label]) => {
-                const b = bt[tier];
-                if (!b) return `<div class="text-gray-500">${label}：本股歷史樣本不足</div>`;
-                const cls = b.avgReturn >= 0 ? 'text-red-400' : 'text-green-400';
-                return `<div class="text-gray-300">${label}：T+5 <span class="${cls} font-mono-num">${b.avgReturn >= 0 ? '+' : ''}${b.avgReturn.toFixed(2)}%</span>，勝率<span class="font-mono-num">${b.winRate.toFixed(0)}%</span>(${b.n}次)</div>`;
-            }).join('');
-            panel.innerHTML = `
-                <div class="bg-gray-800 border ${tierStyle} rounded p-2.5">
-                    <div class="flex justify-between items-center mb-1.5">
-                        <span class="text-xl font-bold text-white">${s.score}<span class="text-xs text-gray-400">/25</span></span>
-                        <span class="text-xs text-right text-gray-200">${rec.label}</span>
-                    </div>
-                    <div class="grid grid-cols-2 gap-0.5 text-[11px]">
-                        ${rows.map(([label, ok, pt]) => `<div class="${ok ? 'text-green-400' : 'text-gray-500'}">${ok ? '✓' : '✗'} ${label}(+${pt})</div>`).join('')}
-                    </div>
-                    ${pos ? `<div class="mt-1.5 text-[11px] text-amber-300">持倉中｜進場 ${fmt(pos.entryPrice)} ／ 停損價 ${fmt(pos.stopPrice)}</div>` : (result.vcp.pendingEntry ? `<div class="mt-1.5 text-[11px] text-brand-cyan">🔔 今天剛出現買進訊號(${result.vcp.pendingEntry.score}分)，依規則明天才算正式進場，目前還不算持倉</div>` : '<div class="mt-1.5 text-[11px] text-gray-500">目前無 VCP 持倉</div>')}
-                    <div class="mt-2 pt-2 border-t border-gray-700 text-[11px] space-y-0.5">
-                        <div class="text-gray-400 mb-0.5">📊 本股VCP歷史回測(進場後第5個交易日)：</div>
-                        ${btRows}
-                        <div class="text-[10px] text-gray-500 mt-1">樣本只來自這檔股票自己的歷史訊號，跟其他工具用全市場大樣本算出的數字不會一樣，僅供參考</div>
-                    </div>
-                </div>`;
-            safeLucideIcons({ root: panel });
-        }
 
-        // ============ 短線指標面板(KDJ / RSI / 布林%B / 量能) ============
-        // 假設說明：量能放大門檻採 1.5 倍(你訊息中同時提到1.5倍跟5倍，這裡先用較常用的1.5倍，覺得太鬆可以告訴我改成5倍)
-        function renderShortTermPanel(symbol) {
-            const result = analysisCache[symbol] && analysisCache[symbol].dailyView;
-            const panel = document.getElementById('shortterm-panel');
-            const badge = document.getElementById('shortterm-float-badge');
-            if (!result) { panel.innerHTML = ''; if (badge) badge.textContent = '--'; return; }
+            const s = result.latestScore;
+            const rec = result.recommendation || { label: '資料不足', tier: 'none' };
             const ind = result.ind;
             const i = ind.closes.length - 1, i1 = i - 1;
+
+            const scoreVal = s ? s.score : '--';
+
+            // 短線指標計算
             const k = ind.kd.k[i], d = ind.kd.d[i], kPrev = ind.kd.k[i1], dPrev = ind.kd.d[i1];
-            const rsi = ind.rsi14[i];
-            const pb = ind.percentB[i];
+            const rsi = ind.rsi14[i], pb = ind.percentB[i];
             const vol = ind.vols[i], volMa20 = ind.volMa20[i];
             const volRatio = (volMa20 !== null && volMa20 > 0) ? vol / volMa20 : null;
             const ibs = result.ibs[i];
-            const latestDate = result.dailyTimes[i];
+            const macdVal = ind.macd.macd[i], macdSig = ind.macd.signal[i], macdValPrev = ind.macd.macd[i1], macdSigPrev = ind.macd.signal[i1];
 
             const kdGolden = (k !== null && d !== null && kPrev !== null && dPrev !== null) && k > d && kPrev <= dPrev;
             const kdDead = (k !== null && d !== null && kPrev !== null && dPrev !== null) && k < d && kPrev >= dPrev;
+            const macdGolden = (macdVal !== null && macdSig !== null && macdValPrev !== null && macdSigPrev !== null) && macdVal > macdSig && macdValPrev <= macdSigPrev;
+            const macdDead = (macdVal !== null && macdSig !== null && macdValPrev !== null && macdSigPrev !== null) && macdVal < macdSig && macdValPrev >= macdSigPrev;
             const bbBreakUp = pb !== null && pb > 1;
             const bbBreakDown = pb !== null && pb < 0;
             const rsiOversold = rsi !== null && rsi < 30;
             const rsiOverbought = rsi !== null && rsi > 70;
-            const volSurge = volRatio !== null && volRatio > 1.5;
-            const macdVal = ind.macd.macd[i], macdSig = ind.macd.signal[i], macdValPrev = ind.macd.macd[i1], macdSigPrev = ind.macd.signal[i1];
-            const macdGolden = (macdVal !== null && macdSig !== null && macdValPrev !== null && macdSigPrev !== null) && macdVal > macdSig && macdValPrev <= macdSigPrev;
-            const macdDead = (macdVal !== null && macdSig !== null && macdValPrev !== null && macdSigPrev !== null) && macdVal < macdSig && macdValPrev >= macdSigPrev;
             const ibsBuy = ibs !== null && ibs <= 0.2;
             const ibsSell = ibs !== null && ibs >= 0.8;
             const volTier = volRatio === null ? '--' : volRatio < 0.5 ? '極度萎縮' : volRatio <= 1.5 ? '正常' : volRatio <= 3 ? '明顯放量' : '爆量';
@@ -3719,57 +3674,213 @@
             const buySignals = [kdGolden && 'KD黃金交叉', macdGolden && 'MACD黃金交叉', bbBreakUp && '布林突破上軌', bbBreakDown && '布林跌破下軌(超賣)', rsiOversold && 'RSI超賣<30', ibsBuy && 'IBS≤0.2(收在當日低點附近)'].filter(Boolean);
             const cautionSignals = [kdDead && 'KD死亡交叉', macdDead && 'MACD死亡交叉', rsiOverbought && 'RSI超買>70', ibsSell && 'IBS≥0.8(收在當日高點附近)'].filter(Boolean);
 
-            // 綜合建議：結合VCP持倉狀態+短線訊號數量，給一句白話結論(這是我自訂的判斷規則，僅供參考，不是嚴謹的投資建議)
-            const vcpPos = result.vcp.openPosition;
-            const lastClose = ind.closes[i];
-            let verdict, verdictCls;
-            if (vcpPos && lastClose <= vcpPos.stopPrice * 1.02) {
-                verdict = '🔴 請停損：價格接近VCP停損線'; verdictCls = 'text-red-400';
-            } else if (vcpPos && cautionSignals.length >= 2) {
-                verdict = '🟠 請減倉：持倉中且短線訊號偏空'; verdictCls = 'text-orange-400';
-            } else if (cautionSignals.length >= 2) {
-                verdict = '🟡 建議觀望：短線訊號偏空較多'; verdictCls = 'text-yellow-400';
-            } else if (buySignals.length >= 3) {
-                verdict = '🟢 可安心買：多項短線訊號偏多'; verdictCls = 'text-green-400';
-            } else if (buySignals.length >= 1) {
-                verdict = '🟢 可小量購買：部分短線訊號偏多'; verdictCls = 'text-lime-400';
-            } else {
-                verdict = '⚪ 建議觀望：目前訊號不明確'; verdictCls = 'text-gray-400';
-            }
-
+            // 更新 Badge 顯示 (無 Emoji 科技風，用發光圓點取代)
             if (badge) {
-                badge.innerHTML = buySignals.length > 0 ? `🟢${buySignals.length}` : cautionSignals.length > 0 ? `🔴${cautionSignals.length}` : '➖';
+                let signalHtml = '<span class="text-slate-500">SYS.IDLE</span>';
+                if (buySignals.length > 0) {
+                    signalHtml = `<span class="flex items-center gap-1 text-emerald-400"><div class="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_4px_#34d399] animate-pulse"></div>B:${buySignals.length}</span>`;
+                } else if (cautionSignals.length > 0) {
+                    signalHtml = `<span class="flex items-center gap-1 text-rose-400"><div class="w-1.5 h-1.5 rounded-full bg-rose-400 shadow-[0_0_4px_#fb7185] animate-pulse"></div>S:${cautionSignals.length}</span>`;
+                }
+                badge.innerHTML = `<span class="font-mono-num text-indigo-200">${scoreVal}</span><span class="text-[9px] text-indigo-400/50">/25</span> <span class="mx-1 border-l border-indigo-500/30 h-2.5 inline-block align-middle"></span> ${signalHtml}`;
             }
 
+            if (!s) {
+                panel.innerHTML = `<div class="bg-brand-card/50 rounded-xl p-4 text-xs text-slate-400 border border-brand-cyan/20 font-mono tracking-wide">系統歷史資料不足 200 日，共振分析模組離線</div>`;
+                return;
+            }
+
+            // VCP 條件陣列 (數字補零增加科技感，已套用新型態名稱)
+            const rows = [
+                ['[01] STAGE2 多頭排列', s.detail.stage2, 3], ['[02] 近 52 週高點附近', s.detail.nearHigh52w, 2],
+                ['[03] 波幅極致收斂', s.detail.contraction, 5], ['[04] 量縮 < 50日 x 0.7', s.detail.volShrink, 3],
+                ['[05] 10日狹幅 < 5%', s.detail.tight, 2], ['[06] 帶量突破 10日高', s.detail.breakout, 3],
+                ['[07] 多頭強勢噴出型態', s.detail.strongBull, 2], ['[08] 波段壓縮突破型態', s.detail.surgeOut, 2],
+                ['[09] 跳空主力攻擊型態', s.detail.gapUpHigher, 3],
+            ];
+
+            // Status Tag 解析：把 rec.label 裡舊的 emoji 用正則表達式濾掉，只留純文字
+            let statusTag = '', statusColor = '';
+            const cleanLabel = (rec.label || '').replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{2300}-\u{23FF}\u{2B00}-\u{2BFF}\u{2190}-\u{21FF}\uFE0F]/gu, '').replace(/\s+/g, ' ').trim();
+
+            if (rec.tier === 'gold') { statusTag = 'SYSTEM.SYNC_PERFECT'; statusColor = 'text-brand-cyan border-brand-cyan/40 bg-brand-cyan/10 shadow-[0_0_10px_rgba(0,242,254,0.2)]'; }
+            else if (rec.tier === 'warning') { statusTag = 'WARNING.OVERHEATED'; statusColor = 'text-amber-400 border-amber-400/40 bg-amber-400/10 shadow-[0_0_10px_rgba(251,191,36,0.2)]'; }
+            else if (rec.tier === 'edge') { statusTag = 'SYSTEM.TEST_MODE'; statusColor = 'text-indigo-300 border-indigo-400/40 bg-indigo-400/10 shadow-[0_0_10px_rgba(129,140,248,0.2)]'; }
+            else { statusTag = 'SYSTEM.OBSERVING'; statusColor = 'text-slate-400 border-slate-500/40 bg-slate-500/10'; }
+
+            // 持倉/待進場狀態 (原 VCP 面板資訊，改成科技終端風、無 Emoji)
+            const pos = result.vcp.openPosition;
+            const pending = result.vcp.pendingEntry;
+            let posLineHtml;
+            if (pos) {
+                posLineHtml = `<div class="flex items-center gap-2 text-amber-300"><div class="w-1.5 h-1.5 rounded-full bg-amber-400 shadow-[0_0_6px_#fbbf24] animate-pulse shrink-0"></div><span class="tracking-wider">[POSITION] 持倉中 · 進場 ${fmt(pos.entryPrice)} · 停損 ${fmt(pos.stopPrice)}</span></div>`;
+            } else if (pending) {
+                posLineHtml = `<div class="flex items-center gap-2 text-brand-cyan"><div class="w-1.5 h-1.5 rounded-full bg-brand-cyan shadow-[0_0_6px_#00f2fe] animate-pulse shrink-0"></div><span class="tracking-wider">[PENDING] 訊號剛觸發(${pending.score}分)，依規則明日才算正式進場</span></div>`;
+            } else {
+                posLineHtml = `<div class="flex items-center gap-2 text-slate-500"><div class="w-1.5 h-1.5 rounded-full border border-slate-600 shrink-0"></div><span class="tracking-wider">[POSITION] 目前無持倉</span></div>`;
+            }
+
+            // 本股 VCP 歷史回測 (原 VCP 面板資訊，改成科技終端風、無 Emoji)
+            const bt = result.backtest;
+            const tierLabels = { gold: 'SEPA黃金組合', warning: '單純高分VCP', edge: '邊緣訊號' };
+            const btRows = Object.entries(tierLabels).map(([tier, label]) => {
+                const b = bt && bt[tier];
+                if (!b) return `<div class="text-slate-600">&gt; ${label}：本股歷史樣本不足</div>`;
+                const cls = b.avgReturn >= 0 ? 'text-red-400' : 'text-green-400';
+                return `<div class="text-slate-400">&gt; ${label}：T+5 <span class="${cls} font-mono-num">${b.avgReturn >= 0 ? '+' : ''}${b.avgReturn.toFixed(2)}%</span>，勝率<span class="font-mono-num">${b.winRate.toFixed(0)}%</span>(${b.n}次)</div>`;
+            }).join('');
+
+            // 布林通道狀態 (原短線面板資訊，改成科技終端風、無 Emoji)
+            const bbWidth = (ind.bbUpper[i] !== null && ind.bbLower[i] !== null && ind.ma20[i]) ? ((ind.bbUpper[i] - ind.bbLower[i]) / ind.ma20[i] * 100) : null;
+            const bbState = classifyBollingerState(ind.closes, ind.vols, ind.ma20, ind.bbUpper, ind.bbLower, i, 120, 60, 5);
+            const bbDotColor = { squeeze: '#fbbf24', strong_up: '#f87171', strong_down: '#4ade80', bull_consolidation: '#fdba74', bear_consolidation: '#7dd3fc' };
+            const bbHtml = bbState ? `
+                <div class="mt-3 pt-3 border-t border-white/5">
+                    <div class="flex items-center gap-2 mb-1">
+                        <div class="w-1.5 h-1.5 rounded-full shrink-0" style="background:${bbDotColor[bbState.state] || '#94a3b8'};box-shadow:0 0 6px ${bbDotColor[bbState.state] || '#94a3b8'}"></div>
+                        <span class="text-[10.5px] font-mono font-bold ${bbState.cls} tracking-wider uppercase">布林通道 · ${bbState.label}</span>
+                        <span class="text-[9px] text-slate-600 font-mono-num ml-auto">帶寬 ${fmt(bbWidth, 1)}%</span>
+                    </div>
+                    <div class="text-[10px] text-slate-500 leading-relaxed">${bbState.detail}</div>
+                </div>` : '';
+
+            // 渲染高質感 HTML：終端機風格 + 玻璃質感 + 流動潮水分隔線
             panel.innerHTML = `
-                <div class="bg-gray-800 rounded p-2.5">
-                    <div class="${verdictCls} font-bold text-sm mb-2 pb-2 border-b border-gray-700">${verdict}</div>
-                    <div class="grid grid-cols-2 gap-1 text-[11px] font-mono-num mb-2">
-                        <div class="text-gray-300">KD：K${fmt(k, 1)} D${fmt(d, 1)} ${kdGolden ? '<span class="text-green-400">黃金交叉</span>' : kdDead ? '<span class="text-orange-400">死亡交叉</span>' : ''}</div>
-                        <div class="text-gray-300">MACD：${fmt(macdVal, 2)} ${macdGolden ? '<span class="text-green-400">黃金交叉</span>' : macdDead ? '<span class="text-orange-400">死亡交叉</span>' : ''}</div>
-                        <div class="text-gray-300">RSI(14)：${fmt(rsi, 1)} ${rsiOversold ? '<span class="text-green-400">超賣</span>' : rsiOverbought ? '<span class="text-orange-400">超買</span>' : ''}</div>
-                        <div class="text-gray-300">布林%B：${fmt(pb, 2)} ${bbBreakUp ? '<span class="text-green-400">突破上軌</span>' : bbBreakDown ? '<span class="text-green-400">跌破下軌</span>' : ''}</div>
-                        <div class="text-gray-300">量比：${fmt(volRatio, 2)}x(${volTier})</div>
-                        <div class="text-gray-300">IBS(${latestDate})：${fmt(ibs, 2)} ${ibsBuy ? '<span class="text-green-400">買訊</span>' : ibsSell ? '<span class="text-orange-400">賣訊</span>' : ''}</div>
+                <div class="relative overflow-hidden bg-[#061224]/80 backdrop-blur-xl border border-brand-cyan/20 rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.8)]">
+                    <!-- 背景光暈 -->
+                    <div class="absolute -top-20 -left-20 w-48 h-48 bg-brand-cyan/10 rounded-full blur-3xl pointer-events-none"></div>
+                    <div class="absolute -bottom-20 -right-20 w-48 h-48 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+                    <!-- 頂部標題區塊 -->
+                    <div class="relative z-10 p-5 pb-4">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <div class="flex items-center gap-2 mb-1.5">
+                                    <i data-lucide="git-merge" class="w-4 h-4 text-brand-cyan"></i>
+                                    <span class="text-[10px] text-brand-cyan font-bold tracking-widest uppercase">共振綜合觀測模組</span>
+                                </div>
+                                <div class="flex items-baseline gap-1">
+                                    <span class="text-3xl font-bold text-white font-mono-num drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]">${scoreVal}</span>
+                                    <span class="text-xs text-brand-cyan/60 font-mono-num uppercase tracking-widest">/ 25 pts</span>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="inline-flex px-2 py-1 rounded border ${statusColor} text-[9px] font-mono tracking-widest uppercase mb-1.5">
+                                    ${statusTag}
+                                </div>
+                                <div class="text-[10px] text-slate-300 max-w-[140px] leading-tight text-right opacity-80">
+                                    ${cleanLabel}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 動態流動分隔線 (Ocean Stream) -->
+                        <div class="w-full h-[1px] ocean-stream-box relative bg-white/5 overflow-hidden">
+                            <div class="absolute inset-0 bg-gradient-to-r from-transparent via-brand-cyan to-transparent w-1/2 animate-[windgust-drift_3s_linear_infinite]"></div>
+                        </div>
                     </div>
-                    <div class="text-[11px] space-y-0.5">
-                        ${buySignals.map(s => `<div class="text-green-400">🟢 ${s}</div>`).join('')}
-                        ${cautionSignals.map(s => `<div class="text-orange-400">🔴 ${s}</div>`).join('')}
-                        ${buySignals.length === 0 && cautionSignals.length === 0 ? '<div class="text-gray-500">目前無明顯短線訊號</div>' : ''}
+
+                    <!-- 左右雙欄：型態 vs 時機 -->
+                    <div class="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-px bg-slate-700/30">
+                        <!-- 左欄：型態結構 (VCP) -->
+                        <div class="bg-gradient-to-b from-[#0a1930]/80 to-[#061224]/80 p-5">
+                            <div class="text-brand-cyan font-bold text-[11px] mb-4 flex items-center gap-1.5 tracking-widest uppercase">
+                                <i data-lucide="scan-line" class="w-3.5 h-3.5"></i> 型態結構掃描
+                            </div>
+                            <div class="space-y-2.5 text-[10.5px] font-mono">
+                                ${rows.map(([label, ok, pt]) => `
+                                    <div class="flex justify-between items-center group">
+                                        <span class="flex items-center gap-2 ${ok ? 'text-brand-cyan drop-shadow-[0_0_2px_rgba(0,242,254,0.5)]' : 'text-slate-500'} transition-colors">
+                                            ${ok
+                                                ? '<div class="w-1 h-3 bg-brand-cyan rounded-sm shadow-[0_0_6px_#00f2fe]"></div>'
+                                                : '<div class="w-1 h-3 bg-slate-700 rounded-sm"></div>'}
+                                            <span class="tracking-wide">${label}</span>
+                                        </span>
+                                        <span class="${ok ? 'text-brand-cyan' : 'text-slate-600'} opacity-80">${ok ? '+' + pt : '+0'}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                            <div class="mt-3 pt-3 border-t border-white/5 text-[10.5px] font-mono">
+                                ${posLineHtml}
+                            </div>
+                            <div class="mt-3 pt-3 border-t border-white/5 space-y-1 text-[10px] font-mono">
+                                <div class="text-slate-600 mb-1 tracking-widest uppercase">[BACKTEST] 本股歷史回測 · T+5</div>
+                                ${btRows}
+                            </div>
+                        </div>
+
+                        <!-- 右欄：點火時機 (短線) -->
+                        <div class="bg-gradient-to-b from-[#0a1930]/80 to-[#061224]/80 p-5">
+                            <div class="text-brand-cyan font-bold text-[11px] mb-4 flex items-center gap-1.5 tracking-widest uppercase">
+                                <i data-lucide="activity" class="w-3.5 h-3.5"></i> 短線點火時機
+                            </div>
+
+                            <!-- 數據儀表 -->
+                            <div class="grid grid-cols-2 gap-3 text-[10px] font-mono mb-4 pb-4 border-b border-white/5">
+                                <div class="flex flex-col gap-0.5">
+                                    <span class="text-slate-500 uppercase tracking-wider">KD (9)</span>
+                                    <span class="text-sm font-bold ${kdGolden ? 'text-emerald-400 drop-shadow-[0_0_5px_rgba(52,211,153,0.5)]' : kdDead ? 'text-rose-400 drop-shadow-[0_0_5px_rgba(251,113,133,0.5)]' : 'text-slate-200'}">
+                                        ${fmt(k, 1)} <span class="text-[10px] text-slate-500 font-normal">/ ${fmt(d, 1)}</span>
+                                    </span>
+                                </div>
+                                <div class="flex flex-col gap-0.5">
+                                    <span class="text-slate-500 uppercase tracking-wider">MACD</span>
+                                    <span class="text-sm font-bold ${macdGolden ? 'text-emerald-400 drop-shadow-[0_0_5px_rgba(52,211,153,0.5)]' : macdDead ? 'text-rose-400 drop-shadow-[0_0_5px_rgba(251,113,133,0.5)]' : 'text-slate-200'}">${fmt(macdVal, 2)}</span>
+                                </div>
+                                <div class="flex flex-col gap-0.5">
+                                    <span class="text-slate-500 uppercase tracking-wider">RSI (14)</span>
+                                    <span class="text-sm font-bold ${rsiOversold ? 'text-emerald-400 drop-shadow-[0_0_5px_rgba(52,211,153,0.5)]' : rsiOverbought ? 'text-rose-400 drop-shadow-[0_0_5px_rgba(251,113,133,0.5)]' : 'text-slate-200'}">
+                                        ${fmt(rsi, 1)}
+                                    </span>
+                                </div>
+                                <div class="flex flex-col gap-0.5">
+                                    <span class="text-slate-500 uppercase tracking-wider">布林 %B</span>
+                                    <span class="text-sm font-bold ${bbBreakUp || bbBreakDown ? 'text-brand-cyan drop-shadow-[0_0_5px_rgba(0,242,254,0.5)]' : 'text-slate-200'}">
+                                        ${fmt(pb, 2)}
+                                    </span>
+                                </div>
+                                <div class="flex flex-col gap-0.5">
+                                    <span class="text-slate-500 uppercase tracking-wider">量比</span>
+                                    <span class="text-sm font-bold text-slate-200">${fmt(volRatio, 1)}x <span class="text-[9px] text-slate-500 font-normal">${volTier}</span></span>
+                                </div>
+                                <div class="flex flex-col gap-0.5">
+                                    <span class="text-slate-500 uppercase tracking-wider">IBS</span>
+                                    <span class="text-sm font-bold ${ibsBuy ? 'text-emerald-400' : ibsSell ? 'text-rose-400' : 'text-slate-200'}">${fmt(ibs, 2)}</span>
+                                </div>
+                            </div>
+
+                            <!-- 訊號輸出區 -->
+                            <div class="space-y-2 text-[10.5px] font-mono bg-black/20 p-3 rounded-lg border border-white/5">
+                                ${buySignals.map(sig => `
+                                    <div class="flex items-center gap-2 text-emerald-400">
+                                        <div class="w-1.5 h-1.5 bg-emerald-400 rounded-full shadow-[0_0_6px_#34d399] animate-pulse shrink-0"></div>
+                                        <span class="tracking-wider">[BUY_SIG] ${sig}</span>
+                                    </div>
+                                `).join('')}
+                                ${cautionSignals.map(sig => `
+                                    <div class="flex items-center gap-2 text-rose-400">
+                                        <div class="w-1.5 h-1.5 bg-rose-500 rounded-full shadow-[0_0_6px_#f43f5e] animate-pulse shrink-0"></div>
+                                        <span class="tracking-wider">[WRN_SIG] ${sig}</span>
+                                    </div>
+                                `).join('')}
+                                ${buySignals.length === 0 && cautionSignals.length === 0 ? `
+                                    <div class="flex items-center gap-2 text-slate-500">
+                                        <div class="w-1.5 h-1.5 border border-slate-600 rounded-full shrink-0"></div>
+                                        <span class="tracking-wider">SYS: NO_EXTREME_SIGNALS</span>
+                                    </div>
+                                ` : ''}
+                            </div>
+                            ${bbHtml}
+                        </div>
                     </div>
-                    <div class="mt-1.5 text-[10px] text-gray-500">KD/MACD/RSI/布林/量比僅供參考，不影響VCP/趨勢波段判斷。IBS買賣訊號會另外標記在日線圖上(紫色圓點)。日線圖右上角可切換副圖看KD或MACD的圖形。</div>
+
+                    <!-- 底部備註 -->
+                    <div class="p-3 bg-[#030914] text-[9.5px] text-slate-500/80 leading-relaxed font-mono tracking-wide border-t border-brand-cyan/10">
+                        &gt; TARGET_SYNC: 左側型態總分代表長線結構強度，右側訊號偵測短線發動點。雙重條件吻合(共振)即為最佳出手時機。KD/MACD/RSI/布林/量比/IBS 僅供參考，不影響 VCP/趨勢波段的主要判斷。
+                    </div>
                 </div>
-                ${(() => {
-                    const bbWidth = (ind.bbUpper[i] !== null && ind.bbLower[i] !== null && ind.ma20[i]) ? ((ind.bbUpper[i] - ind.bbLower[i]) / ind.ma20[i] * 100) : null;
-                    const bbState = classifyBollingerState(ind.closes, ind.vols, ind.ma20, ind.bbUpper, ind.bbLower, i, 120, 60, 5);
-                    if (!bbState) return '';
-                    return `
-                    <div class="bg-gray-800 rounded p-2.5 mt-2">
-                        <div class="text-xs text-gray-400 mb-1">布林通道狀態(帶寬 ${fmt(bbWidth, 1)}%)</div>
-                        <div class="text-base font-bold ${bbState.cls} mb-1">${bbState.emoji} ${bbState.label}</div>
-                        <div class="text-[11px] text-gray-300 leading-relaxed">${bbState.detail}</div>
-                    </div>`;
-                })()}`;
+            `;
+            safeLucideIcons({ root: panel });
         }
 
         // ============ 今日買點建議(燈號+停損金額試算，給「現在進行式」的判斷) ============
@@ -5561,14 +5672,12 @@
             if (dv) renderDailySubpanel(dv);
         });
         function openInfoModal(which) {
-            document.getElementById('vcp-panel').classList.toggle('hidden', which !== 'vcp');
-            document.getElementById('shortterm-panel').classList.toggle('hidden', which !== 'shortterm');
+            document.getElementById('resonance-panel').classList.toggle('hidden', which !== 'resonance');
             document.getElementById('predict-panel').classList.toggle('hidden', which !== 'predict');
             document.getElementById('four-treasures-panel').classList.toggle('hidden', which !== 'fourtreasures');
             document.getElementById('intraday-panel').classList.toggle('hidden', which !== 'intraday');
             const titleEl = document.getElementById('modal-title');
-            if (which === 'vcp') titleEl.innerHTML = '<i data-lucide="activity" class="w-5 h-5 text-brand-cyan"></i> VCP 評分參考';
-            else if (which === 'shortterm') titleEl.innerHTML = '<i data-lucide="zap" class="w-5 h-5 text-brand-cyan"></i> 短線技術指標';
+            if (which === 'resonance') titleEl.innerHTML = '<i data-lucide="git-merge" class="w-5 h-5 text-brand-cyan"></i> 共振綜合觀測';
             else if (which === 'predict') titleEl.innerHTML = '<i data-lucide="compass" class="w-5 h-5 text-brand-cyan"></i> 明日策略・買點建議';
             else if (which === 'fourtreasures') titleEl.innerHTML = '<i data-lucide="gem" class="w-5 h-5 text-brand-cyan"></i> 長週線波段工具';
             else if (which === 'intraday') titleEl.innerHTML = '<i data-lucide="radio" class="w-5 h-5 text-brand-cyan"></i> 盤中速覽';
@@ -5577,8 +5686,7 @@
             if (which === 'intraday') renderIntradayPanel(currentSymbol);
             document.getElementById('info-modal').classList.remove('hidden');
         }
-        document.getElementById('vcp-float-btn').addEventListener('click', () => openInfoModal('vcp'));
-        document.getElementById('shortterm-float-btn').addEventListener('click', () => openInfoModal('shortterm'));
+        document.getElementById('resonance-float-btn').addEventListener('click', () => openInfoModal('resonance'));
         document.getElementById('predict-btn').addEventListener('click', () => openInfoModal('predict'));
         document.getElementById('four-treasures-float-btn').addEventListener('click', () => openInfoModal('fourtreasures'));
         document.getElementById('intraday-btn').addEventListener('click', () => openInfoModal('intraday'));
