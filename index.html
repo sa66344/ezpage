@@ -3328,52 +3328,222 @@
             else state = 'greenyellow';
             return { state, closeNow, ma20Now, ma100Now };
         }
-        function renderWeeklyStatusDropdown(symbol, wv) {
-            const dd = document.getElementById('weekly-status-detail-panel');
-            const dv = analysisCache[symbol] && analysisCache[symbol].dailyView;
-            if (!dd) return;
-            const light = dv ? computeStockLight(stockCache[symbol], dv.ind) : null;
-            const lightMap = {
-                red: { emoji: '📈', label: '多頭排列', cls: 'text-red-400' },
-                green: { emoji: '📉', label: '空頭排列', cls: 'text-green-400' },
-                redyellow: { emoji: '📉', label: '漲多拉回', cls: 'text-amber-400' },
-                greenyellow: { emoji: '📈', label: '止跌反彈', cls: 'text-yellow-300' },
-            };
-            const lightHtml = light ? `<span class="${lightMap[light.state].cls} font-bold">${lightMap[light.state].emoji}${lightMap[light.state].label}</span>` : '<span class="text-slate-500">資料不足</span>';
-            const badgeEl = document.getElementById('weekly-status-badge');
-            if (badgeEl) badgeEl.innerHTML = light ? `<span class="${lightMap[light.state].cls}">${lightMap[light.state].emoji}${lightMap[light.state].label}</span>` : '';
-
-            // 綜合建議：用乖離率+布林%B簡單判斷買點/賣點/觀望，僅供參考，不是嚴謹的訊號
-            const diff = wv.lastMa20 ? ((wv.lastClose - wv.lastMa20) / wv.lastMa20 * 100) : null;
-            const pB = wv.lastBbPercentB;
-            let verdict, verdictCls;
-            if (wv.openPosition) {
-                verdict = (pB !== null && pB > 1) ? '過熱，留意波動' : '持有中，續抱觀察';
-                verdictCls = (pB !== null && pB > 1) ? 'text-orange-400' : 'text-blue-300';
-            } else if (pB !== null && pB < 0) {
-                verdict = '偏買點(跌出布林下緣)'; verdictCls = 'text-green-400';
-            } else if (pB !== null && pB > 1) {
-                verdict = '偏賣點(漲出布林上緣，慎防過熱)'; verdictCls = 'text-red-400';
-            } else if (diff !== null && diff >= 0 && diff <= 8) {
-                verdict = '偏買點(貼近均線)'; verdictCls = 'text-green-400';
-            } else {
-                verdict = '觀望'; verdictCls = 'text-gray-400';
+        // ==========================================
+        // 新增：長週期海象觀測 (共用卡片生成器)
+        // 合併「個股狀態」與「長週線波段工具」的資料
+        // ==========================================
+        function generateCombinedWeeklyCard(symbol, wv, dv) {
+            if (!wv || !wv.fourTreasures) {
+                return '<div class="bg-brand-card/50 rounded-xl p-4 text-xs text-slate-400 border border-brand-cyan/20 font-mono tracking-wide">[SYS.WARN] 資料未備妥</div>';
             }
 
+            const ft = wv.fourTreasures;
+
+            // --- 1. 狀態與動能 (原個股狀態) ---
+            const light = dv ? computeStockLight(stockCache[symbol], dv.ind) : null;
+            const techLightMap = {
+                red: { tag: 'TREND.BULL', label: '多頭排列', dot: 'bg-emerald-400', shadow: 'shadow-[0_0_6px_#34d399]', text: 'text-emerald-400' },
+                green: { tag: 'TREND.BEAR', label: '空頭排列', dot: 'bg-rose-400', shadow: 'shadow-[0_0_6px_#fb7185]', text: 'text-rose-400' },
+                redyellow: { tag: 'TREND.PULLBACK', label: '漲多拉回', dot: 'bg-amber-400', shadow: 'shadow-[0_0_6px_#fbbf24]', text: 'text-amber-400' },
+                greenyellow: { tag: 'TREND.REBOUND', label: '止跌反彈', dot: 'bg-cyan-400', shadow: 'shadow-[0_0_6px_#22d3ee]', text: 'text-cyan-400' },
+            };
+            const lm = light ? techLightMap[light.state] : null;
+
+            const diff = wv.lastMa20 ? ((wv.lastClose - wv.lastMa20) / wv.lastMa20 * 100) : null;
+            const pB = wv.lastBbPercentB;
+            let verdict, verdictCls, verdictTag, verdictDot;
+            if (wv.openPosition) {
+                verdict = (pB !== null && pB > 1) ? '過熱，留意波動' : '持有中，續抱觀察';
+                verdictCls = (pB !== null && pB > 1) ? 'text-orange-400' : 'text-blue-400';
+                verdictTag = (pB !== null && pB > 1) ? 'WRN.OVERHEAT' : 'SYS.HOLDING';
+                verdictDot = (pB !== null && pB > 1) ? 'bg-orange-400 shadow-[0_0_6px_#f97316]' : 'bg-blue-400 shadow-[0_0_6px_#60a5fa]';
+            } else if (pB !== null && pB < 0) {
+                verdict = '跌出下緣(偏買)'; verdictCls = 'text-emerald-400'; verdictTag = 'SIG.OVERSOLD'; verdictDot = 'bg-emerald-400 shadow-[0_0_6px_#34d399]';
+            } else if (pB !== null && pB > 1) {
+                verdict = '漲出上緣(偏賣)'; verdictCls = 'text-rose-400'; verdictTag = 'SIG.OVERBOUGHT'; verdictDot = 'bg-rose-400 shadow-[0_0_6px_#fb7185]';
+            } else if (diff !== null && diff >= 0 && diff <= 8) {
+                verdict = '貼近均線(偏買)'; verdictCls = 'text-emerald-400'; verdictTag = 'SIG.PULLBACK'; verdictDot = 'bg-emerald-400 shadow-[0_0_6px_#34d399]';
+            } else {
+                verdict = '觀望'; verdictCls = 'text-slate-400'; verdictTag = 'SYS.IDLE'; verdictDot = 'bg-slate-500 shadow-[0_0_4px_#64748b]';
+            }
+
+            // --- 2. 布林通道 ---
             const lastWeekIdx = wv.weeks.length - 1;
             const bbWidth = (wv.lastBbUpper !== null && wv.lastBbLower !== null && wv.lastMa20) ? ((wv.lastBbUpper - wv.lastBbLower) / wv.lastMa20 * 100) : null;
             const wBbState = classifyBollingerState(wv.closesArr, wv.volArr, wv.ma20Arr, wv.bbUpperArr, wv.bbLowerArr, lastWeekIdx, 24, 12, 5);
 
-            dd.innerHTML = `
-                <div class="text-xs text-slate-400 mb-1">個股狀態</div>
-                <div class="text-sm mb-3">${lightHtml}</div>
-                <div class="text-xs text-slate-400 mb-1">綜合評分</div>
-                <div class="text-sm font-bold ${verdictCls} mb-3">${verdict}</div>
-                <div class="text-xs text-slate-400 mb-1">布林通道狀態${bbWidth !== null ? `(帶寬 ${fmt(bbWidth, 1)}%)` : ''}</div>
-                ${wBbState ? `
-                    <div class="text-base font-bold ${wBbState.cls} mb-1">${wBbState.emoji} ${wBbState.label}</div>
-                    <div class="text-[11px] text-slate-300 leading-relaxed">${wBbState.detail}</div>
-                ` : '<div class="text-sm text-slate-500">資料不足</div>'}`;
+            let bbTechHtml = '<div class="text-[11px] text-slate-500 font-mono tracking-widest">[DATA_MISSING] 布林數據不足</div>';
+            if (wBbState) {
+                const cleanLabel = (wBbState.label || '').replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{2300}-\u{23FF}\u{2B00}-\u{2BFF}\u{2190}-\u{21FF}\uFE0F]/gu, '').replace(/\s+/g, ' ').trim();
+                const bbDotColorMap = { squeeze: 'bg-amber-400 shadow-[0_0_6px_#fbbf24]', strong_up: 'bg-rose-400 shadow-[0_0_6px_#fb7185]', strong_down: 'bg-emerald-400 shadow-[0_0_6px_#34d399]', bull_consolidation: 'bg-orange-400 shadow-[0_0_6px_#fb923c]', bear_consolidation: 'bg-cyan-400 shadow-[0_0_6px_#22d3ee]' };
+                const bbDot = bbDotColorMap[wBbState.state] || 'bg-slate-400';
+                const bbTextColor = wBbState.cls.replace('text-red-400', 'text-rose-400').replace('text-green-400', 'text-emerald-400');
+
+                bbTechHtml = `
+                    <div class="flex justify-between items-center mb-2">
+                        <div class="flex items-center gap-2">
+                            <div class="w-1.5 h-1.5 rounded-full ${bbDot} animate-pulse shrink-0"></div>
+                            <span class="${bbTextColor} font-bold text-[11px] tracking-wider uppercase">[BB_STATE] ${cleanLabel}</span>
+                        </div>
+                        <span class="text-[9px] text-brand-cyan/70 font-mono-num bg-brand-cyan/10 px-1.5 py-0.5 rounded border border-brand-cyan/20">帶寬 ${fmt(bbWidth, 1)}%</span>
+                    </div>
+                    <div class="text-[10px] text-slate-400 leading-relaxed font-mono bg-black/20 p-2.5 rounded-lg border border-white/5">
+                        > ${wBbState.detail}
+                    </div>
+                `;
+            }
+
+            // --- 3. 條件核對與決策 (原長週線波段) ---
+            const v = evaluateWeeklyBuySuitability(wv, symbol);
+            let statusColor, statusDot, statusTag;
+            if (v.light === '🟢') {
+                statusColor = 'text-emerald-400 border-emerald-500/40 bg-emerald-500/10 shadow-[0_0_12px_rgba(16,185,129,0.2)]';
+                statusDot = 'bg-emerald-400 shadow-[0_0_6px_#34d399]';
+                statusTag = 'SYS.BUY_SIGNAL';
+            } else if (v.light === '🟡') {
+                statusColor = 'text-amber-400 border-amber-500/40 bg-amber-500/10 shadow-[0_0_12px_rgba(245,158,11,0.2)]';
+                statusDot = 'bg-amber-400 shadow-[0_0_6px_#fbbf24]';
+                statusTag = 'SYS.OBSERVE';
+            } else {
+                statusColor = 'text-rose-400 border-rose-500/40 bg-rose-500/10 shadow-[0_0_12px_rgba(244,63,94,0.2)]';
+                statusDot = 'bg-rose-400 shadow-[0_0_6px_#fb7185]';
+                statusTag = 'SYS.NO_TRADE';
+            }
+
+            const rows = [
+                ['[IND_01] 整根K棒站上週20MA', ft.aboveMa],
+                ['[IND_02] W型態完成', ft.wPattern.completed],
+                ['[IND_03] 底部位階爆量', ft.volSurge.surge],
+            ];
+
+            // --- 組合為單一 HTML 卡片 ---
+            return `
+                <div class="relative overflow-hidden bg-[#061224]/90 backdrop-blur-xl border border-brand-cyan/20 rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.8)]">
+                    <!-- 背景光暈 -->
+                    <div class="absolute -top-12 -left-12 w-40 h-40 bg-brand-cyan/10 rounded-full blur-3xl pointer-events-none"></div>
+                    <div class="absolute -bottom-10 -right-10 w-32 h-32 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+                    <!-- 頂部標題區塊 -->
+                    <div class="relative z-10 p-5 pb-4">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <div class="flex items-center gap-2 mb-1.5 text-brand-cyan">
+                                    <i data-lucide="scan-face" class="w-4 h-4"></i>
+                                    <span class="text-[10px] font-bold tracking-widest uppercase">長週期海象觀測</span>
+                                </div>
+                                <div class="flex items-baseline gap-1">
+                                    <span class="text-3xl font-bold text-white font-mono-num drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]">${ft.count}</span>
+                                    <span class="text-xs text-brand-cyan/60 font-mono-num uppercase tracking-widest">/ 3 條件符合</span>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-[9px] text-brand-cyan/50 font-mono border border-brand-cyan/20 bg-brand-cyan/5 px-2 py-0.5 rounded uppercase tracking-wider">
+                                    ${ft.time} 週數據
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 流動潮水分隔線 -->
+                        <div class="w-full h-[1px] ocean-stream-box relative bg-white/5 overflow-hidden">
+                            <div class="absolute inset-0 bg-gradient-to-r from-transparent via-brand-cyan to-transparent w-1/2 animate-[windgust-drift_3s_linear_infinite]"></div>
+                        </div>
+                    </div>
+
+                    <!-- [PART 1] 狀態與動能 -->
+                    <div class="grid grid-cols-2 gap-px bg-slate-700/50">
+                        <div class="bg-gradient-to-b from-[#0a1930]/90 to-[#061224]/90 p-4">
+                            <div class="text-[9px] text-slate-500 tracking-widest uppercase mb-2 font-mono">趨勢排列</div>
+                            ${light ? `
+                                <div class="flex items-center gap-2 ${lm.text} mb-1">
+                                    <div class="w-1.5 h-1.5 rounded-full ${lm.dot} ${lm.shadow} animate-pulse shrink-0"></div>
+                                    <span class="font-bold text-[11px] tracking-wider">${lm.label}</span>
+                                </div>
+                                <div class="text-[9px] ${lm.text} opacity-70 font-mono">${lm.tag}</div>
+                            ` : '<span class="text-xs text-slate-500 font-mono">[DATA_ERR]</span>'}
+                        </div>
+
+                        <div class="bg-gradient-to-b from-[#0a1930]/90 to-[#061224]/90 p-4">
+                            <div class="text-[9px] text-slate-500 tracking-widest uppercase mb-2 font-mono">綜合動能評分</div>
+                            <div class="flex items-center gap-2 ${verdictCls} mb-1">
+                                <div class="w-1.5 h-1.5 rounded-full ${verdictDot} animate-pulse shrink-0"></div>
+                                <span class="font-bold text-[11px] tracking-wider">${verdict}</span>
+                            </div>
+                            <div class="text-[9px] ${verdictCls} opacity-70 font-mono">${verdictTag}</div>
+                        </div>
+                    </div>
+
+                    <!-- [PART 2] 布林通道 -->
+                    <div class="bg-gradient-to-b from-[#0a1930]/90 to-[#061224]/90 p-4 border-t border-white/5">
+                        <div class="text-[9px] text-slate-500 tracking-widest uppercase mb-2 font-mono pb-1">Bollinger Bands</div>
+                        ${bbTechHtml}
+                    </div>
+
+                    <!-- [PART 3] 條件核對清單 -->
+                    <div class="px-5 py-4 border-t border-white/5 bg-[#061224]/90">
+                        <div class="text-[9px] text-slate-500 tracking-widest uppercase mb-2 font-mono">Checklist</div>
+                        <div class="space-y-2.5 font-mono text-[10.5px] bg-slate-700/20 p-3.5 rounded-xl border border-white/5">
+                            ${rows.map(([label, ok]) => `
+                                <div class="flex justify-between items-center group">
+                                    <span class="flex items-center gap-2.5 ${ok ? 'text-brand-cyan drop-shadow-[0_0_2px_rgba(0,242,254,0.5)]' : 'text-slate-500'} transition-colors">
+                                        ${ok
+                                            ? '<div class="w-1 h-3 bg-brand-cyan rounded-sm shadow-[0_0_6px_#00f2fe]"></div>'
+                                            : '<div class="w-1 h-3 bg-slate-700 rounded-sm"></div>'}
+                                        <span class="tracking-wide">${label}</span>
+                                    </span>
+                                    <span class="${ok ? 'text-brand-cyan' : 'text-slate-600'} opacity-80 text-[9px] tracking-widest">${ok ? 'PASS' : 'FAIL'}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <!-- [PART 4] 綜合決策輸出 -->
+                    <div class="p-5 bg-gradient-to-b from-black/20 to-black/40 border-t border-white/5">
+                        <div class="flex items-center gap-2 mb-2">
+                            <div class="px-2 py-1 rounded border ${statusColor} text-[9px] font-mono tracking-widest uppercase inline-flex items-center gap-1.5">
+                                <div class="w-1.5 h-1.5 rounded-full ${statusDot} animate-pulse shrink-0"></div>
+                                ${statusTag}
+                            </div>
+                            <span class="text-[13px] font-bold text-white tracking-wide ml-1">${v.label}</span>
+                        </div>
+                        <div class="text-[11px] text-slate-300 leading-relaxed font-mono tracking-wide mb-3 pl-1">
+                            > ${v.advice}
+                        </div>
+                        <div class="text-[9px] text-slate-500 font-mono tracking-widest border-t border-white/5 pt-2">
+                            [NOTE] 綜合評估包含週線型態、均線與布林通道。IND_02 與 IND_03 屬演算法量化近似判斷，僅供策略參考。
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ==========================================
+        // 更新 Toolbar 的 Badge，並將合併卡片寫入 Dashboard 面板
+        // ==========================================
+        function renderWeeklyStatusDropdown(symbol, wv) {
+            const dd = document.getElementById('weekly-status-detail-panel');
+            const badgeEl = document.getElementById('weekly-status-badge');
+            const dv = analysisCache[symbol] && analysisCache[symbol].dailyView;
+
+            // 更新 Toolbar 按鈕上的迷你標籤
+            if (badgeEl) {
+                const light = dv ? computeStockLight(stockCache[symbol], dv.ind) : null;
+                const techLightMap = {
+                    red: { label: '多頭排列', dot: 'bg-emerald-400', shadow: 'shadow-[0_0_6px_#34d399]', text: 'text-emerald-400' },
+                    green: { label: '空頭排列', dot: 'bg-rose-400', shadow: 'shadow-[0_0_6px_#fb7185]', text: 'text-rose-400' },
+                    redyellow: { label: '漲多拉回', dot: 'bg-amber-400', shadow: 'shadow-[0_0_6px_#fbbf24]', text: 'text-amber-400' },
+                    greenyellow: { label: '止跌反彈', dot: 'bg-cyan-400', shadow: 'shadow-[0_0_6px_#22d3ee]', text: 'text-cyan-400' },
+                };
+                const lm = light ? techLightMap[light.state] : null;
+                badgeEl.innerHTML = lm
+                    ? `<span class="flex items-center gap-1 ${lm.text}"><div class="w-1.5 h-1.5 rounded-full ${lm.dot} ${lm.shadow}"></div> ${lm.label}</span>`
+                    : '';
+            }
+
+            // 注入合併卡片
+            if (dd) {
+                dd.innerHTML = generateCombinedWeeklyCard(symbol, wv, dv);
+                safeLucideIcons({ root: dd });
+            }
         }
 
         // ============ 主控：載入股票 ============
@@ -3616,35 +3786,25 @@
             }
             return { light, label, advice };
         }
+        // ==========================================
+        // 更新 Toolbar 的 Badge，並將合併卡片寫入 Info 面板
+        // ==========================================
         function renderFourTreasuresPanel(symbol) {
             const wv = analysisCache[symbol] && analysisCache[symbol].weeklyView;
+            const dv = analysisCache[symbol] && analysisCache[symbol].dailyView;
             const panel = document.getElementById('four-treasures-panel');
             const badge = document.getElementById('four-treasures-float-badge');
-            if (!wv || !wv.fourTreasures) { panel.innerHTML = ''; if (badge) badge.textContent = '--'; return; }
-            const ft = wv.fourTreasures;
-            if (badge) badge.innerHTML = `${ft.count}/3`;
-            const tierStyle = ft.count >= 3 ? 'border-amber-400 bg-amber-900/20' : ft.count >= 2 ? 'border-blue-400 bg-blue-900/20' : 'border-gray-600';
-            const rows = [
-                ['① 整根K棒站上週20MA', ft.aboveMa],
-                ['② W型態完成', ft.wPattern.completed],
-                ['③ 底部位階爆量', ft.volSurge.surge],
-            ];
-            const v = evaluateWeeklyBuySuitability(wv, symbol);
-            panel.innerHTML = `
-                <div class="bg-gray-800 border ${tierStyle} rounded p-2.5">
-                    <div class="flex justify-between items-center mb-1.5">
-                        <span class="text-xl font-bold text-white">${ft.count}<span class="text-xs text-gray-400">/3 項指標(${ft.time}這週)</span></span>
-                        <span class="text-xs text-right text-gray-200">${ft.count >= 3 ? '🌟 符合多項條件，值得關注' : ft.count >= 2 ? '👀 部分符合，持續觀察' : '一般，未明顯符合'}</span>
-                    </div>
-                    <div class="grid grid-cols-2 gap-0.5 text-[11px] mb-2">
-                        ${rows.map(([label, ok]) => `<div class="${ok ? 'text-green-400' : 'text-gray-500'}">${ok ? '✓' : '✗'} ${label}</div>`).join('')}
-                    </div>
-                    <div class="border-t border-gray-700 pt-2">
-                        <div class="text-lg font-bold mb-0.5">${v.light} ${v.label}</div>
-                        <div class="text-[11px] text-gray-300">${v.advice}</div>
-                    </div>
-                    <div class="mt-1.5 text-[11px] text-gray-500">②③是用程式量化規則去近似判斷型態，跟肉眼判斷可能會有落差，僅供參考</div>
-                </div>`;
+
+            // 更新 Toolbar 按鈕上的數字
+            if (badge) {
+                badge.innerHTML = (wv && wv.fourTreasures) ? `${wv.fourTreasures.count}/3` : '--';
+            }
+
+            // 注入合併卡片
+            if (panel) {
+                panel.innerHTML = generateCombinedWeeklyCard(symbol, wv, dv);
+                safeLucideIcons({ root: panel });
+            }
         }
 
         // ============ 共振綜合觀測：合併 VCP 型態結構 + 短線點火時機 ============
