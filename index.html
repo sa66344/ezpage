@@ -346,21 +346,91 @@
 </head>
 <body class="text-slate-200 font-sans flex flex-col overflow-hidden w-full h-full">
 
-    <!-- 登入畫面：預設蓋住整個App，要輸入密碼驗證成功才會隱藏 -->
-    <div id="login-screen" class="fixed inset-0 z-[100] bg-brand-bg flex items-center justify-center p-5">
-        <div class="w-full max-w-xs">
-            <div class="flex flex-col items-center mb-6">
-                <div class="bg-gradient-to-br from-brand-cyan to-brand-teal p-3 rounded-2xl shadow-lg mb-3"><i data-lucide="waves" class="text-brand-bg w-7 h-7"></i></div>
-                <h1 class="text-xl font-bold text-white">潮汐指標</h1>
-                <p class="text-slate-500 text-xs mt-1">請輸入密碼才能使用</p>
+    <!-- 登入畫面：Sci-Fi 科技終端風格 -->
+    <div id="login-screen" class="fixed inset-0 z-[100] bg-[#030914] flex flex-col items-center justify-center p-5 overflow-y-auto">
+        
+        <!-- 背景環境光暈 -->
+        <div class="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+            <div class="absolute top-[10%] left-[20%] w-64 h-64 bg-brand-cyan/10 rounded-full blur-[80px]"></div>
+            <div class="absolute bottom-[20%] right-[10%] w-72 h-72 bg-indigo-500/10 rounded-full blur-[100px]"></div>
+        </div>
+
+        <div class="relative z-10 w-full max-w-sm flex flex-col gap-5 py-8">
+            
+            <!-- Logo 與 標題 -->
+            <div class="flex flex-col items-center mb-2">
+                <div class="bg-gradient-to-br from-brand-cyan to-brand-teal p-3.5 rounded-2xl shadow-[0_0_20px_rgba(0,242,254,0.3)] mb-4">
+                    <i data-lucide="waves" class="text-brand-bg w-8 h-8"></i>
+                </div>
+                <h1 class="text-2xl font-bold text-white tracking-widest font-mono drop-shadow-md">潮汐指標</h1>
+                <p class="text-brand-cyan/70 text-[10px] font-mono tracking-widest uppercase mt-1.5">Tide Indicator System</p>
             </div>
-            <form id="login-form" class="space-y-3">
-                <input type="password" id="login-password-input" placeholder="密碼" autocomplete="current-password"
-                       class="w-full bg-brand-card border border-brand-border text-white px-4 py-3 rounded-xl focus:outline-none focus:border-brand-cyan placeholder-slate-500 text-center transition">
-                <button type="submit" id="login-submit-btn" class="w-full bg-gradient-to-r from-brand-cyan to-brand-teal text-brand-bg font-bold py-3 rounded-xl transition active:scale-95">登入</button>
-                <p id="login-error" class="hidden text-red-400 text-xs text-center"></p>
+
+            <!-- 登入表單卡片 -->
+            <form id="login-form" class="space-y-4 w-full bg-[#0a1930]/80 backdrop-blur-xl p-5 rounded-2xl border border-brand-cyan/20 shadow-[0_8px_32px_rgba(0,0,0,0.6)]">
+                <div class="relative">
+                    <i data-lucide="lock" class="absolute left-4 top-3.5 w-4 h-4 text-brand-cyan/60"></i>
+                    <input type="password" id="login-password-input" placeholder="SYSTEM PASSWORD" autocomplete="current-password"
+                           class="w-full bg-black/40 border border-brand-border text-white pl-10 pr-4 py-3 rounded-xl focus:outline-none focus:border-brand-cyan focus:ring-1 focus:ring-brand-cyan/50 placeholder-slate-600 text-sm font-mono tracking-widest text-center transition">
+                </div>
+                <button type="submit" id="login-submit-btn" class="w-full bg-gradient-to-r from-brand-cyan to-brand-teal text-brand-bg font-bold py-3 rounded-xl transition shadow-[0_0_15px_rgba(0,242,254,0.4)] active:scale-95 font-mono tracking-widest uppercase">
+                    登入 [LOGIN]
+                </button>
+                <p id="login-error" class="hidden text-rose-400 text-xs text-center font-mono"></p>
+
+                <!-- 管理員密碼提示 (取代原本的 Emoji) -->
+                <div class="pt-3 border-t border-brand-cyan/10 flex items-start gap-2">
+                    <i data-lucide="shield-alert" class="w-3.5 h-3.5 text-slate-500 shrink-0 mt-0.5"></i>
+                    <p class="text-slate-400 text-[10px] leading-relaxed font-mono tracking-wide">
+                        [SYS.NOTICE] 密碼將不定期進行安全性重置。請向開發者索取最新密碼權限。
+                    </p>
+                </div>
             </form>
-            <p class="text-slate-500 text-[11px] text-center mt-4 leading-relaxed">🔄 密碼會定期更換，請向管理員索取最新密碼</p>
+
+            <!-- PWA 加入主畫面提醒卡片 -->
+            <div class="w-full bg-gradient-to-b from-[#0a1930]/80 to-[#061224]/80 backdrop-blur-md p-4.5 rounded-2xl border border-white/5 shadow-xl p-4">
+                <div class="flex items-start gap-2.5 mb-3.5">
+                    <div class="w-1.5 h-1.5 rounded-full bg-amber-400 shadow-[0_0_6px_#fbbf24] animate-pulse shrink-0 mt-1.5"></div>
+                    <div>
+                        <div class="text-amber-400 text-[11px] font-bold tracking-widest font-mono mb-1">強烈建議：建議先加入手機桌面，享受像原生 App 的流暢體驗！</div>
+                        <div class="text-[10px] text-slate-400 leading-relaxed font-mono tracking-wide">請在登入系統並添加自選股<span class="text-slate-200 font-bold">「前」</span>，先將本頁面加入主畫面。以獨立 App 模式啟動可避免日後瀏覽器清除快取導致資料遺失。</div>
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <!-- iOS 說明 -->
+                    <div class="bg-black/25 border border-white/5 rounded-lg p-2.5">
+                        <div class="flex items-center gap-2 mb-1.5">
+                            <div class="w-1 h-1 rounded-full bg-brand-cyan shadow-[0_0_4px_#00f2fe]"></div>
+                            <i data-lucide="apple" class="w-3.5 h-3.5 text-slate-300"></i>
+                            <span class="text-white text-[10.5px] font-bold font-mono tracking-wider">iPhone (Safari)</span>
+                        </div>
+                        <div class="text-[10px] text-slate-400 pl-3 font-mono tracking-wide flex items-center flex-wrap gap-1">
+                            點擊底部 <i data-lucide="share" class="w-3 h-3"></i>「分享」 → 「加入主畫面」
+                        </div>
+                    </div>
+
+                    <!-- Android 說明 -->
+                    <div class="bg-black/25 border border-white/5 rounded-lg p-2.5">
+                        <div class="flex items-center gap-2 mb-1.5">
+                            <div class="w-1 h-1 rounded-full bg-emerald-400 shadow-[0_0_4px_#34d399]"></div>
+                            <i data-lucide="smartphone" class="w-3.5 h-3.5 text-emerald-400"></i>
+                            <span class="text-white text-[10.5px] font-bold font-mono tracking-wider">Android (Chrome)</span>
+                        </div>
+                        <div class="text-[10px] text-slate-400 pl-3 font-mono tracking-wide flex items-center flex-wrap gap-1">
+                            點擊右上角 <i data-lucide="more-vertical" class="w-3 h-3"></i> 選單 → 「加入主畫面」
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 免責聲明 -->
+            <div class="w-full text-center mt-2">
+                <p class="text-[9px] text-slate-500/70 font-mono tracking-widest">
+                    [DISCLAIMER] 本平台數據僅供學術研究與回測參考，不構成投資建議。
+                </p>
+            </div>
+
         </div>
     </div>
 
