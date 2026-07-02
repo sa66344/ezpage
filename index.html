@@ -1340,21 +1340,6 @@
             }
             return [...byCode, ...byName].slice(0, limit);
         }
-        function renderStockSuggestDropdown(items) {
-            const dd = document.getElementById('stock-suggest-dropdown');
-            if (!dd) return;
-            if (items.length === 0) { dd.classList.add('hidden'); dd.innerHTML = ''; return; }
-            dd.innerHTML = items.map(it => `<button type="button" class="stock-suggest-item w-full text-left px-3 py-2 text-sm hover:bg-brand-bg transition flex items-center gap-2" data-code="${it.code}" data-name="${it.name}"><span class="font-mono-num text-brand-cyan">${it.code}</span><span class="text-slate-200 truncate">${it.name}</span></button>`).join('');
-            dd.classList.remove('hidden');
-            dd.querySelectorAll('.stock-suggest-item').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    document.getElementById('stock-input').value = btn.dataset.code;
-                    document.getElementById('stock-name-input').value = btn.dataset.name;
-                    dd.classList.add('hidden');
-                });
-            });
-        }
-
         // 大範圍掃描母清單：沿用名稱表裡有把握的常見大型/中型股代號(約80多檔)，不是官方即時成分股名單
         const MASTER_SCAN_LIST = Object.keys(STOCK_NAMES).filter(c => !['0050', '0056', '00878'].includes(c));
         // 產業分類(手動整理母清單108檔，給「產業輪動排行」用；之後母清單如果增加新股票要記得補分類，沒分類的會歸到「其他」)
@@ -3885,6 +3870,38 @@
 
             return { lastClose, ma20, lastDate, stopPrice, riskPerShare, riskPct, themeColor, label, advice, vcpScore, shortSignals, shortWarnings, vcpHolding, momentumScore };
         }
+        // 明日策略卡片用的簡易走勢小線圖(近N個交易日收盤價)，純SVG不佔額外圖表空間
+        function buildTodaySparkline(dv, count = 30) {
+            const closes = dv.ind.closes;
+            const n = closes.length;
+            const len = Math.min(count, n);
+            const slice = closes.slice(n - len);
+            if (slice.length < 2) return '';
+            const w = 280, h = 44, pad = 3;
+            const min = Math.min(...slice), max = Math.max(...slice);
+            const range = (max - min) || (min * 0.01) || 1;
+            const stepX = (w - pad * 2) / (slice.length - 1);
+            const pts = slice.map((v, idx) => [pad + idx * stepX, h - pad - ((v - min) / range) * (h - pad * 2)]);
+            const chgPct = (slice[slice.length - 1] - slice[0]) / slice[0] * 100;
+            const isUp = chgPct >= 0;
+            const lineColor = isUp ? '#f87171' : '#4ade80'; // 台股慣例：紅漲綠跌
+            const pathD = pts.map((p, idx) => (idx === 0 ? 'M' : 'L') + p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ');
+            const areaD = pathD + ` L${pts[pts.length - 1][0].toFixed(1)},${h} L${pts[0][0].toFixed(1)},${h} Z`;
+            const last = pts[pts.length - 1];
+            return `
+                <div class="flex items-center gap-3 bg-black/15 border border-white/5 rounded-lg px-3 py-2 mb-2.5">
+                    <svg viewBox="0 0 ${w} ${h}" class="w-full h-9" preserveAspectRatio="none">
+                        <path d="${areaD}" fill="${lineColor}" opacity="0.12"></path>
+                        <path d="${pathD}" fill="none" stroke="${lineColor}" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"></path>
+                        <circle cx="${last[0].toFixed(1)}" cy="${last[1].toFixed(1)}" r="2.2" fill="${lineColor}"></circle>
+                    </svg>
+                    <div class="shrink-0 text-right">
+                        <div class="text-[9px] text-slate-500 whitespace-nowrap">近${slice.length}日走勢</div>
+                        <div class="text-[11px] font-mono-num font-bold whitespace-nowrap" style="color:${lineColor}">${isUp ? '+' : ''}${chgPct.toFixed(1)}%</div>
+                    </div>
+                </div>`;
+        }
+
         function renderTodaySignal(symbol) {
             const panel = document.getElementById('predict-panel');
             const a = analysisCache[symbol];
@@ -3916,6 +3933,8 @@
             if (r.shortWarnings.length > 0) shortTechHtml += r.shortWarnings.map(s => `<div class="flex items-start gap-2"><span class="w-1.5 h-1.5 rounded-full bg-rose-400 mt-1.5 shrink-0"></span><div><span class="text-rose-400 font-bold text-[11px]">${s.name}</span><div class="text-slate-400 text-[10px]">${s.desc}</div></div></div>`).join('');
             if (!shortTechHtml) shortTechHtml = '<div class="text-slate-500 text-[11px] pl-3">各項指標處於中性區間</div>';
 
+            const sparklineHtml = buildTodaySparkline(a.dailyView);
+
             panel.innerHTML = `
                 <div class="bg-brand-bg/80 border border-slate-700/50 rounded-xl overflow-hidden shadow-2xl backdrop-blur-md">
                     <div class="p-5 border-l-4 ${c.border} bg-gradient-to-r from-brand-card to-transparent">
@@ -3929,45 +3948,58 @@
                                 <div class="text-lg font-mono-num font-bold ${r.momentumScore > 0 ? 'text-red-400' : 'text-green-400'}">${r.momentumScore > 0 ? '+' : ''}${r.momentumScore.toFixed(1)}</div>
                             </div>
                         </div>
-                        <div class="text-[12px] text-slate-300 leading-relaxed mb-1">${r.advice}</div>
-                        <div class="text-[9px] text-slate-500 font-mono-num">DATE: ${r.lastDate}</div>
+                        <div class="text-[12px] text-slate-300 leading-relaxed mb-2.5">${r.advice}</div>
+                        <div class="flex items-start gap-1.5 bg-brand-cyan/5 border border-brand-cyan/20 rounded-lg px-2.5 py-2 mb-2.5">
+                            <i data-lucide="lightbulb" class="w-3.5 h-3.5 text-brand-cyan shrink-0 mt-0.5"></i>
+                            <div class="text-[10px] text-slate-400 leading-relaxed">這裡是用「最新一個交易日的收盤資料」試算的綜合建議，用來決定「下一次有機會交易時」要不要進場，每次重新打開才會用最新資料算一次。</div>
+                        </div>
+                        ${sparklineHtml}
+                        <div class="text-[9px] text-slate-500 font-mono-num flex items-center gap-1"><i data-lucide="calendar" class="w-3 h-3"></i> 依 ${r.lastDate} 收盤資料運算</div>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-px bg-slate-700/30 border-y border-slate-700/50">
-                        <div class="bg-brand-bg/60 p-4">
-                            <div class="text-brand-cyan font-bold text-[11px] mb-3 flex items-center gap-1.5 uppercase tracking-widest"><i data-lucide="scan-line" class="w-3.5 h-3.5"></i> 型態解析</div>
-                            <div class="space-y-2.5">
+                        <div class="bg-brand-bg/60 p-4 flex flex-col">
+                            <div class="text-brand-cyan font-bold text-sm mb-3 flex items-center gap-1.5 tracking-wide"><i data-lucide="scan-line" class="w-4 h-4"></i> 型態解析</div>
+                            <div class="space-y-2.5 flex-1">
                                 ${oceanTags}
                             </div>
+                            <div class="mt-3 pt-2 border-t border-slate-700/40 text-[10px] text-slate-500 leading-relaxed">判斷目前股價是否出現主力發動的強勢型態，符合越多項，代表訊號越明確。</div>
                         </div>
-                        <div class="bg-brand-bg/60 p-4">
-                            <div class="text-brand-cyan font-bold text-[11px] mb-3 flex items-center gap-1.5 uppercase tracking-widest"><i data-lucide="activity" class="w-3.5 h-3.5"></i> 短線技術指標</div>
-                            <div class="space-y-2.5">
+                        <div class="bg-brand-bg/60 p-4 flex flex-col">
+                            <div class="text-brand-cyan font-bold text-sm mb-3 flex items-center gap-1.5 tracking-wide"><i data-lucide="activity" class="w-4 h-4"></i> 短線技術指標</div>
+                            <div class="space-y-2.5 flex-1">
                                 ${shortTechHtml}
                             </div>
+                            <div class="mt-3 pt-2 border-t border-slate-700/40 text-[10px] text-slate-500 leading-relaxed">觀察 KD、RSI、布林通道等短線指標，抓最近幾天買盤轉強或過熱的訊號，僅供短線進出場參考。</div>
                         </div>
                     </div>
 
-                    <div class="p-4 bg-brand-card/30">
-                        <div class="text-slate-400 font-bold text-[11px] mb-2 flex items-center gap-1.5 uppercase tracking-widest"><i data-lucide="shield" class="w-3.5 h-3.5"></i> 風險防禦基準</div>
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-[11px] font-mono-num">
-                            <div class="bg-black/20 p-2 rounded border border-white/5">
-                                <div class="text-slate-500 mb-0.5 text-[9px]">目前收盤價</div>
-                                <div class="text-white font-bold text-sm">${fmt(r.lastClose)}</div>
+                    <div class="p-4 bg-gradient-to-br from-orange-950/20 via-brand-card/30 to-transparent">
+                        <div class="flex items-center gap-2 mb-3">
+                            <div class="w-6 h-6 rounded-lg bg-orange-500/15 border border-orange-500/30 flex items-center justify-center shrink-0">
+                                <i data-lucide="shield" class="w-3.5 h-3.5 text-orange-400"></i>
                             </div>
-                            <div class="bg-black/20 p-2 rounded border border-white/5">
-                                <div class="text-slate-500 mb-0.5 text-[9px]">生命線 (20MA)</div>
-                                <div class="text-blue-400 font-bold text-sm">${fmt(r.ma20)}</div>
+                            <div class="text-orange-300 font-bold text-sm tracking-wide">風險防禦基準</div>
+                        </div>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-2.5 text-[11px] font-mono-num">
+                            <div class="bg-black/25 p-2.5 rounded-lg border border-white/5">
+                                <div class="text-slate-500 mb-1 text-[9px]">目前收盤價</div>
+                                <div class="text-white font-bold text-base">${fmt(r.lastClose)}</div>
                             </div>
-                            <div class="bg-black/20 p-2 rounded border border-red-500/20">
-                                <div class="text-slate-500 mb-0.5 text-[9px]">建議停損價</div>
-                                <div class="text-orange-400 font-bold text-sm">${fmt(r.stopPrice)}</div>
+                            <div class="bg-black/25 p-2.5 rounded-lg border border-blue-500/10">
+                                <div class="text-slate-500 mb-1 text-[9px]">生命線 (20MA)</div>
+                                <div class="text-blue-400 font-bold text-base">${fmt(r.ma20)}</div>
                             </div>
-                            <div class="bg-black/20 p-2 rounded border border-red-500/20">
-                                <div class="text-slate-500 mb-0.5 text-[9px]">單股承受風險</div>
-                                <div class="text-orange-400 font-bold text-sm">${fmt(r.riskPerShare)} <span class="text-[10px]">(${r.riskPct.toFixed(1)}%)</span></div>
+                            <div class="bg-black/25 p-2.5 rounded-lg border border-orange-500/20">
+                                <div class="text-slate-500 mb-1 text-[9px]">建議停損價</div>
+                                <div class="text-orange-400 font-bold text-base">${fmt(r.stopPrice)}</div>
+                            </div>
+                            <div class="bg-black/25 p-2.5 rounded-lg border border-orange-500/20">
+                                <div class="text-slate-500 mb-1 text-[9px]">單股承受風險</div>
+                                <div class="text-orange-400 font-bold text-base">${fmt(r.riskPerShare)} <span class="text-[10px]">(${r.riskPct.toFixed(1)}%)</span></div>
                             </div>
                         </div>
+                        <div class="mt-3 pt-2 border-t border-orange-500/10 text-[10px] text-slate-500 leading-relaxed">取「20日均線」與「7%固定硬停損」兩者較高者作為建議停損價，藉此估算買進後每股最多可能承受的虧損金額與比例，方便你抓進場部位大小。</div>
                     </div>
                 </div>`;
             safeLucideIcons({ root: panel });
