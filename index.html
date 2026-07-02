@@ -855,7 +855,7 @@
                     </button>
                     <div id="about-section-0a" class="hidden px-4 pb-4 space-y-2.5">
                         <p class="text-slate-300 text-[13px]">我喜歡研究新東西，也喜歡自己動手解決問題。這個工具，其實是為了我自己而做。 以前我總花很多時間研究個股、看線圖，卻忽略了生活。於是，我把自己的交易邏輯寫成程式，做出這個小工具。它不是為了預測市場，而是希望用更少的時間做出更有紀律的決策，把更多時間留給生活，以及真正對我重要的人。  這個小工具。加入手機桌面（PWA），就像一個安靜陪伴你的 App。</p>
-                      <p class="text-slate-300 text-[15px]">考量到每個人的交易步調不同，系統裡設計了三個模式：</p>
+                      <p class="text-slate-300 text-[15px]">考量到每個人的交易步調不同，系統裡設計了三個看盤模式，再加上一個負責「進場後怎麼顧」的戰術魚池：</p>
 
                         <div class="info-subcard">
                             <div class="info-subcard-title"><span class="info-dot"></span> 新手無腦模式</div>
@@ -868,6 +868,10 @@
                         <div class="info-subcard">
                             <div class="info-subcard-title"><span class="info-dot"></span> 日線短線衝刺</div>
                             <div class="info-subcard-body">結合多種技術分析，找出市場上的強勢標的，提供給想要短期看到成績、節奏比較快的操作參考。</div>
+                        </div>
+                        <div class="info-subcard">
+                            <div class="info-subcard-title"><span class="info-dot"></span> 戰術魚池</div>
+                            <div class="info-subcard-body">上面三個模式負責回答「要不要進場」，魚池負責「進場之後怎麼顧」。已經買進的部位放進「持倉魚池」，系統會自動用均線跟波動率算出建議停損停利價位(也可以自己輸入%數)；還沒進場但想追蹤的代號先丟進「潛在觀測槽」孵化，系統給「長線佈局／短線點火」的智能建議，孵化夠久再決定要不要正式出手。</div>
                         </div>
 
                         <p class="text-slate-300 text-[13px]">介面看起來簡單，背後其實有一個會自動交叉比對VCP型態、均線、基本面和籌碼數據的運算核心，把複雜的分析轉換成清楚的買賣點和防守價位。希望這個工具能在決策時幫上忙，陪自己克服人性裡的弱點，乖乖守紀律，朝「大賺小賠」的方向努力。</p>
@@ -1044,6 +1048,10 @@
  <div class="info-subcard-body">看不懂線圖、評分也沒關係！直接輸入想買的股票跟金額，就告訴你現在適不適合買、最多大概會賠多少錢，還能加入持股提醒清單，自動幫我比對停利/停損價位。</div>
  </div>
  <div class="info-subcard">
+ <div class="info-subcard-title"><span class="info-dot"></span> 戰術魚池</div>
+ <div class="info-subcard-body">買進後把部位丟進「持倉魚池」，停損停利可以選「系統建議」(自動套用20MA跟波動率算出的價位)，或自己輸入%數自訂。還沒進場的口袋名單先丟進「潛在觀測槽」孵化，系統會給「長線佈局」或「短線點火」的智能建議，並顯示孵化天數進度條。這裡的通知排在「上午7點」，跟新手模式「下午7點」的持股提醒是各自獨立的兩組排程，互不影響。</div>
+ </div>
+ <div class="info-subcard">
  <div class="info-subcard-title"><span class="info-dot"></span> 儀表板</div>
  <div class="info-subcard-body">打開App第一眼看到的畫面，有每日股市風力圖(大盤+美股關鍵指標)跟盤後速報(追蹤清單的突破高低/漲跌停/法人買賣超)，當天市況一眼掃完。</div>
  </div>
@@ -1087,6 +1095,26 @@
  <div class="info-subcard-body">如果是「盤整突破」的型態，只要上漲達到我設定的目標（預設是 3%），系統就會提醒我開心停利；其他型態（站上均線、爆量確認）如果還沒賺錢，停損已經改用「跌破週20MA」動態判斷，不再是固定%數——這樣可以給股價合理的震盪空間，不容易在均線糾結的盤整區被微小波動誤觸發；一旦開始獲利，一樣會啟動「跌破前一週最低價」的移動停利法，盡量把利潤留住！這些標記都會畫在長線圖上。</div>
  </div>
  </div>
+ <div class="info-heading-md pt-1"> 戰術魚池 / 停損停利公式</div>
+ <div class="space-y-2">
+ <div class="info-subcard">
+ <div class="info-subcard-title"><span class="info-dot"></span> 系統建議停損</div>
+ <div class="info-subcard-body">跟新手模式同一套邏輯：取「日20MA」跟「收盤價 × 0.93（7%硬停損）」兩者比較高的當停損價，均線在上面時優先保護，均線太低時至少守住7%。</div>
+ </div>
+ <div class="info-subcard">
+ <div class="info-subcard-title"><span class="info-dot"></span> 系統建議停利</div>
+ <div class="info-subcard-body">用近20日「日報酬標準差」當波動率，乘以3倍當目標乖離幅度，且至少抓8%（避免波動太小時目標貼在現價旁邊，一下就被雜訊洗到）。震盪愈大的股票，停利目標會拉得愈遠。</div>
+ </div>
+ <div class="info-subcard">
+ <div class="info-subcard-title"><span class="info-dot"></span> 自訂停損/停利</div>
+ <div class="info-subcard-body">不想用系統算的話，新增持倉時可以分別把停損、停利切成「自訂」，直接輸入%數，系統會以「成本價」為基準算出價位，不套用均線或波動率。</div>
+ </div>
+ <div class="info-subcard">
+ <div class="info-subcard-title"><span class="info-dot"></span> 潛在觀測槽的智能建議</div>
+ <div class="info-subcard-body">「短線點火」= KD黃金交叉或RSI跌破30超賣區其中之一出現；「長線佈局」= 沒有短線訊號，但日20MA站上日100MA（均線多頭排列）；兩者都沒有就是「持續觀察」，代表訊號還不夠明確，先繼續孵化。</div>
+ </div>
+ </div>
+
  <p class="text-slate-400 text-[12px] leading-relaxed"> 小叮嚀：上面提到的所有門檻（像是盤整的寬鬆度、爆量要幾倍、停損/停利的 % 數），我都有把它們做成彈性的參數！隨時可以點擊網頁最上方導覽列的「 設定」齒輪，依照我當下的心情跟市況自由微調喔。</p>
  </div>
  </div>
