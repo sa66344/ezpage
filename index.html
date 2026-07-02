@@ -2635,12 +2635,18 @@
             // Yahoo 的成交量單位是「股」，這裡除以 1000 轉換成「張」以對齊證交所格式
             const volLots = isFinite(meta.regularMarketVolume) ? Math.floor(meta.regularMarketVolume / 1000) : null;
 
-            // Yahoo meta 未必有當日極精確的盤中開高低，作為備援只要有現價與昨收即可
+            // Yahoo這支chart API的meta欄位其實通常有帶regularMarketOpen/DayHigh/DayLow(不是100%保證每檔都有，
+            // 所以還是要individually檢查isFinite再用)，先前這裡寫死回傳null，導致只要MIS掛掉、
+            // 改走Yahoo備援，「盤中型態判斷」就會因為open/high/low永遠是null而直接失效，
+            // 每次都顯示「資料不足，無法判斷盤中型態」。這裡改成實際去讀這三個欄位，讀不到才留null。
+            const openRaw = meta.regularMarketOpen;
+            const highRaw = meta.regularMarketDayHigh;
+            const lowRaw = meta.regularMarketDayLow;
             return {
                 price,
-                open: null,
-                high: null,
-                low: null,
+                open: isFinite(openRaw) && openRaw > 0 ? openRaw : null,
+                high: isFinite(highRaw) && highRaw > 0 ? highRaw : null,
+                low: isFinite(lowRaw) && lowRaw > 0 ? lowRaw : null,
                 prevClose,
                 volLots,
                 updateTime
