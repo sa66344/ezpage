@@ -25162,9 +25162,26 @@ function openPageHelp(e) {
     if (!t) return;
     ((document.getElementById("page-help-title").innerHTML =
         `<i data-lucide="help-circle" class="w-4 h-4" style="color:var(--pm-ink2)"></i> ${t.title}`),
-        (document.getElementById("page-help-body").innerHTML = t.body
-            .map((e) => `<p>${e}</p>`)
-            .join("")));
+        // 【2026-09-12修正：說明彈窗改成卡片式，不再是一整排死板的段落文字】
+        // 大部分說明內容本來就是「功能名稱：說明文字」的格式，這裡偵測這個pattern，
+        // 把每一項拆成「彩色圓點+粗體標題+內文」的獨立卡片，一眼就能分辨這裡在講幾件事、
+        // 各自的重點是什麼；抓不到「名稱：」格式的項目，維持原本的純文字段落顯示。
+        (document.getElementById("page-help-body").innerHTML = (() => {
+            const palette = ["#5CE1FF", "#D6FF5C", "#FF6B9D", "#FFB347", "#B39CFF", "#7CFFB2", "#FF8C42"];
+            let colorIdx = 0;
+            return t.body
+                .map((item) => {
+                    const m = item.match(/^([^:：]{1,16}[:：])([\s\S]*)$/);
+                    if (m) {
+                        const label = m[1].replace(/[:：]$/, ""),
+                            rest = m[2].trim(),
+                            color = palette[colorIdx++ % palette.length];
+                        return `<div class="mb-2.5 rounded-[14px] p-3" style="background:#FAFAF7;border:1.5px solid #EEEEE8"><div class="flex items-center gap-2 mb-1"><span class="w-2.5 h-2.5 rounded-full shrink-0" style="background:${color};border:1.5px solid rgba(26,26,24,.2)"></span><span class="font-[700] text-[12.5px]" style="color:var(--pm-ink)">${label}</span></div><p class="text-[12px] leading-relaxed" style="color:var(--pm-ink2)">${rest}</p></div>`;
+                    }
+                    return `<p class="mb-2.5 text-[12px] leading-relaxed" style="color:var(--pm-ink2)">${item}</p>`;
+                })
+                .join("");
+        })()));
     const n = document.getElementById("page-help-modal");
     (n.classList.remove("hidden"), safeLucideIcons({ root: n }));
 }
@@ -27317,7 +27334,12 @@ async function updateLiteMissionCommand2() {
 }
 // 角色設定與術語字典規則已改由 Cloudflare Worker 的 systemInstruction 統一控管(呼叫 Gemini
 // gemini-3.5-flash)，這裡只留一段簡短說明給本機對話紀錄用，不會實際影響AI回覆的規則。
-const FISHBAO_SYSTEM_PROMPT = "你是『魚寶』，潮汐指標系統的 AI 財經助理(由 Gemini 驅動)。";
+// 【2026-09-12修正：系統提示詞太空泛，導致回答死板、講一堆不針對重點的內容】
+// 原本只有一句「你是魚寶」，完全沒講要怎麼回答，這裡補上明確的回答風格要求：
+// 直接針對她問的重點回答、避免制式的免責聲明式長篇大論、控制篇幅、少用**粗體**/###標題這種
+// 厚重的markdown排版(聊天框目前只會把符號原樣顯示，不會渲染成真的粗體/標題)。
+const FISHBAO_SYSTEM_PROMPT =
+    "你是『魚寶』，潮汐指標系統的 AI 財經助理(由 Gemini 驅動)。回答時請直接針對使用者問的重點回答，不要每次都重複講一樣的免責聲明或籠統的風險提醒；篇幅盡量精簡，能兩三句講完就不要展開成長篇報告。用口語、直接的語氣，避免用**粗體**、### 標題、條列符號這類markdown排版——這裡的對話框不會把這些符號轉成真正的粗體或標題，只會照樣顯示星號、井字號，所以請直接用一般文字、換行分段就好，不要用星號或井字號。";
 function fishbaoLoadMemory() {
     try {
         const e = localStorage.getItem("fishbao_chat_memory"),
@@ -27332,6 +27354,16 @@ function fishbaoSaveMemory(e) {
     } catch (e) {}
 }
 let fishbaoMemory = fishbaoLoadMemory();
+// 【2026-09-12新增：防呆markdown轉換】就算魚寶偶爾還是回了markdown格式(**粗體**、###標題、
+// *條列)，這裡也做基本轉換，不會讓她看到一堆原始星號/井字號。只套用在魚寶自己的回覆，
+// 使用者自己輸入的訊息維持原樣顯示。
+function fishbaoMarkdownToHtml(text) {
+    let s = text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    s = s.replace(/^#{1,6}\s*(.+)$/gm, "<b>$1</b>");
+    s = s.replace(/\*\*(.+?)\*\*/g, "<b>$1</b>");
+    s = s.replace(/^[*-]\s+(.+)$/gm, "・$1");
+    return s;
+}
 function fishbaoRenderMessages() {
     const e = document.getElementById("fishbao-messages");
     if (!e) return;
@@ -27343,7 +27375,8 @@ function fishbaoRenderMessages() {
                   const n = !t && e.truncated
                       ? '<button type="button" class="fishbao-continue-btn mt-2 block text-[12px] text-brand-cyan font-bold underline">👉 回覆被截斷了，點我請魚寶繼續說</button>'
                       : "";
-                  return `<div class="flex ${t ? "justify-end" : "justify-start"}"><div class="max-w-[80%] rounded-[16px] px-3.5 py-2.5 text-[13px] leading-relaxed whitespace-pre-wrap" style="${t ? "background:#17171b;color:#fff;border-bottom-right-radius:4px" : "background:#fff;color:#1A1A18;border:1px solid #E5E5E5;border-bottom-left-radius:4px"}">${e.content.replace(/</g, "&lt;").replace(/>/g, "&gt;")}${n}</div></div>`;
+                  const contentHtml = t ? e.content.replace(/</g, "&lt;").replace(/>/g, "&gt;") : fishbaoMarkdownToHtml(e.content);
+                  return `<div class="flex ${t ? "justify-end" : "justify-start"}"><div class="max-w-[80%] rounded-[16px] px-3.5 py-2.5 text-[13px] leading-relaxed whitespace-pre-wrap" style="${t ? "background:#17171b;color:#fff;border-bottom-right-radius:4px" : "background:#fff;color:#1A1A18;border:1px solid #E5E5E5;border-bottom-left-radius:4px"}">${contentHtml}${n}</div></div>`;
               })
               .join("")
         : '<div class="text-center text-[12px] py-8" style="color:#9A9590">嗨，我是魚寶🐟<br>點上面的快速按鈕，或直接輸入問題開始聊天</div>';
