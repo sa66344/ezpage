@@ -12871,7 +12871,13 @@ function evaluateWeeklyBuy(e) {
     }
     const E = computeAutoTrendline(t),
         $ = !(!E || "down" !== E.type || E.brokenNow),
-        C = k && w && S && !$ && !u.completed && (d.breakout || g);
+        // 【2026-09-18新增：長線候選加乖離率濾網】回測累積紀錄發現長線候選平均乖離率高達17%，
+        // 完全沒有做位階過濾，等於系統一直在挑「已經噴出一大段」的股票，5日/10日報酬因此偏弱、
+        // 勝率只有37%左右。這裡比照短線候選「別追高」的精神，加一道週線乖離率上限(10%)，
+        // 超過就不算長線候選，避免繼續挑已經漲多的標的。
+        weeklyBiasPct = null !== r && null !== c ? ((c - r) / r) * 100 : null,
+        biasQualified = null === weeklyBiasPct || weeklyBiasPct <= 10,
+        C = k && w && S && !$ && !u.completed && biasQualified && (d.breakout || g);
     let L = null;
     return (
         C ||
@@ -12882,7 +12888,9 @@ function evaluateWeeklyBuy(e) {
                       ? "價格仍壓在下降趨勢線之下，空頭結構未破壞，反彈不追"
                       : w
                         ? S
-                            ? explainWeeklyNoBuy(d, m, p)
+                            ? biasQualified
+                                ? explainWeeklyNoBuy(d, m, p)
+                                : `週乖離率${weeklyBiasPct.toFixed(1)}%已經超過10%上限，位階偏高不列入長線候選(別追高)`
                             : "週KAMA尚未同步轉多，研判還在盤整雜訊區"
                         : "本週量能未達 5 週均量 1.5 倍，動能不足"
                   : "週收盤未站上週MA，趨勢未站穩"),
@@ -12898,6 +12906,7 @@ function evaluateWeeklyBuy(e) {
             kamaQualified: S,
             underDowntrendLine: $,
             mPatternAlert: u,
+            weeklyBiasPct,
         }
     );
 }
@@ -21002,6 +21011,9 @@ async function scanWatchlist(forcedScope) {
         reportIgnitionHits(l);
         updateDemotionAlertsAfterScan(l).then(refreshFreshIgnitionCache); // 【訊號降級警示】掃描完後比對昨日/今日狀態，更新布告欄/觀測槽/自選股的降級標記；接著才能算新鮮點火名單(依賴前者填好的todayCurrentStatusMap/todayDemotedAsOfDate)
         refreshYesterdayScoresCache(); // 【2026-08-11新增】動能加速度快取，跟新鮮點火快取一樣掃描完就在背景刷新，不擋掃描本身的完成
+        // 【2026-09-18新增：全市場掃描完成後自動存今日快照】她做全市場「鯨魚雷達」掃描本來就是每天
+        // 會做的事，掃描一完成就順便自動存今日快照，不用她另外記得去魚小韭頁按按鈕。
+        "master" === (forcedScope || scanScopeAtStart) && autoSaveXiaojiuDailySnapshotIfNeeded();
         try {
             const e = {};
             (c.forEach((t) => {
@@ -23788,7 +23800,26 @@ function openXiaojiuExportModal(e, t, n) {
 // 抽成獨立函式，接收被點擊的按鈕本身，存檔進行中把按鈕內容換成轉圈+「存檔中...」，
 // 讓兩個進入點(魚小韭頁按鈕、儀表板按鈕)點下去都有清楚的動態回饋，不用等toast跳出來才知道有沒有在動作；
 // 用try/finally確保不管是提早return(非交易日/沒有掃描資料)還是正常跑完，按鈕最後都會恢復原本外觀。
-async function saveXiaojiuDailySnapshot(btn) {
+// 【2026-09-18新增：自動存今日快照，不用再靠自己記得按按鈕】她說真的會忘記按「存今日快照」，
+// 已經連續好幾天忘記存、缺口補不回來。與其一直提醒她，不如乾脆自動做掉：只要她做了「鯨魚雷達」
+// 全市場掃描(這是她本來就會做的事，不是額外要求)，掃描一結束就自動存一次今天的快照，全程不用
+// 她按任何按鈕、也不會跳出複製CSV的視窗打斷她，一天只會自動存一次(用localStorage記錄今天存過
+// 了沒，避免重複存)。手動按「存今日快照」的按鈕還在，效果不變(會跳CSV視窗方便她要備份的話用)。
+async function autoSaveXiaojiuDailySnapshotIfNeeded() {
+    try {
+        const today = taipeiDateStr(new Date());
+        if (loadJSON("xiaojiu_snapshot_autosaved_date", null) === today) return;
+        const weekday = new Intl.DateTimeFormat("en-US", { timeZone: "Asia/Taipei", weekday: "short" }).format(new Date());
+        if ("Sat" === weekday || "Sun" === weekday) return;
+        const rows = lastScanVisibleRows || [];
+        if (0 === rows.length) return;
+        await saveXiaojiuDailySnapshot(null, true);
+        saveJSON("xiaojiu_snapshot_autosaved_date", today);
+    } catch (e) {
+        console.warn("自動存今日快照失敗，明天會再試一次", e.message);
+    }
+}
+async function saveXiaojiuDailySnapshot(btn, silent) {
     const originalHtml = btn ? btn.innerHTML : null;
     if (btn) {
         btn.disabled = true;
@@ -23802,14 +23833,14 @@ async function saveXiaojiuDailySnapshot(btn) {
         // 直接擋下來，不讓非交易日的存檔動作發生。只判斷週末，國定假日之後如果需要可以再擴充。
         const weekday = new Intl.DateTimeFormat("en-US", { timeZone: "Asia/Taipei", weekday: "short" }).format(new Date());
         if ("Sat" === weekday || "Sun" === weekday) {
-            return void showToast(
+            return void (silent || showToast(
                 "今天是非交易日，股價不會變，不用存快照——你上次存的就是最新的一份，等下一個交易日收盤後再存",
                 "info",
-            );
+            ));
         }
         const e = lastScanVisibleRows || [];
         if (0 === e.length)
-            return void showToast("請先到掃描頁執行一次「鯨魚雷達」掃描，才有資料可以存", "error");
+            return void (silent || showToast("請先到掃描頁執行一次「鯨魚雷達」掃描，才有資料可以存", "error"));
         const t = loadXiaojiuState(),
             n = taipeiDateStr(new Date()),
             recentCandidateSymbols = await fetchRecentCandidateSymbols(5),
@@ -23851,19 +23882,23 @@ async function saveXiaojiuDailySnapshot(btn) {
                 }),
                 s = await t.json();
             s && s.ok
-                ? showToast(`已存進D1(${s.count}筆)`, "success")
-                : showToast(
+                ? showToast(silent ? `今日快照已自動存檔(${s.count}筆)` : `已存進D1(${s.count}筆)`, "success")
+                : silent ||
+                  showToast(
                       `D1存失敗：${(s && s.error) || "未知原因"}，可以先手動複製下面的文字備份`,
                       "error",
                   );
         } catch (e) {
-            showToast("D1存失敗(連線問題)，可以先手動複製下面的文字備份", "error");
+            silent || showToast("D1存失敗(連線問題)，可以先手動複製下面的文字備份", "error");
         }
-        openXiaojiuExportModal(
-            "存今日快照",
-            "已存進D1了(開發者測試中)。全選下面這段文字可以複製備份(CSV格式)。",
-            a,
-        );
+        // 【2026-09-18新增：自動存檔不跳CSV複製視窗】她要的是完全不用管、不用她按任何東西，
+        // 跳視窗要她複製文字反而是打斷；靜默模式只留一個小小的toast通知，不強迫她做任何動作。
+        silent ||
+            openXiaojiuExportModal(
+                "存今日快照",
+                "已存進D1了(開發者測試中)。全選下面這段文字可以複製備份(CSV格式)。",
+                a,
+            );
     } finally {
         if (btn) {
             btn.disabled = false;
@@ -26548,10 +26583,34 @@ async function liteZenRenderHistory() {
         }),
     );
     ((wrap.innerHTML = h
-        .map(
-            (entry, entryIdx) => `<div class="rounded-[20px] p-4" style="background:#FFFFFF;border:2.5px solid #1A1A1A;box-shadow:4px 4px 0 #1A1A1A">
+        .map((entry, entryIdx) => {
+            // 【2026-09-18新增：每筆便當紀錄加一個當天整組的加權平均報酬%】原本每一檔股票下面
+            // 雖然有自己的%數，但要整組表現好不好，她得自己心算3、4檔的數字才知道——直接算好
+            // 一個彙總數字(用金額加權平均，不是單純算術平均，比較貼近實際報酬率)放在日期旁邊。
+            const validItems = entry.items
+                .map((it) => {
+                    const effPrice = void 0 !== it.actualPrice ? it.actualPrice : it.price,
+                        effShares = void 0 !== it.actualShares ? it.actualShares : it.shares,
+                        curPrice = priceMap[it.symbol];
+                    if (!curPrice || !(effPrice > 0)) return null;
+                    return { pct: ((curPrice - effPrice) / effPrice) * 100, cost: effPrice * effShares };
+                })
+                .filter(Boolean);
+            let summaryHtml = "";
+            if (validItems.length > 0) {
+                const totalCost = validItems.reduce((sum, v) => sum + v.cost, 0),
+                    weightedPct = totalCost > 0 ? validItems.reduce((sum, v) => sum + v.pct * v.cost, 0) / totalCost : null,
+                    upCount = validItems.filter((v) => v.pct > 0).length,
+                    downCount = validItems.filter((v) => v.pct < 0).length,
+                    summaryColor = null === weightedPct ? "#8A8A8A" : weightedPct >= 0 ? "#CC665C" : "#0A7A4A";
+                summaryHtml =
+                    null !== weightedPct
+                        ? `<span class="text-[11px] font-black" style="color:${summaryColor}" title="用每檔實際花費金額加權平均，不是單純把幾檔的%數平均">整組${weightedPct >= 0 ? "+" : ""}${weightedPct.toFixed(1)}%(${upCount}漲${downCount}跌)</span>`
+                        : "";
+            }
+            return `<div class="rounded-[20px] p-4" style="background:#FFFFFF;border:2.5px solid #1A1A1A;box-shadow:4px 4px 0 #1A1A1A">
                 <div class="flex items-center justify-between mb-2">
-                    <div class="text-[11px] font-black" style="color:#1A1A1A">${entry.date}</div>
+                    <div class="flex items-center gap-2"><span class="text-[11px] font-black" style="color:#1A1A1A">${entry.date}</span>${summaryHtml}</div>
                     <button type="button" class="lite-zen-history-delete-entry-btn w-6 h-6 rounded-full bg-white border-2 flex items-center justify-center transition active:translate-y-[1px]" style="border-color:#B4232A;color:#B4232A" data-entry-idx="${entryIdx}" title="刪除這筆紀錄"><i data-lucide="trash-2" class="w-3 h-3"></i></button>
                 </div>
                 <div class="space-y-2.5">
@@ -26598,8 +26657,8 @@ async function liteZenRenderHistory() {
                         })
                         .join("")}
                 </div>
-            </div>`,
-        )
+            </div>`;
+        })
         .join("")),
         safeLucideIcons({ root: wrap }));
 }
