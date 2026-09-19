@@ -15211,6 +15211,8 @@ async function computeStockPatternBadges(symbols) {
                         bearAlert: !!(row && row.bearSignals && row.bearSignals.length > 0),
                         // 【2026-09-19新增：量能連續放大，給型態膠囊用】
                         volStreakUp: !!(row && row.volStreakUp),
+                        // 【2026-09-19新增：價量背離，給型態膠囊用】
+                        priceVolDivergence: !!(row && row.priceVolDivergence),
                         // 【2026-09-11新增：乖離率安全/過熱標籤要用，這裡本來就有算，直接一起帶出去，
                         // 不用額外再打一次API】
                         dailyBiasPct: row ? row.dailyBiasPct : null,
@@ -15433,6 +15435,9 @@ function computeMomentumScore(it) {
         tagLabels.includes("適合週線") && (patternScore += 5));
     score += Math.min(patternScore, 25);
     tagLabels.includes("空方警報") && (score -= 30);
+    // 【2026-09-19新增：價量背離扣分】比空方警報輕——這個是「還在漲但快沒力」的早期警訊，
+    // 不是已經走弱，扣分幅度比空方警報小，但仍要反映在分數上提醒她留意。
+    tagLabels.includes("價量背離") && (score -= 15);
     return Math.max(0, Math.min(100, Math.round(score)));
 }
 function getWatchlistTargets(stockList) {
@@ -15620,6 +15625,13 @@ async function buildWatchlistCandidateStockList() {
                     dailyMa20: row.dailyMa20,
                     dailyBiasPct: row.dailyBiasPct,
                     tags: patternTagsFromBadgeInfo(badgeMap[symbol]),
+                    // 【2026-09-19新增：週20MA之上/停損參考價】對照講義「多頭vs空頭(判斷依據:週20MA)」
+                    // 跟《關鍵5｜風險評估》的停損標準——row.weeklyBuy是computeScanRow本來就會算的
+                    // evaluateWeeklyBuy()結果(nowAboveMa/lastMa20)，row.dailyMa100也是本來就有算的
+                    // 序列最後一筆，這裡只是一起帶出去給卡片顯示用，不重新打API、不影響原本任何判斷。
+                    weeklyAboveMa: row.weeklyBuy ? !!row.weeklyBuy.nowAboveMa : null,
+                    weeklyMa20: row.weeklyBuy && typeof row.weeklyBuy.lastMa20 === "number" ? row.weeklyBuy.lastMa20 : null,
+                    dailyMa100: typeof row.dailyMa100 === "number" ? row.dailyMa100 : null,
                 });
             } catch (e) {
                 console.warn("觀察名單候選股計算失敗", symbol, e.message);
@@ -15644,6 +15656,9 @@ function patternTagsFromBadgeInfo(info) {
     // 【2026-09-19新增：量能連續放大】跟「布林壓縮爆量」是不同的東西——那個是單次帶量突破，
     // 這個是連續3個交易日成交量逐日放大，比較能看出買盤是持續進來、不是單日出貨或雜訊。
     if (info.volStreakUp) tags.push({ label: "連續放量", variant: "neon-pill--muted", reason: "最近3個交易日成交量逐日放大，買盤持續進場，跟單日爆量(可能是出貨)不同" });
+    // 【2026-09-19新增：價量背離】股價還在創高，但量能明顯縮手，是末升段的早期警訊，
+    // 跟「空方警報」不同——那個是已經走弱，這個是「還在漲、但快沒力了」，提醒留意別追高。
+    if (info.priceVolDivergence) tags.push({ label: "價量背離", variant: "neon-pill--amber", reason: "股價近期仍創高，但成交量比前幾天明顯萎縮，買氣可能在退潮，是末升段常見的早期警訊" });
     return tags;
 }
 // 【2026-09-11新增：opts.showCaptions=true時，型態膠囊下面會多印一行白話原因，給像觀察名單這種
@@ -15937,7 +15952,25 @@ function buildWatchlistCardHtml(it) {
             ${isIdealRelay ? '<span class="pm-pill" style="background:#D6FFE8;border-color:#1A6B3A;color:#1A6B3A" title="投信連買超過3天已經確立，外資剛好第1天才跟上，是雙法人共識正要成形的時間點">🎯理想接力</span>' : ""}
             ${biasText ? `<span class="pm-pill" style="background:#E8F0FF;border-color:#1B4D6B;color:#1B4D6B">${biasText}</span>` : ""}
             <span class="pm-pill" style="background:#E8F0FF;border-color:#1B4D6B;color:#1B4D6B">量 ${typeof it.volumeLots === "number" ? it.volumeLots : "--"} 張</span>
+            ${
+                typeof it.weeklyMa20 === "number"
+                    ? it.weeklyAboveMa
+                        ? `<span class="pm-pill" style="background:#D6FFE8;border-color:#1A6B3A;color:#1A6B3A" title="收盤價站在週20MA之上，對照講義「多頭vs空頭(判斷依據:週20MA)」，是個股層級多頭趨勢的基本門檻，週20MA=${it.weeklyMa20.toFixed(2)}">✓週20MA之上</span>`
+                        : `<span class="pm-pill" style="background:#FFE4E4;border-color:#B4232A;color:#B4232A" title="收盤價還沒站上週20MA(=${it.weeklyMa20.toFixed(2)})，對照講義的定義，這代表個股層級還沒確立多頭趨勢，只是短線籌碼訊號提前出現，留意風險">尚未站上週20MA</span>`
+                    : ""
+            }
         </div>
+        ${
+            typeof it.dailyMa20 === "number" || typeof it.dailyMa100 === "number" || typeof it.weeklyMa20 === "number"
+                ? `<div class="mb-1.5 text-[10px] font-bold px-2.5 py-1 rounded-[8px]" style="background:#E8F0FF;border:1px dashed #1B4D6B;color:#1B4D6B" title="對照講義《關鍵5｜風險評估》：風險承受度較小可用日20MA(較緊)，較高可用日100MA或週20MA(較寬)，公式＝(現價−停損參考價)×股數＝預估最大虧損，實際停損點請依個人風險承受度自行選擇，非系統建議的固定停損">🛡️停損參考：${[
+                    typeof it.dailyMa20 === "number" ? `日20MA ${it.dailyMa20.toFixed(2)}` : null,
+                    typeof it.dailyMa100 === "number" ? `日100MA ${it.dailyMa100.toFixed(2)}` : null,
+                    typeof it.weeklyMa20 === "number" ? `週20MA ${it.weeklyMa20.toFixed(2)}` : null,
+                  ]
+                    .filter(Boolean)
+                    .join(" ／ ")}</div>`
+                : ""
+        }
         ${quarterWarning ? `<div class="mb-1.5 text-[10px] font-bold px-2.5 py-1 rounded-[8px]" style="background:#F0F0EC;border:1px dashed #8A8680;color:#5A5753">⏰ ${quarterWarning}</div>` : ""}
         ${it.signalConfirmed === false ? '<div class="mb-1.5 text-[10px] font-bold px-2.5 py-1 rounded-[8px]" style="background:#F0F0EC;border:1px dashed #8A8680;color:#5A5753" title="前一個交易日的候選名單裡沒有這檔，這是第一次出現，還沒經過隔日確認，動能分數已經打折反映">🌱 初步訊號，昨天還沒出現，先觀察別急著追</div>' : ""}
         <div class="mb-1.5">
@@ -20368,6 +20401,22 @@ async function computeScanRow(e, t, n, bypassMasterLiquidityGate) {
         // 跟單日「量≥1000張」門檻不一樣——單日爆量也可能是出貨(大戶倒貨同樣會爆量)，連續3天放大
         // 比較能看出買盤是持續進來，不是一次性事件。
         const volStreakUp = o.length >= 3 && o[o.length - 1].volume > o[o.length - 2].volume && o[o.length - 2].volume > o[o.length - 3].volume;
+        // 【2026-09-19新增：價量背離】對照講義「價漲量縮」的定義——股價還在創高，但量能是縮的，
+        // 代表買氣在退，是末升段的早期警訊，跟「空方警報」(已經走弱的訊號)不一樣，這個抓的是
+        // 「還在漲、但快沒力了」。算法：最近5個交易日，後2天的收盤高點 >= 前3天的收盤高點(價格
+        // 仍創高或持平創高)，但後2天均量比前3天均量萎縮20%以上(量能明顯縮手)。
+        const priceVolDivergence = (() => {
+            if (o.length < 5) return false;
+            const last5 = o.slice(-5);
+            const earlier = last5.slice(0, 3),
+                recent = last5.slice(3);
+            const earlierHighClose = Math.max(...earlier.map((k) => k.close)),
+                recentHighClose = Math.max(...recent.map((k) => k.close));
+            if (recentHighClose < earlierHighClose) return false;
+            const earlierAvgVol = earlier.reduce((sum, k) => sum + k.volume, 0) / earlier.length,
+                recentAvgVol = recent.reduce((sum, k) => sum + k.volume, 0) / recent.length;
+            return earlierAvgVol > 0 && recentAvgVol < earlierAvgVol * 0.8;
+        })();
         // 【2026-09-11修正：真正找到「按鯨魚雷達卻掃到自選股」的原因】原本這裡跟computeStockPatternBadges
         // 共用同一個全域scanScope變數，那支函式為了繞開這關liquidity gate，會暫時把全域scanScope
         // 硬改成"watchlist"、算完再改回來——但這中間是好幾百檔的非同步運算，如果她這時候剛好按了
@@ -20394,6 +20443,7 @@ async function computeScanRow(e, t, n, bypassMasterLiquidityGate) {
                     prevWeeklyVolLots: null,
                     volAboveAvg5d: u,
                     volStreakUp: volStreakUp,
+                    priceVolDivergence: priceVolDivergence,
                     bullSignals: [],
                     bearSignals: [],
                     weeklySparkline: null,
@@ -20427,8 +20477,10 @@ async function computeScanRow(e, t, n, bypassMasterLiquidityGate) {
                     dailyMa20: null,
                     dailyBiasPct: null,
                     dailyMa10: null,
+                    dailyMa100: null,
                     dailyMa5: null,
                     prevClose: null,
+                    priceVolDivergence: !1,
                 }),
                 s
             );
@@ -20706,6 +20758,10 @@ async function computeScanRow(e, t, n, bypassMasterLiquidityGate) {
             // 【2026-09-10補上：日線10MA】B.ma10同樣是本來就有算的序列，補上原因是「快跑警示」
             // 需要判斷「跌破10MA」，之前沒有這個欄位所以那個條件先暫時關閉，現在補上就能生效。
             dailyMa10: B.ma10.length ? B.ma10[B.ma10.length - 1] : null,
+            // 【2026-09-19新增：日線100MA，給觀察名單卡片的「停損參考價」用】B.ma100本來就有算，
+            // 對照講義《關鍵5｜風險評估》的停損標準：風險承受度較小用日20MA、較高用日100MA/週20MA，
+            // 這裡只是把序列最後一筆額外拿出來，不影響原本任何判斷邏輯。
+            dailyMa100: B.ma100.length ? B.ma100[B.ma100.length - 1] : null,
             // 【2026-09-11新增：給魚小韭3~5天極短線出場邏輯用的日線5MA跟昨收】
             // ma5Arr跟B.ma10/B.ma20是同一套sma()算法，只是週期換成5；prevClose直接從o(日K陣列)
             // 倒數第二筆拿，o.length<2時(新股/資料不足)給null，呼叫端要自己判斷null要怎麼處理。
@@ -20715,6 +20771,7 @@ async function computeScanRow(e, t, n, bypassMasterLiquidityGate) {
             })(),
             prevClose: o.length >= 2 ? o[o.length - 2].close : null,
             volStreakUp: volStreakUp,
+            priceVolDivergence: priceVolDivergence,
         };
     } catch (t) {
         s = {
@@ -20768,8 +20825,10 @@ async function computeScanRow(e, t, n, bypassMasterLiquidityGate) {
             dailyMa20: null,
             dailyBiasPct: null,
             dailyMa10: null,
+            dailyMa100: null,
             dailyMa5: null,
             prevClose: null,
+            priceVolDivergence: !1,
         };
     }
     return s;
@@ -25257,9 +25316,10 @@ const PAGE_HELP = {
             "短線動能分數：卡片左上角圓形數字(0~100)，綜合天數分級、理想接力、乖離安全度、型態強度算出來，只看短線時機點、不看PBR等長線價值面，觀察名單預設依分數高到低排序，不用一張一張挑。",
             "訊號延續確認：跟前一個交易日的候選名單比對，同一檔連續兩天都在候選名單裡才算「已確認」；第一次出現的候選，卡片上會多跳出「🌱初步訊號」提醒，動能分數的天數分級跟理想接力這兩項也會打七折，避免抓到那種只出現一天就消失的假訊號(比如早上還在觀察名單、收盤就反轉的情況)。",
             "季底作帳提醒：接近季底(3/6/9/12月底前10個交易日內)，卡片上會多跳出提醒「連買天數可信度打折看待」，因為投信這段期間容易有作帳行情，天數不能照平常的標準解讀；這段期間動能分數裡「天數分級」跟「理想接力」這兩項也會自動打七折，分數本身就會比較保守，不用自己心算要扣多少。",
+            "週20MA之上／停損參考：對照傳統技術分析講義的「多頭vs空頭(判斷依據:週20MA)」跟風險評估章節，卡片上會多兩塊資訊——綠色「✓週20MA之上」代表個股層級的多頭趨勢門檻也過了(紅色代表還沒過，籌碼訊號可能提前出現)；藍色「🛡️停損參考」列出日20MA/日100MA/週20MA三個參考價，對應講義「風險承受度較小用日20MA、較高用日100MA或週20MA」的停損標準，只是參考值不是系統建議的固定停損，實際停損點請依個人風險承受度自行拿捏。",
             "快跑名單：自選股裡如果出現外資或投信連賣≥2天、且跌破10MA或20MA的標的，會列在這裡並在對應卡片標紅色警示，同時寫進系統布告欄。",
             "法人+投信同步買超：置頂，依成交量分成<499張／500~999張／≥1000張三級，符合條件的股票旁邊會標🔥(無空方警報、至少疊加2種型態、外資投信買超都還在早期)。",
-            "雙訊號/連買連賣天數/放量上漲：「雙訊號」「法人連買/連賣天數」都有外資/投信切換鈕；「放量上漲」門檻可切換800/1000張。個股都有現價(紅漲綠跌)跟型態膠囊(適合日線/週線/爆發/醞釀待發/底部起漲/布林壓縮爆量/連續放量/空方警報)。「連續放量」是最近3個交易日成交量逐日放大，跟「布林壓縮爆量」的單次帶量突破不一樣，比較能看出買盤是持續進場、不是單日出貨或雜訊。",
+            "雙訊號/連買連賣天數/放量上漲：「雙訊號」「法人連買/連賣天數」都有外資/投信切換鈕；「放量上漲」門檻可切換800/1000張。個股都有現價(紅漲綠跌)跟型態膠囊(適合日線/週線/爆發/醞釀待發/底部起漲/布林壓縮爆量/連續放量/價量背離/空方警報)。「連續放量」是最近3個交易日成交量逐日放大，跟「布林壓縮爆量」的單次帶量突破不一樣，比較能看出買盤是持續進場、不是單日出貨或雜訊。「價量背離」是股價近期仍創高、但量能比前幾天明顯萎縮，屬於「還在漲但快沒力了」的早期警訊，跟已經走弱的「空方警報」不同，扣分也比較輕。",
             "使用順序：這一頁載入過後，魚小韭選股排序才會用到「外資連買天數+放量上漲天數」的加分，也才會出現外資出場時間提醒，建議每天先開過這裡再進魚小韭。",
         ],
     },
