@@ -8914,10 +8914,10 @@ function renderTaiexTrendChart(e) {
     if (!t || !marketLightCache || !marketLightCache.historyData) return;
     t.innerHTML = "";
     const n = LightweightCharts.createChart(t, {
-            layout: { background: { type: "solid", color: "transparent" }, textColor: "#64748b" },
+            layout: { background: { type: "solid", color: "transparent" }, textColor: "#8A8680" },
             grid: {
-                vertLines: { visible: !0, color: "#F0F0F0", style: LightweightCharts.LineStyle.Dashed },
-                horzLines: { visible: !0, color: "#F0F0F0", style: LightweightCharts.LineStyle.Dashed },
+                vertLines: { visible: !1 },
+                horzLines: { visible: !0, color: "#F0F0EC", style: LightweightCharts.LineStyle.Solid },
             },
             timeScale: { visible: !1 },
             rightPriceScale: { visible: !1, scaleMargins: { top: 0.25, bottom: 0.12 } },
@@ -8929,29 +8929,33 @@ function renderTaiexTrendChart(e) {
             handleScroll: !1,
             handleScale: !1,
         }),
+        // 【2026-09-20重新設計：收斂配色】原本「價格區域(藍色漸層)+MA20(藍色虛線)+MA100(橘色實線)+
+        // 另外再用canvas畫一層MA20~MA100中間的橘色填色」四層疊在一起，才是畫面看起來很雜亂混濁的
+        // 主因。改成單一系統：價格用極淡的墨色區域(幾乎看不到，只是襯托線條用)、MA20用藍色實線、
+        // MA100用中性灰實線，兩條參考線用顏色深淺分主次，不再疊加填色區塊。
         a = n.addAreaSeries({
-            lineColor: "#3B82F6",
-            topColor: "rgba(59, 130, 246, 0.30)",
-            bottomColor: "rgba(245, 158, 11, 0.04)",
-            lineWidth: 3,
+            lineColor: "#1A1A1A",
+            topColor: "rgba(26, 26, 24, 0.06)",
+            bottomColor: "rgba(26, 26, 24, 0)",
+            lineWidth: 2,
             crosshairMarkerVisible: !0,
             crosshairMarkerRadius: 4,
             crosshairMarkerBorderColor: "#1A1A1A",
-            crosshairMarkerBackgroundColor: "#3B82F6",
+            crosshairMarkerBackgroundColor: "#1A1A1A",
             priceLineVisible: !1,
             lastValueVisible: !1,
         }),
         s = n.addLineSeries({
-            color: "#3B82F6",
+            color: "#1B4D6B",
             lineWidth: 2,
-            lineStyle: LightweightCharts.LineStyle.Dashed,
             crosshairMarkerVisible: !1,
             priceLineVisible: !1,
             lastValueVisible: !1,
         }),
         o = n.addLineSeries({
-            color: "#F59E0B",
-            lineWidth: 3,
+            color: "#8A8680",
+            lineWidth: 2,
+            lineStyle: LightweightCharts.LineStyle.Dashed,
             crosshairMarkerVisible: !1,
             priceLineVisible: !1,
             lastValueVisible: !1,
@@ -9014,57 +9018,10 @@ function renderTaiexTrendChart(e) {
             (pill.style.color = color),
             pill.classList.remove("hidden"));
     })();
-    const p = [];
-    for (let e = c; e < l.length; e++)
-        null !== i[e] && null !== r[e] && p.push({ time: l[e].time, v20: i[e], v100: r[e] });
-    const g = document.createElement("canvas");
-    function h() {
-        const e = t.clientWidth,
-            a = t.clientHeight;
-        if (!e || !a || p.length < 2) return;
-        const l = window.devicePixelRatio || 1;
-        ((g.width = e * l),
-            (g.height = a * l),
-            (g.style.width = e + "px"),
-            (g.style.height = a + "px"));
-        const i = g.getContext("2d");
-        (i.setTransform(l, 0, 0, l, 0, 0), i.clearRect(0, 0, e, a));
-        const r = [],
-            c = [];
-        if (
-            (p.forEach((e) => {
-                const t = n.timeScale().timeToCoordinate(e.time),
-                    a = s.priceToCoordinate(e.v20),
-                    l = o.priceToCoordinate(e.v100);
-                null !== t &&
-                    null !== a &&
-                    null !== l &&
-                    (r.push({ x: t, y: a }), c.push({ x: t, y: l }));
-            }),
-            !(r.length < 2))
-        ) {
-            (i.beginPath(), i.moveTo(r[0].x, r[0].y));
-            for (let e = 1; e < r.length; e++) i.lineTo(r[e].x, r[e].y);
-            for (let e = c.length - 1; e >= 0; e--) i.lineTo(c[e].x, c[e].y);
-            (i.closePath(),
-                (i.fillStyle = "rgba(255, 165, 0, 0.25)"),
-                i.fill(),
-                (i.lineWidth = 1.5),
-                (i.strokeStyle = "#1D4ED8"),
-                i.beginPath(),
-                r.forEach((e, t) => (0 === t ? i.moveTo(e.x, e.y) : i.lineTo(e.x, e.y))),
-                i.stroke(),
-                (i.strokeStyle = "#F59E0B"),
-                i.beginPath(),
-                c.forEach((e, t) => (0 === t ? i.moveTo(e.x, e.y) : i.lineTo(e.x, e.y))),
-                i.stroke());
-        }
-    }
-    ((g.style.position = "absolute"),
-        (g.style.left = "0"),
-        (g.style.top = "0"),
-        (g.style.pointerEvents = "none"),
-        t.appendChild(g));
+    // 【2026-09-20移除：原本這裡用一個額外的canvas圖層，把MA20~MA100中間填橘色、
+    // 再把兩條線重畫一次——跟上面LightweightCharts原生畫的線疊在一起，是造成畫面
+    // 混濁模糊的主因。MA20/MA100線本身LightweightCharts原生就會畫(上面的s/o兩個
+    // line series)，不需要再疊一層canvas，拿掉之後畫面乾淨很多，resize邏輯也單純很多。
     let y = !1,
         x = 0,
         b = 0;
@@ -9076,8 +9033,7 @@ function renderTaiexTrendChart(e) {
             ((x = a),
             (b = s),
             n.applyOptions({ width: a, height: s }),
-            y || (n.timeScale().fitContent(), (y = !0)),
-            requestAnimationFrame(h));
+            y || (n.timeScale().fitContent(), (y = !0)));
     }).observe(t);
 }
 function renderTaiexChartCard() {
@@ -9085,9 +9041,9 @@ function renderTaiexChartCard() {
     if (!e) return;
     if (!marketLightCache || !marketLightCache.historyData)
         return void (e.innerHTML =
-            '<div class="rounded-[24px] p-4 bg-white border-[3px] border-black shadow-[6px_6px_0_#000]"><div class="ocean-loader" aria-label="載入中"></div></div>');
+            '<div class="rounded-card border-card border-ink shadow-hard bg-white p-4"><div class="ocean-loader" aria-label="載入中"></div></div>');
     const t = marketLightCache.historyData[marketLightCache.historyData.length - 1];
-    ((e.innerHTML = `<div class="rounded-[24px] p-4 bg-white border-[3px] border-black shadow-[6px_6px_0_#000] overflow-hidden">\n                <div class="flex items-center justify-between gap-2 flex-wrap">\n                    <span class="text-[16px] font-black text-black flex items-center gap-1.5">日線趨勢 · 日MA / 100MA<span id="taiex-volume-pill" class="hidden text-[9.5px] font-black px-2 py-[3px] rounded-full bg-[#E8F0FF] border-2 border-black text-black" title=""></span></span>\n                    <button id="taiex-chart-card-open-btn" type="button" class="shrink-0 flex items-center gap-1 text-[10px] font-black px-3 py-1.5 rounded-full bg-black text-white border-2 border-black shadow-[2px_2px_0_#000] transition active:translate-y-[1px]" title="看完整加權指數頁面(日K/週K/月K)"><span class="w-1.5 h-1.5 rounded-full inline-block bg-[#D6FF5C] border border-white"></span>詳細</button>\n                </div>\n                <div class="flex items-center justify-between gap-2 mt-1"><span class="text-[10px] font-bold text-[#8A8A8A]">資料來源：${marketLightCache.usedProxy ? "0050(代理)" : "Yahoo Finance(^TWII)"}</span></div>\n                <div class="flex items-center gap-3 mt-1.5 flex-wrap">\n                    <span class="inline-flex items-center gap-1 text-[10px] font-black font-mono text-black"><span class="inline-block w-[6px] h-[6px] rounded-full" style="background:#3B82F6"></span>日MA(20) ${fmt(marketLightCache.ma20Now)}</span>\n                    <span class="inline-flex items-center gap-1 text-[10px] font-black font-mono text-black"><span class="inline-block w-[6px] h-[6px] rounded-full border-[1.5px] border-black" style="background:#F59E0B"></span>日100MA ${fmt(marketLightCache.ma100Now)}</span>\n                </div>\n                <div id="taiex-chart-card-canvas" style="height: 320px; width: 100%; margin-top: 8px; border-radius: 16px; overflow: hidden; position: relative; background:#FFFEF5;" class="border-[2.5px] border-black"></div>\n                                ${t ? `<div class="mt-2 pt-2 border-t-[1.5px] border-black/20 flex items-center justify-between flex-wrap gap-x-3 gap-y-1 text-[11px] font-mono font-black tabular-nums text-black/60">\n                    <span class="text-black/40">${t.time}</span>\n                    <span>開 <b class="text-black font-black">${fmt(t.open)}</b></span>\n                    <span>高 <b class="text-black font-black">${fmt(t.high)}</b></span>\n                    <span>低 <b class="text-black font-black">${fmt(t.low)}</b></span>\n                    <span>收 <b class="text-black font-black">${fmt(t.close)}</b></span>\n                </div>` : ""}\n            </div>`),
+    ((e.innerHTML = `<div class="rounded-card border-card border-ink shadow-hard bg-white p-4 overflow-hidden">\n                <div class="flex items-center justify-between gap-2 flex-wrap">\n                    <span class="text-[14px] font-black flex items-center gap-1.5" style="color:#1A1A1A">日線趨勢 · 日MA / 100MA<span id="taiex-volume-pill" class="hidden text-[9.5px] font-black px-2 py-[3px] rounded-pill" style="border:1px solid #1A1A1A" title=""></span></span>\n                    <button id="taiex-chart-card-open-btn" type="button" class="shrink-0 flex items-center gap-1 text-[10px] font-black px-3 py-1.5 rounded-full transition active:translate-y-[1px]" style="background:#1A1A1A;border:1.5px solid #1A1A1A;color:#D6FF5C" title="看完整加權指數頁面(日K/週K/月K)"><span class="w-1.5 h-1.5 rounded-full inline-block" style="background:#D6FF5C"></span>詳細</button>\n                </div>\n                <div class="flex items-center justify-between gap-2 mt-1"><span class="text-[10px] font-bold" style="color:#8A8680">資料來源：${marketLightCache.usedProxy ? "0050(代理)" : "Yahoo Finance(^TWII)"}</span></div>\n                <div class="flex items-center gap-3 mt-1.5 flex-wrap">\n                    <span class="inline-flex items-center gap-1 text-[10px] font-black font-mono" style="color:#1A1A1A"><span class="inline-block w-[6px] h-[6px] rounded-full" style="background:#1B4D6B"></span>日MA(20) ${fmt(marketLightCache.ma20Now)}</span>\n                    <span class="inline-flex items-center gap-1 text-[10px] font-black font-mono" style="color:#1A1A1A"><span class="inline-block w-[6px] h-[6px] rounded-full" style="background:#8A8680"></span>日100MA ${fmt(marketLightCache.ma100Now)}</span>\n                </div>\n                <div id="taiex-chart-card-canvas" style="height: 320px; width: 100%; margin-top: 8px; border-radius: 14px; overflow: hidden; position: relative; background:#FFFFFF; border:1.5px solid #1A1A1A"></div>\n                                ${t ? `<div class="mt-2 pt-2 flex items-center justify-between flex-wrap gap-x-3 gap-y-1 text-[11px] font-mono font-black tabular-nums" style="border-top:1.5px solid #E3E1DA;color:#8A8680">\n                    <span style="color:#B8B0A0">${t.time}</span>\n                    <span>開 <b style="color:#1A1A1A">${fmt(t.open)}</b></span>\n                    <span>高 <b style="color:#1A1A1A">${fmt(t.high)}</b></span>\n                    <span>低 <b style="color:#1A1A1A">${fmt(t.low)}</b></span>\n                    <span>收 <b style="color:#1A1A1A">${fmt(t.close)}</b></span>\n                </div>` : ""}\n            </div>`),
         renderTaiexTrendChart("taiex-chart-card-canvas"));
 }
 async function fetchMarginBalance() {
