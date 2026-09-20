@@ -8718,7 +8718,7 @@ function renderMarketLight() {
                   return `<div class="mt-3 pt-2.5 flex items-center gap-2 flex-wrap" style="border-top:1.5px dashed rgba(26,26,26,.2)">\n                    <span class="text-[11px] font-bold" style="color:#8A8A8A">即時報價</span>\n                    <span class="font-mono font-black text-[12px] px-2.5 py-0.5 rounded-full" style="background:${e >= 0 ? "#FFD6E0" : "#D6FFE8"};border:1px solid #1A1A1A;color:${e >= 0 ? "#B4232A" : "#0A7A4A"}">${fmt(i.price)}${null !== e ? ` ${a}${fmt(e)}(${a}${t.toFixed(2)}%)` : ""}</span>\n                    <span class="text-[10px] font-bold" style="color:#8A8A8A">${s}更新</span>\n                </div>`;
               })()
             : '<div class="mt-3 pt-2.5 text-[11px] font-bold" style="border-top:1.5px dashed rgba(26,26,26,.2);color:#8A8A8A">即時報價暫時抓不到，只能看下面的收盤計算基準</div>';
-    ((n.innerHTML = `\n                <div class="rounded-full px-4 py-3 flex items-center gap-3 mb-4" style="background:${s.bg};border:1.5px solid #1A1A1A;box-shadow:0 1px 2px rgba(26,26,24,.08)">\n                    <span class="w-8 h-8 rounded-full flex items-center justify-center shrink-0 animate-pulse" style="background:${s.dot};border:1.5px solid #1A1A1A"></span>\n                    <div class="min-w-0">\n                        <div class="text-[16px] font-black leading-tight" style="color:${s.text}">${s.fullLabel || s.label}</div>\n                        <div class="text-[13px] font-bold mt-0.5" style="color:#5A5753">${s.alloc}</div>\n                    </div>\n                </div>\n                <div class="rounded-[16px] p-4 mb-4" style="background:#F8F6F0;border:1.5px solid #1A1A1A;box-shadow:0 1px 2px rgba(26,26,24,.08)">\n                    <div class="text-[12px] font-black font-mono mb-2" style="color:#1A1A1A">${marketLightCache.usedProxy ? "0050(代理)" : "加權指數"}(收盤基準)：${fmt(marketLightCache.closeNow)}</div>\n                    <div class="flex items-center gap-3 flex-wrap text-[11px] font-black font-mono" style="color:#1A1A1A">\n                        <span class="inline-flex items-center gap-1"><span class="inline-block w-2 h-2 rounded-full" style="background:#3B82F6"></span>日MA ${fmt(marketLightCache.ma20Now)}</span>\n                        <span class="inline-flex items-center gap-1"><span class="inline-block w-2 h-2 rounded-full border-[1.5px] border-black" style="background:#F59E0B"></span>日100MA ${fmt(marketLightCache.ma100Now)}</span>\n                    </div>\n                    ${r}\n                    <div id="taiex-mini-chart" style="height: 180px; width: 100%; margin-top: 12px; border-radius: 16px; overflow: hidden; position: relative; background:#FFFEF5;" class="border-[2.5px] border-black"></div>\n                    <div class="mt-1.5 text-[10px] font-bold" style="color:#8A8A8A">資料來源：${marketLightCache.source}</div>\n                    ${o}\n                    ${l}\n                </div>\n                <div class="mt-3 rounded-[16px] p-4" style="background:#E8F0FF;border:2px solid rgba(26,26,26,.1)">\n                    <div class="flex items-center gap-1.5 font-black text-[13px] mb-1.5" style="color:#1A1A1A"><i data-lucide="waves" class="w-3.5 h-3.5"></i> 洋流：長線趨勢</div>\n                    <p class="text-[12px] font-bold" style="color:#5A5753">用日MA、日100MA判斷大盤長線多空方向，不受單日波動影響。</p>\n                </div>\n                <div class="mt-3 rounded-[20px] p-5 bg-white border-[2.5px] border-black shadow-[4px_4px_0_#000]">\n                    <div class="font-black text-[13px] mb-2.5" style="color:#1A1A1A">燈號說明</div>\n                    <div class="space-y-2">\n                        ${[
+    ((n.innerHTML = `\n                <div class="rounded-full px-4 py-3 flex items-center gap-3 mb-4" style="background:${s.bg};border:1.5px solid #1A1A1A;box-shadow:0 1px 2px rgba(26,26,24,.08)">\n                    <span class="w-8 h-8 rounded-full flex items-center justify-center shrink-0 animate-pulse" style="background:${s.dot};border:1.5px solid #1A1A1A"></span>\n                    <div class="min-w-0">\n                        <div class="text-[16px] font-black leading-tight" style="color:${s.text}">${s.fullLabel || s.label}</div>\n                        <div class="text-[13px] font-bold mt-0.5" style="color:#5A5753">${s.alloc}</div>\n                    </div>\n                </div>\n                <div class="rounded-[16px] p-4 mb-4" style="background:#F8F6F0;border:1.5px solid #1A1A1A;box-shadow:0 1px 2px rgba(26,26,24,.08)">\n                    <div class="text-[12px] font-black font-mono mb-2" style="color:#1A1A1A">${marketLightCache.usedProxy ? "0050(代理)" : "加權指數"}(收盤基準)：${fmt(marketLightCache.closeNow)}</div>\n                    <div class="flex items-center gap-3 flex-wrap text-[11px] font-black font-mono" style="color:#1A1A1A">\n                        <span class="inline-flex items-center gap-1"><span class="inline-block w-2 h-2 rounded-full" style="background:#1B4D6B"></span>日MA ${fmt(marketLightCache.ma20Now)}</span>\n                        <span class="inline-flex items-center gap-1"><span class="inline-block w-2 h-2 rounded-full" style="background:#4A2E85"></span>日100MA ${fmt(marketLightCache.ma100Now)}</span>\n                    </div>\n                    <div class="flex items-center gap-2.5 mt-1.5 flex-wrap text-[9.5px] font-bold" style="color:#8A8680"><span class="inline-flex items-center gap-1"><span class="inline-block w-2.5 h-2.5 rounded-[3px]" style="background:rgba(180,35,42,.35)"></span>多頭區</span><span class="inline-flex items-center gap-1"><span class="inline-block w-2.5 h-2.5 rounded-[3px]" style="background:rgba(138,134,128,.3)"></span>盤整區</span><span class="inline-flex items-center gap-1"><span class="inline-block w-2.5 h-2.5 rounded-[3px]" style="background:rgba(10,122,74,.35)"></span>空頭區</span></div>\n                    ${r}\n                    <div id="taiex-mini-chart" style="height: 180px; width: 100%; margin-top: 12px; border-radius: 14px; overflow: hidden; position: relative; background:#FFFFFF; border:1.5px solid #1A1A1A"></div>\n                    <div class="mt-1.5 text-[10px] font-bold" style="color:#8A8A8A">資料來源：${marketLightCache.source}</div>\n                    ${o}\n                    ${l}\n                </div>\n                <div class="mt-3 rounded-[16px] p-4" style="background:#E8F0FF;border:2px solid rgba(26,26,26,.1)">\n                    <div class="flex items-center gap-1.5 font-black text-[13px] mb-1.5" style="color:#1A1A1A"><i data-lucide="waves" class="w-3.5 h-3.5"></i> 洋流：長線趨勢</div>\n                    <p class="text-[12px] font-bold" style="color:#5A5753">用日MA、日100MA判斷大盤長線多空方向，不受單日波動影響。</p>\n                </div>\n                <div class="mt-3 rounded-card border-card border-ink shadow-hard bg-white p-5">\n                    <div class="font-black text-[13px] mb-2.5" style="color:#1A1A1A">燈號說明<span class="ml-1.5 text-[10px] font-bold" style="color:#8A8680">(👉標示目前所在的狀態)</span></div>\n                    <div class="space-y-2">\n                        ${[
         "red",
         "redyellow",
         "greenyellow",
@@ -8726,12 +8726,14 @@ function renderMarketLight() {
     ]
         .map((e) => {
             const t = a[e],
-                n = e === marketLightCache.state;
-            return `<div class="rounded-[12px] p-3" style="background:#FFFEF5;border:1.5px solid rgba(26,26,26,.1)">\n                                <div class="flex items-center justify-between gap-2">\n                                    <span class="flex items-center gap-1.5 min-w-0"><span class="w-2 h-2 rounded-full shrink-0" style="background:${t.dot};border:1px solid #1A1A1A"></span><span class="text-[13px] font-black truncate" style="color:#1A1A1A">${t.emoji} ${t.fullLabel || t.label}</span></span>\n                                    <span class="text-[10px] font-mono font-black px-2.5 py-1 rounded-full shrink-0" style="background:#1A1A1A;color:#fff">${t.alloc}</span>\n                                </div>\n                                ${t.desc ? `<div class="mt-2 rounded-[10px] p-2.5 text-[11px] font-bold leading-relaxed" style="background:#F8F6F0;border:1.5px dashed rgba(26,26,26,.25);color:#5A5753">${t.desc}</div>` : ""}\n                            </div>`;
+                // 【2026-09-20修正：這個布林值原本就有算，但沒有被用在畫面上】她說要看這份燈號說明
+                // 對照目前實際在哪個狀態，之前只是內部算好卻沒畫出來，現在真的拿來標示「目前狀態」。
+                isCurrent = e === marketLightCache.state;
+            return `<div class="rounded-[12px] p-3" style="background:${isCurrent ? t.bg : "#FAFAF8"};border:${isCurrent ? `2px solid ${t.text}` : "1.5px solid #E3E1DA"}">\n                                <div class="flex items-center justify-between gap-2">\n                                    <span class="flex items-center gap-1.5 min-w-0 flex-wrap">\n                                        <span class="w-2 h-2 rounded-full shrink-0" style="background:${t.dot};border:1px solid #1A1A1A"></span>\n                                        <span class="text-[13px] font-black truncate" style="color:#1A1A1A">${t.emoji} ${t.fullLabel || t.label}</span>\n                                        ${isCurrent ? `<span class="text-[9.5px] font-black px-2 py-0.5 rounded-full shrink-0" style="background:#1A1A1A;color:#D6FF5C">👉 目前狀態</span>` : ""}\n                                    </span>\n                                    <span class="text-[10px] font-mono font-black px-2.5 py-1 rounded-full shrink-0" style="background:#1A1A1A;color:#fff">${t.alloc}</span>\n                                </div>\n                                ${t.desc ? `<div class="mt-2 rounded-[10px] p-2.5 text-[11px] font-bold leading-relaxed" style="background:rgba(255,255,255,.6);border:1.5px dashed rgba(26,26,26,.2);color:#5A5753">${t.desc}</div>` : ""}\n                            </div>`;
         })
         .join(
             "",
-        )}\n                    </div>\n                </div>\n                <p class="text-[11px] font-bold mt-3 leading-relaxed" style="color:#8A8A8A">同在均線上方=多頭、同在下方=空頭，中間為過渡狀態；燈號固定用收盤價計算，即時報價僅供參考。</p>\n                <button id="market-light-retry" class="mt-3 w-full font-black py-2.5 text-[13px] transition flex items-center justify-center gap-1.5" style="background:#F0F0F0;color:#1A1A1A;border:1.5px solid #1A1A1A;border-radius:999px;box-shadow:0 2px 6px rgba(26,26,24,.08)"><i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> 重新計算</button>`),
+        )}\n                    </div>\n                </div>\n                <p class="text-[11px] font-bold mt-3 leading-relaxed" style="color:#8A8680">同在均線上方=多頭、同在下方=空頭，中間為過渡狀態；燈號固定用收盤價計算，即時報價僅供參考。</p>\n                <button id="market-light-retry" class="mt-3 w-full font-black py-2.5 text-[13px] transition flex items-center justify-center gap-1.5" style="background:#F0F0F0;color:#1A1A1A;border:1.5px solid #1A1A1A;border-radius:999px;box-shadow:0 2px 6px rgba(26,26,24,.08)"><i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> 重新計算</button>`),
         safeLucideIcons({ root: n }),
         document.getElementById("market-light-retry").addEventListener("click", () => {
             loadMarketLight();
@@ -8931,17 +8933,18 @@ function renderTaiexTrendChart(e) {
         }),
         // 【2026-09-20重新設計：收斂配色】原本「價格區域(藍色漸層)+MA20(藍色虛線)+MA100(橘色實線)+
         // 另外再用canvas畫一層MA20~MA100中間的橘色填色」四層疊在一起，才是畫面看起來很雜亂混濁的
-        // 主因。改成單一系統：價格用極淡的墨色區域(幾乎看不到，只是襯托線條用)、MA20用藍色實線、
-        // MA100用中性灰實線，兩條參考線用顏色深淺分主次，不再疊加填色區塊。
+        // 主因，先改成全部同一色階(墨色+藍+灰)但她回饋「顏色太單調」。改成三個各自獨立的顏色、
+        // 但都取自她既有的收斂配色系統(紅＝台股慣例的多頭/價格本色、藍＝籌碼類參考線、
+        // 紫＝估值/長線參考線)，不是隨便加色，是沿用她已經定義好的色系分派到不同用途。
         a = n.addAreaSeries({
-            lineColor: "#1A1A1A",
-            topColor: "rgba(26, 26, 24, 0.06)",
-            bottomColor: "rgba(26, 26, 24, 0)",
-            lineWidth: 2,
+            lineColor: "#B4232A",
+            topColor: "rgba(180, 35, 42, 0.14)",
+            bottomColor: "rgba(180, 35, 42, 0)",
+            lineWidth: 2.2,
             crosshairMarkerVisible: !0,
             crosshairMarkerRadius: 4,
             crosshairMarkerBorderColor: "#1A1A1A",
-            crosshairMarkerBackgroundColor: "#1A1A1A",
+            crosshairMarkerBackgroundColor: "#B4232A",
             priceLineVisible: !1,
             lastValueVisible: !1,
         }),
@@ -8953,7 +8956,7 @@ function renderTaiexTrendChart(e) {
             lastValueVisible: !1,
         }),
         o = n.addLineSeries({
-            color: "#8A8680",
+            color: "#4A2E85",
             lineWidth: 2,
             lineStyle: LightweightCharts.LineStyle.Dashed,
             crosshairMarkerVisible: !1,
@@ -9018,10 +9021,60 @@ function renderTaiexTrendChart(e) {
             (pill.style.color = color),
             pill.classList.remove("hidden"));
     })();
-    // 【2026-09-20移除：原本這裡用一個額外的canvas圖層，把MA20~MA100中間填橘色、
-    // 再把兩條線重畫一次——跟上面LightweightCharts原生畫的線疊在一起，是造成畫面
-    // 混濁模糊的主因。MA20/MA100線本身LightweightCharts原生就會畫(上面的s/o兩個
-    // line series)，不需要再疊一層canvas，拿掉之後畫面乾淨很多，resize邏輯也單純很多。
+    // 【2026-09-20新增：多頭區/盤整區/空頭區背景】她要圖上直接標出這三個分類。沿用跟大盤燈號
+    // 彈窗同一套色系(紅＝多頭、灰＝盤整、綠＝空頭)：收盤價同時站上日MA20、日100MA之上算多頭區，
+    // 同時跌破兩條均線算空頭區，介於中間(只站上其中一條)算盤整區。用獨立的背景canvas畫，插到
+    // chart容器最前面(DOM順序排在LightweightCharts自己畫的canvas之前)，因為上面chart的
+    // layout.background設定是transparent，背景色才透得出來、不會擋住價格線。
+    const zoneCanvas = document.createElement("canvas");
+    (zoneCanvas.style.position = "absolute"),
+        (zoneCanvas.style.left = "0"),
+        (zoneCanvas.style.top = "0"),
+        (zoneCanvas.style.pointerEvents = "none"),
+        t.insertBefore(zoneCanvas, t.firstChild);
+    const zoneColorMap = { bull: "rgba(180, 35, 42, 0.07)", bear: "rgba(10, 122, 74, 0.07)", mixed: "rgba(138, 134, 128, 0.05)" };
+    function zoneOf(idx) {
+        const close = l[idx] ? l[idx].close : null,
+            ma20v = i[idx],
+            ma100v = r[idx];
+        if (null === close || null === ma20v || null === ma100v) return null;
+        if (close > ma20v && close > ma100v) return "bull";
+        if (close < ma20v && close < ma100v) return "bear";
+        return "mixed";
+    }
+    function drawZones() {
+        const w = t.clientWidth,
+            hgt = t.clientHeight;
+        if (!w || !hgt) return;
+        const dpr = window.devicePixelRatio || 1;
+        ((zoneCanvas.width = w * dpr),
+            (zoneCanvas.height = hgt * dpr),
+            (zoneCanvas.style.width = w + "px"),
+            (zoneCanvas.style.height = hgt + "px"));
+        const ctx = zoneCanvas.getContext("2d");
+        (ctx.setTransform(dpr, 0, 0, dpr, 0, 0), ctx.clearRect(0, 0, w, hgt));
+        let barW = 6;
+        if (l.length > c + 1) {
+            const x0 = n.timeScale().timeToCoordinate(l[c].time),
+                x1 = n.timeScale().timeToCoordinate(l[c + 1].time);
+            null !== x0 && null !== x1 && (barW = Math.abs(x1 - x0));
+        }
+        let segStart = c,
+            segZone = zoneOf(c);
+        for (let idx = c + 1; idx <= l.length; idx++) {
+            const zn = idx < l.length ? zoneOf(idx) : null;
+            if (zn !== segZone) {
+                if (segZone) {
+                    const xStart = n.timeScale().timeToCoordinate(l[segStart].time),
+                        xEnd = n.timeScale().timeToCoordinate(l[idx - 1].time);
+                    null !== xStart &&
+                        null !== xEnd &&
+                        ((ctx.fillStyle = zoneColorMap[segZone]), ctx.fillRect(xStart - barW / 2, 0, xEnd - xStart + barW, hgt));
+                }
+                ((segStart = idx), (segZone = zn));
+            }
+        }
+    }
     let y = !1,
         x = 0,
         b = 0;
@@ -9033,7 +9086,8 @@ function renderTaiexTrendChart(e) {
             ((x = a),
             (b = s),
             n.applyOptions({ width: a, height: s }),
-            y || (n.timeScale().fitContent(), (y = !0)));
+            y || (n.timeScale().fitContent(), (y = !0)),
+            requestAnimationFrame(drawZones));
     }).observe(t);
 }
 function renderTaiexChartCard() {
@@ -9043,7 +9097,7 @@ function renderTaiexChartCard() {
         return void (e.innerHTML =
             '<div class="rounded-card border-card border-ink shadow-hard bg-white p-4"><div class="ocean-loader" aria-label="載入中"></div></div>');
     const t = marketLightCache.historyData[marketLightCache.historyData.length - 1];
-    ((e.innerHTML = `<div class="rounded-card border-card border-ink shadow-hard bg-white p-4 overflow-hidden">\n                <div class="flex items-center justify-between gap-2 flex-wrap">\n                    <span class="text-[14px] font-black flex items-center gap-1.5" style="color:#1A1A1A">日線趨勢 · 日MA / 100MA<span id="taiex-volume-pill" class="hidden text-[9.5px] font-black px-2 py-[3px] rounded-pill" style="border:1px solid #1A1A1A" title=""></span></span>\n                    <button id="taiex-chart-card-open-btn" type="button" class="shrink-0 flex items-center gap-1 text-[10px] font-black px-3 py-1.5 rounded-full transition active:translate-y-[1px]" style="background:#1A1A1A;border:1.5px solid #1A1A1A;color:#D6FF5C" title="看完整加權指數頁面(日K/週K/月K)"><span class="w-1.5 h-1.5 rounded-full inline-block" style="background:#D6FF5C"></span>詳細</button>\n                </div>\n                <div class="flex items-center justify-between gap-2 mt-1"><span class="text-[10px] font-bold" style="color:#8A8680">資料來源：${marketLightCache.usedProxy ? "0050(代理)" : "Yahoo Finance(^TWII)"}</span></div>\n                <div class="flex items-center gap-3 mt-1.5 flex-wrap">\n                    <span class="inline-flex items-center gap-1 text-[10px] font-black font-mono" style="color:#1A1A1A"><span class="inline-block w-[6px] h-[6px] rounded-full" style="background:#1B4D6B"></span>日MA(20) ${fmt(marketLightCache.ma20Now)}</span>\n                    <span class="inline-flex items-center gap-1 text-[10px] font-black font-mono" style="color:#1A1A1A"><span class="inline-block w-[6px] h-[6px] rounded-full" style="background:#8A8680"></span>日100MA ${fmt(marketLightCache.ma100Now)}</span>\n                </div>\n                <div id="taiex-chart-card-canvas" style="height: 320px; width: 100%; margin-top: 8px; border-radius: 14px; overflow: hidden; position: relative; background:#FFFFFF; border:1.5px solid #1A1A1A"></div>\n                                ${t ? `<div class="mt-2 pt-2 flex items-center justify-between flex-wrap gap-x-3 gap-y-1 text-[11px] font-mono font-black tabular-nums" style="border-top:1.5px solid #E3E1DA;color:#8A8680">\n                    <span style="color:#B8B0A0">${t.time}</span>\n                    <span>開 <b style="color:#1A1A1A">${fmt(t.open)}</b></span>\n                    <span>高 <b style="color:#1A1A1A">${fmt(t.high)}</b></span>\n                    <span>低 <b style="color:#1A1A1A">${fmt(t.low)}</b></span>\n                    <span>收 <b style="color:#1A1A1A">${fmt(t.close)}</b></span>\n                </div>` : ""}\n            </div>`),
+    ((e.innerHTML = `<div class="rounded-card border-card border-ink shadow-hard bg-white p-4 overflow-hidden">\n                <div class="flex items-center justify-between gap-2 flex-wrap">\n                    <span class="text-[14px] font-black flex items-center gap-1.5" style="color:#1A1A1A">日線趨勢 · 日MA / 100MA<span id="taiex-volume-pill" class="hidden text-[9.5px] font-black px-2 py-[3px] rounded-pill" style="border:1px solid #1A1A1A" title=""></span></span>\n                    <button id="taiex-chart-card-open-btn" type="button" class="shrink-0 flex items-center gap-1 text-[10px] font-black px-3 py-1.5 rounded-full transition active:translate-y-[1px]" style="background:#1A1A1A;border:1.5px solid #1A1A1A;color:#D6FF5C" title="看完整加權指數頁面(日K/週K/月K)"><span class="w-1.5 h-1.5 rounded-full inline-block" style="background:#D6FF5C"></span>詳細</button>\n                </div>\n                <div class="flex items-center justify-between gap-2 mt-1"><span class="text-[10px] font-bold" style="color:#8A8680">資料來源：${marketLightCache.usedProxy ? "0050(代理)" : "Yahoo Finance(^TWII)"}</span></div>\n                <div class="flex items-center gap-3 mt-1.5 flex-wrap">\n                    <span class="inline-flex items-center gap-1 text-[10px] font-black font-mono" style="color:#1A1A1A"><span class="inline-block w-[6px] h-[6px] rounded-full" style="background:#1B4D6B"></span>日MA(20) ${fmt(marketLightCache.ma20Now)}</span>\n                    <span class="inline-flex items-center gap-1 text-[10px] font-black font-mono" style="color:#1A1A1A"><span class="inline-block w-[6px] h-[6px] rounded-full" style="background:#4A2E85"></span>日100MA ${fmt(marketLightCache.ma100Now)}</span>\n                </div>\n                <div class="flex items-center gap-2.5 mt-1 flex-wrap text-[9.5px] font-bold" style="color:#8A8680"><span class="inline-flex items-center gap-1"><span class="inline-block w-2.5 h-2.5 rounded-[3px]" style="background:rgba(180,35,42,.35)"></span>多頭區</span><span class="inline-flex items-center gap-1"><span class="inline-block w-2.5 h-2.5 rounded-[3px]" style="background:rgba(138,134,128,.3)"></span>盤整區</span><span class="inline-flex items-center gap-1"><span class="inline-block w-2.5 h-2.5 rounded-[3px]" style="background:rgba(10,122,74,.35)"></span>空頭區</span></div>\n                <div id="taiex-chart-card-canvas" style="height: 320px; width: 100%; margin-top: 8px; border-radius: 14px; overflow: hidden; position: relative; background:#FFFFFF; border:1.5px solid #1A1A1A"></div>\n                                ${t ? `<div class="mt-2 pt-2 flex items-center justify-between flex-wrap gap-x-3 gap-y-1 text-[11px] font-mono font-black tabular-nums" style="border-top:1.5px solid #E3E1DA;color:#8A8680">\n                    <span style="color:#B8B0A0">${t.time}</span>\n                    <span>開 <b style="color:#1A1A1A">${fmt(t.open)}</b></span>\n                    <span>高 <b style="color:#1A1A1A">${fmt(t.high)}</b></span>\n                    <span>低 <b style="color:#1A1A1A">${fmt(t.low)}</b></span>\n                    <span>收 <b style="color:#1A1A1A">${fmt(t.close)}</b></span>\n                </div>` : ""}\n            </div>`),
         renderTaiexTrendChart("taiex-chart-card-canvas"));
 }
 async function fetchMarginBalance() {
