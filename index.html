@@ -748,7 +748,7 @@ html:not(#_p1):not(#_p2) :is(#panel-daily,#panel-weekly) .ct-stock-actions{posit
 html:not(#_p1):not(#_p2) :is(#panel-daily,#panel-weekly) .chart-floating-card{margin:6px 0 0!important;padding:4px 20px 10px!important;background:#FFFFFF!important;border:0!important;box-shadow:none!important;border-radius:0!important}
 html:not(#_p1):not(#_p2) :is(#daily-title,#weekly-title){display:flex!important;flex-wrap:wrap!important;align-items:baseline!important;gap:2px 10px!important;font-family:inherit!important;font-weight:400!important}
 html:not(#_p1):not(#_p2) :is(#daily-title,#weekly-title)>span:first-child{flex-basis:100%;font-size:15px!important;color:#5B6470!important;font-weight:400!important;font-family:inherit!important;letter-spacing:0}
-html:not(#_p1):not(#_p2) :is(#daily-title,#weekly-title)>span:nth-child(2){font-size:34px!important;line-height:1.15;font-weight:500!important;color:#111418!important;margin-left:0!important;font-family:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace!important;background:none!important;box-shadow:none!important}
+html:not(#_p1):not(#_p2) :is(#daily-title,#weekly-title)>span:nth-child(2){font-size:34px!important;line-height:1.15;font-weight:500!important;margin-left:0!important;font-family:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace!important;background:none!important;box-shadow:none!important}
 html:not(#_p1):not(#_p2) :is(#daily-title,#weekly-title)>span:nth-child(n+3){display:none!important}
 html:not(#_p1):not(#_p2) :is(#daily-subtitle,#weekly-subtitle){font-size:13px!important;font-weight:400!important;color:#5B6470!important;margin-top:2px}
 html:not(#_p1):not(#_p2) :is(#daily-subtitle,#weekly-subtitle)>span:first-child{font-size:15px;font-weight:500!important}
@@ -20487,6 +20487,18 @@ function wtApplyVolDayHighlight(e, t) {
 }
 function wtApplyQuote(e, t, n, a) {
     if (!e || !n) return;
+    // 【2026-10-03】盤後備援模式有時拿不到漲跌%，價格會變成黑色；改用日K最後兩根自己算，讓價格一律紅漲綠跌
+    if (!isFinite(n.changePct)) {
+        try {
+            const cands = [stockCache && stockCache[t], scanStockCache && scanStockCache[t]].filter((x) => x && x.length > 1);
+            cands.sort((x, y) => Math.abs(x[x.length - 1].close - n.price) - Math.abs(y[y.length - 1].close - n.price));
+            const bb = cands[0];
+            if (bb && bb.length > 1) {
+                const L = bb[bb.length - 1], P = bb[bb.length - 2], ref = isFinite(n.price) && n.price > 0 && Math.abs(n.price - L.close) / L.close > 0.001 ? L.close : P.close;
+                ref > 0 && (n = Object.assign({}, n, { changePct: ((n.price - ref) / ref) * 100 }));
+            }
+        } catch (err) {}
+    }
     // 記錄最新報價供排序使用(成交價/單日總量)
     (wtLastQuoteCache[t] = {
         price: isFinite(n.price) && n.price > 0 ? n.price : null,
@@ -31889,7 +31901,7 @@ document.readyState==="loading"?document.addEventListener("DOMContentLoaded",sta
             h += '<div class="sl-list">' + show.map(function (x) {
                 var r = x.fit, f = r.ft;
                 var dots = f.items.map(function (it) { return '<span class="sl-ft' + (it.ok ? " on" : "") + '">' + esc(it.short) + "</span>"; }).join("");
-                return '<div class="sl-row" role="button" tabindex="0" data-symbol="' + esc(x.sym) + '"><div class="sl-l1"><span class="sl-name">' + esc(x.label) + '</span><span class="ct-fit-tag" style="background:' + r.info.bg + ";color:" + r.info.fg + '">' + esc(r.info.t) + '</span><span class="sl-cnt">' + f.count + '/4</span></div><div class="sl-l2">' + dots + '</div><div class="sl-l3">' + (x.ws != null ? "週趨勢 " + x.ws + "/10・" : "") + "收盤 " + n2(r.m.close) + "・停損 週20MA " + n2(r.swing.stop) + "（-" + Math.max(0, r.swing.risk).toFixed(1) + "%）" + (r.m.volMult != null ? "・量 " + r.m.volMult.toFixed(1) + " 倍" : "") + "</div></div>";
+                return '<div class="sl-row" role="button" tabindex="0" data-symbol="' + esc(x.sym) + '"><div class="sl-l1"><span class="sl-name">' + esc(x.label) + '</span><span class="ct-fit-tag" style="background:' + r.info.bg + ";color:" + r.info.fg + '">' + esc(r.info.t) + '</span><span class="sl-cnt">' + f.count + '/4</span></div><div class="sl-l2">' + dots + '</div><div class="sl-l3">' + (x.ws != null ? "週趨勢 " + x.ws + "/10・" : "") + "收盤 <b style=\"color:" + (x.chg > 0 ? "#C62A22" : x.chg < 0 ? "#11804A" : "inherit") + "\">" + n2(r.m.close) + (x.chg != null ? "（" + (x.chg >= 0 ? "+" : "") + x.chg.toFixed(1) + "%）" : "") + "</b>" + "・停損 週20MA " + n2(r.swing.stop) + "（-" + Math.max(0, r.swing.risk).toFixed(1) + "%）" + (r.m.volMult != null ? "・量 " + r.m.volMult.toFixed(1) + " 倍" : "") + "</div></div>";
             }).join("") + "</div>";
             state.list.length > 8 && (h += '<button type="button" class="sl-more">' + (state.showAll ? "收合" : "看全部 " + state.list.length + " 檔") + "</button>");
             h += '<div class="sl-foot">' + (state.at ? state.at + " 從最近一次掃描的 " + state.total + " 檔中挑出。" : "") + "「等拉回」代表趨勢很強但離週20MA超過12%，先別追。</div>";
@@ -31912,7 +31924,7 @@ document.readyState==="loading"?document.addEventListener("DOMContentLoaded",sta
                 try {
                     var bars = window.ctStyleFitBars(r.symbol) || (f ? await f(r.symbol) : null);
                     var fit = bars && window.ctStyleFit ? window.ctStyleFit(bars, { sym: r.symbol, momentum: r.momentumScore }) : null;
-                    if (fit && fit.ft && (fit.label === "swing" || fit.label === "both" || fit.label === "far")) { var wsr = null; try { wsr = g("computeWeeklyMoatScore") ? computeWeeklyMoatScore(bars) : null; } catch (e2) {} out.push({ sym: r.symbol, label: lab ? lab(r.symbol) : r.symbol, fit: fit, ws: wsr && wsr.score != null ? wsr.score : null }); }
+                    if (fit && fit.ft && (fit.label === "swing" || fit.label === "both" || fit.label === "far")) { var wsr = null; try { wsr = g("computeWeeklyMoatScore") ? computeWeeklyMoatScore(bars) : null; } catch (e2) {} var chg = bars.length > 1 && bars[bars.length - 2].close ? (bars[bars.length - 1].close / bars[bars.length - 2].close - 1) * 100 : null; out.push({ sym: r.symbol, label: lab ? lab(r.symbol) : r.symbol, fit: fit, ws: wsr && wsr.score != null ? wsr.score : null, chg: chg }); }
                 } catch (e) {}
                 state.done++;
                 if (state.done % 10 === 0) { state.list = sortOut(out); render(); }
@@ -33138,7 +33150,7 @@ document.readyState==="loading"?document.addEventListener("DOMContentLoaded",sta
             h += '<div class="mh-list">' + results.map(function (r) {
                 var s = r.st ? STATUS[r.st] : { t: "—", bg: "#F1F2F4", fg: "#5B6470" };
                 var c = r.dayChg == null ? "#5B6470" : r.dayChg > 0 ? "#C62A22" : r.dayChg < 0 ? "#11804A" : "#5B6470";
-                return '<div class="mh-row" role="button" tabindex="0" data-symbol="' + esc(r.h.symbol) + '"><div class="mh-l1"><span class="mh-tag" style="background:' + s.bg + ";color:" + s.fg + '">' + s.t + '</span>' + styleTag(r.style) + '<span class="mh-name">' + esc(label(r.h.symbol)) + '</span><span class="mh-px">' + (r.st ? n2(r.price) : "") + '</span><span class="mh-chg" style="color:' + c + '">' + (r.st ? pct(r.dayChg) : "") + "</span></div>" +
+                return '<div class="mh-row" role="button" tabindex="0" data-symbol="' + esc(r.h.symbol) + '"><div class="mh-l1"><span class="mh-tag" style="background:' + s.bg + ";color:" + s.fg + '">' + s.t + '</span>' + styleTag(r.style) + '<span class="mh-name">' + esc(label(r.h.symbol)) + '</span><span class="mh-px" style="color:' + c + '">' + (r.st ? n2(r.price) : "") + '</span><span class="mh-chg" style="color:' + c + '">' + (r.st ? pct(r.dayChg) : "") + "</span></div>" +
                     '<div class="mh-l2">' + esc(r.reason) + (r.st ? "（持有 " + pct(r.pnl) + "）" : "") + "</div>" + '<div class="mh-l3row">' + (r.st ? '<span class="mh-l3">' + esc(r.levelsLine) + "</span>" : "<span></span>") + '<button type="button" class="mh-edit" data-id="' + esc(r.h.id) + '">編輯</button></div></div>';
             }).join("") + "</div>";
             var foot = ph.key === "pre" ? "盤前：用昨天收盤算出今天的防守價與目標價。" : ph.key === "live" ? (anyLive ? "盤中：用即時報價比對，每3分鐘自動更新；型態要等收盤才確認。" : "盤中：即時報價暫時抓不到，先用昨天收盤價。") : ph.key === "post" ? "盤後：用今天收盤重新計算，防守價與目標價是給下個交易日用的。" : "休市：顯示最近一個交易日的收盤狀態。";
@@ -33456,6 +33468,61 @@ document.readyState==="loading"?document.addEventListener("DOMContentLoaded",sta
         show(saved && panes.querySelector('[data-key="' + saved + '"]') ? saved : (panes.firstElementChild && panes.firstElementChild.dataset.key));
     }
     document.readyState === "loading" ? document.addEventListener("DOMContentLoaded", start) : start();
+})();
+</script>
+<script id="ct-login-guard">
+// 【2026-10-03】登入按鈕保險：獨立在最後面處理登入，不靠主程式那段初始化。
+// 之前如果開App時主程式前面任何一步出錯，登入按鈕就不會被綁定，按了會像「沒反應」。
+// 這裡在document最前面攔截登入表單送出，自己處理逾時、重試、錯誤訊息，處理完就不再交給舊的寫法。
+(function () {
+    var BASE = "https://tide-proxy.sa66344.workers.dev";
+    function save(tok) { try { sessionStorage.setItem("trend_auth_token", tok); } catch (e) {} try { localStorage.setItem("trend_auth_token", tok); } catch (e) {} }
+    function tf(url, ms, opts) {
+        if (typeof AbortController === "undefined") return Promise.race([fetch(url, opts), new Promise(function (_, rej) { setTimeout(function () { rej(new Error("連線逾時")); }, ms); })]);
+        var c = new AbortController(), tm = setTimeout(function () { c.abort(); }, ms);
+        return fetch(url, Object.assign({ cache: "no-store" }, opts, { signal: c.signal }))
+            .catch(function (err) { throw err && err.name === "AbortError" ? new Error("連線逾時") : err; })
+            .finally(function () { clearTimeout(tm); });
+    }
+    async function go(ev) {
+        var form = ev.target;
+        if (!form || form.id !== "login-form") return;
+        ev.preventDefault(); ev.stopImmediatePropagation();
+        var btn = document.getElementById("login-submit-btn"), err = document.getElementById("login-error"), inp = document.getElementById("login-password-input");
+        if (!btn || !inp || btn.dataset.busy === "1") return;
+        var pw = (inp.value || "").trim();
+        if (!pw) { if (err) { err.textContent = "請先輸入通行碼"; err.classList.remove("hidden"); } inp.focus(); return; }
+        var label = btn.innerHTML;
+        btn.dataset.busy = "1"; btn.disabled = true; btn.textContent = "登入中…";
+        err && err.classList.add("hidden");
+        try {
+            var res = null, last = null;
+            for (var k = 0; k < 2 && !res; k++) {
+                try { res = await tf(((typeof AUTH_BASE !== "undefined" && AUTH_BASE) || BASE) + "/login", 15000, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ password: pw }) }); }
+                catch (e1) { last = e1; if (k === 0) btn.textContent = "連線較慢，再試一次…"; }
+            }
+            if (!res) throw last || new Error("連線失敗");
+            var data; try { data = await res.json(); } catch (e2) { throw new Error("伺服器回應異常(HTTP " + res.status + ")"); }
+            if (!(data && data.ok && data.token)) {
+                if (err) { err.textContent = (data && data.error) || "通行碼不對，請再試一次"; err.classList.remove("hidden"); }
+                return;
+            }
+            save(data.token);
+            try { data.vip && typeof setVipUnlocked === "function" && setVipUnlocked(); } catch (e3) {}
+            inp.value = "";
+            var ls = document.getElementById("login-screen"); ls && ls.classList.add("hidden");
+            try { typeof applyVipUiState === "function" && applyVipUiState(); } catch (e4) {}
+            try { typeof syncForeignChipsToServer === "function" && syncForeignChipsToServer().then(function () { typeof loadForeignStreakSection === "function" && loadForeignStreakSection(); }); } catch (e5) {}
+        } catch (e) {
+            if (err) {
+                err.textContent = /逾時/.test(e && e.message) ? "伺服器太久沒有回應，請再按一次登入；一直這樣的話，稍等一兩分鐘再試" : "登入失敗：" + ((e && e.message) || "連線問題") + "，請檢查網路後再試一次";
+                err.classList.remove("hidden");
+            }
+        } finally {
+            btn.dataset.busy = ""; btn.disabled = false; btn.innerHTML = label;
+        }
+    }
+    document.addEventListener("submit", go, true);
 })();
 </script>
 </body></html>
