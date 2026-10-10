@@ -1981,7 +1981,7 @@ html:not(#_l1):not(#_l2) body #login-screen div:has(>[data-target="login-news-bo
 
 <div><div class="text-[11px] font-black mb-1.5" style="color:#1A1A1A">重點提醒</div><div class="space-y-1"><div class="flex items-start gap-1.5"><span class="w-2.5 h-2.5 rounded-full shrink-0 mt-1" style="background:#FFD6E0;border:1px solid #1A1A1A"></span><p class="text-[11px] leading-relaxed font-bold" style="color:#1A1A1A">進度條與燈號僅供參考，實際訊號以下方卡片條件文字（✓/○）為準。</p></div><div class="flex items-start gap-1.5"><span class="w-2.5 h-2.5 rounded-full shrink-0 mt-1" style="background:#FFD6E0;border:1px solid #1A1A1A"></span><p class="text-[11px] leading-relaxed font-bold" style="color:#1A1A1A">卡片右上角出現「🚨 警訊降級」代表這檔有降級警示，點擊可查看原因。</p></div></div></div>
 
-</div></div><div class="flex gap-2 p-1 rounded-full mb-4" style="background:#F8F6F0;border:1.5px solid #1A1A1A"><button id="aqua-watch-mode-daily" class="aqua-watch-mode-btn flex-1 text-xs py-1.5 rounded-full font-black transition-all" data-mode="daily" style="background:#1A1A1A;color:#D6FF5C">短線動能 (日)</button> <button id="aqua-watch-mode-weekly" class="aqua-watch-mode-btn flex-1 text-xs py-1.5 rounded-full font-bold transition-all" data-mode="weekly" style="color:#1A1A1A">長線波段 (週)</button></div><div class="grid grid-cols-[1fr_auto] gap-2 mb-4"><input id="aqua-watch-symbol-input" type="text" placeholder="輸入代號加入觀測" class="w-full text-black px-3 py-2.5 text-[13px] font-black outline-none" style="background:#FFFEF5;border:1.5px solid #1A1A1A;border-radius:14px;box-shadow:0 1px 2px rgba(26,26,24,.08)"> <button id="aqua-watch-add-btn" class="shrink-0 px-4 py-2.5 text-sm font-black transition flex items-center gap-1.5" style="background:#1A1A1A;color:#D6FF5C;border:1.5px solid #1A1A1A;border-radius:14px;box-shadow:0 1px 2px rgba(26,26,24,.08)"><i data-lucide="plus" class="w-4 h-4"></i></button></div><div id="aqua-watch-grid" class="hidden grid grid-cols-4 gap-2 mb-4"></div><div id="aqua-watch-list" class="space-y-3"></div></section><section id="aqua-section-xiaojiu" class="hidden glass-panel p-5"><div class="flex items-center justify-between mb-3"><h3 class="font-black text-[16px] flex items-center gap-2" style="color:#1A1A1A"><span class="w-7 h-7 rounded-full bg-white border-2 flex items-center justify-center" style="border-color:#1A1A1A"><i data-lucide="sprout" class="w-3.5 h-3.5" style="color:#1A1A1A"></i></span> 魚小韭</h3><div class="flex items-center gap-2"><button id="xiaojiu-settings-open-btn" class="w-9 h-9 rounded-full bg-white flex items-center justify-center transition shrink-0" style="border:1.5px solid #1A1A1A" title="魚小韭設定"><i data-lucide="settings-2" class="w-4 h-4" style="color:#1A1A1A"></i></button> <button id="aqua-xiaojiu-refresh-btn" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full transition text-[11.5px] font-black" style="background:#FFE66D;border:1.5px solid #1A1A1A;color:#1A1A1A;box-shadow:0 1px 2px rgba(26,26,24,.08)" title="重新抓取持股現價與防守線"><i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> 資訊重整</button></div></div><div id="xiaojiu-lock-gate" class="text-center py-8"><div class="w-12 h-12 mx-auto rounded-full bg-white border-2 flex items-center justify-center mb-2" style="border-color:#1A1A1A"><i data-lucide="lock" class="w-5 h-5" style="color:#1A1A1A"></i></div><p class="font-black text-sm mb-1" style="color:#1A1A1A">魚小韭已上鎖</p><p class="text-[11px] font-bold mb-4" style="color:#5A5753">輸入密碼才能查看/操作這個頁面</p><form id="xiaojiu-lock-form" class="max-w-[220px] mx-auto space-y-2"><input type="password" id="xiaojiu-lock-input" placeholder="密碼" autocomplete="current-password" class="w-full text-black px-3 py-2.5 text-sm text-center font-black outline-none" style="background:#FFFEF5;border:1.5px solid #1A1A1A;border-radius:14px;box-shadow:0 1px 2px rgba(26,26,24,.08)"> <button type="submit" id="xiaojiu-lock-submit" class="w-full font-black py-2.5 text-sm transition" style="background:#1A1A1A;color:#D6FF5C;border:1.5px solid #1A1A1A;border-radius:999px;box-shadow:0 2px 6px rgba(26,26,24,.08)">解鎖</button><p id="xiaojiu-lock-error" class="hidden text-[11px] font-bold" style="color:#C8553D"></p></form></div><div id="xiaojiu-main-view" class="hidden"><div id="xiaojiu-strategy-window" class="rounded-[20px] p-4 mb-3" style="background:#0F1A2A;border:2px solid #1A1A1A;box-shadow:0 4px 16px rgba(26,26,24,.10)"><div class="flex items-center gap-2 mb-3"><i data-lucide="compass" class="w-4 h-4" style="color:#D6FF5C"></i><span class="font-black text-[14px] text-white">戰略視窗</span></div><div id="xiaojiu-strategy-blind-buy" class="mb-2"></div><div id="xiaojiu-strategy-exit-warnings"></div></div><div id="xiaojiu-settle-banner" class="mb-2 rounded-[14px] px-3 py-2 text-[11px] font-bold leading-relaxed" style="background:#F8F6F0;border:1px solid #1A1A1A;color:#1A1A1A">尚未進行日結</div><div class="rounded-[20px] p-5 mb-3 relative overflow-hidden" style="background:#0F1A2A;border:2px solid #1A1A1A;box-shadow:0 4px 16px rgba(26,26,24,.10)"><div class="absolute left-0 top-0 bottom-0 w-1" style="background:#D6FF5C"></div><div class="flex justify-between items-start mb-5 relative z-10"><div><div class="text-[10px] font-black mb-1 tracking-widest flex items-center gap-1.5" style="color:#9AB0C8"><span class="w-1.5 h-1.5 rounded-full animate-pulse" style="background:#00FF88"></span>總資產 (現金 + 市值)</div><div id="xiaojiu-total-val" class="text-[32px] font-black text-white font-mono tracking-tight inline-block" style="border-bottom:4px solid #D6FF5C">--</div><div id="xiaojiu-principal-line" class="text-[11.5px] font-bold mt-2 font-mono" style="color:#C9D6E3"></div></div><button id="xiaojiu-cash-adjust-open-btn" class="w-9 h-9 rounded-full flex items-center justify-center transition shrink-0" style="background:rgba(255,255,255,.1);border:2px solid rgba(255,255,255,.2)" title="現金增減(存入或提領本金，不綁定特定持股)"><i data-lucide="coins" class="w-4 h-4" style="color:#D6FF5C"></i></button></div><div class="grid grid-cols-3 gap-3 relative z-10 pt-4" style="border-top:1px solid rgba(255,255,255,.1)"><div><div class="text-[10px] font-bold mb-0.5" style="color:#9AB0C8">可用現金</div><div id="xiaojiu-cash-val" class="text-[15px] font-black text-white font-mono">--</div></div><div><div class="text-[10px] font-bold mb-0.5" style="color:#9AB0C8">勝率</div><div id="xiaojiu-winrate-val" class="text-[15px] font-black font-mono" style="color:#FFFFFF">--</div><div id="xiaojiu-winrate-sub" class="text-[9.5px] font-bold mt-0.5" style="color:#9AB0C8"></div></div><div><div class="text-[10px] font-bold mb-0.5" style="color:#9AB0C8">觸發次數</div><div id="xiaojiu-trades-val" class="text-[15px] font-black font-mono" style="color:#D6FF5C">--</div></div></div><div class="grid grid-cols-2 gap-3 relative z-10 pt-3 mt-3" style="border-top:1px solid rgba(255,255,255,.1)"><div><div class="text-[10px] font-bold mb-0.5" style="color:#9AB0C8">已實現損益</div><div id="xiaojiu-realized-val" class="text-[15px] font-black font-mono" style="color:#9AB0C8">--</div></div><div><div class="text-[10px] font-bold mb-0.5" style="color:#9AB0C8">未實現損益</div><div id="xiaojiu-unrealized-val" class="text-[15px] font-black font-mono" style="color:#9AB0C8">--</div></div></div><p id="xiaojiu-recon-note" class="hidden text-[10.5px] font-bold leading-relaxed relative z-10 mt-2.5 rounded-[10px] px-2.5 py-1.5" style="color:#FFE7A3;background:rgba(255,231,163,.08);border:1px solid rgba(255,231,163,.3)"></p><p class="text-[9.5px] font-bold leading-relaxed relative z-10 mt-2.5" style="color:#6B7F94">勝率只算「已出場」的次數，這套策略是嚴設停損、盈虧比取勝，出場大多是停損觸發，勝率天生會偏低——已實現/未實現損益的實際金額跟%數，比單看勝率更能反映真正績效。</p></div><div class="tide-card mb-3" style="background:#FFFFFF;border:1.5px solid #1A1A1A;border-radius:16px;box-shadow:0 1px 2px rgba(26,26,24,.08)"><button class="collapse-toggle w-full flex justify-between items-center p-3.5 text-left" data-target="xiaojiu-rule-info-body"><h3 class="font-black text-[14px] flex items-center gap-2" style="color:#1A1A1A"><i data-lucide="shield-alert" class="w-4 h-4" style="color:#1A1A1A"></i> 運作規則說明</h3><span class="chevron shrink-0 w-7 h-7 rounded-full bg-white border-2 flex items-center justify-center" style="border-color:#1A1A1A;color:#1A1A1A"><i data-lucide="chevron-down" class="chevron-icon w-4 h-4"></i></span></button><div id="xiaojiu-rule-info-body" class="hidden px-3.5 pb-3.5 space-y-2.5"><div class="pl-3" style="border-left:3px solid #9A9A9A"><div class="font-black text-[12.5px] mb-1" style="color:#1A1A1A">🐟 運作原理</div><div class="text-[12px] leading-relaxed font-bold" style="color:#5A5753">魚小韭是純規則的自動模擬驗證工具，依據每日17:30後的鯨魚雷達分數進行部位替換與資金分配，不是AI在幫妳決定。</div></div><div class="pl-3" style="border-left:3px solid #E53935"><div class="font-black text-[12.5px] mb-1" style="color:#1A1A1A">🛡️ 智能防禦機制</div><div class="text-[12px] leading-relaxed font-bold" style="color:#5A5753">當美股風力達6.5級(疾風)以上時，啟動防禦模式：全面暫停「短線動能」建倉；僅特案放行「長線底部起漲 且 外資買超」的防禦型標的，且試單資金強制減半。</div></div></div></div><div class="flex mb-3 p-1 rounded-full" style="background:#F8F6F0;border:1.5px solid #1A1A1A"><button class="xiaojiu-view-tab-btn flex-1 h-9 rounded-full text-[13px] font-black flex items-center justify-center gap-1.5 transition" data-view-tab="live" style="background:#1A1A1A;color:#D6FF5C"><i data-lucide="fish" class="w-3.5 h-3.5"></i> 運作中部位</button> <button class="xiaojiu-view-tab-btn flex-1 h-9 rounded-full text-[13px] font-bold flex items-center justify-center gap-1.5 transition" data-view-tab="history" style="color:#1A1A1A"><i data-lucide="bar-chart-3" class="w-3.5 h-3.5"></i> 歷史與分析</button></div><div id="xiaojiu-view-tab-live"><button id="xiaojiu-refresh-btn" class="w-full text-[14px] font-black transition flex items-center justify-center gap-2 mb-3" style="background:#C8C8C8;color:#1A1A1A;border:1.5px solid #1A1A1A;border-radius:999px;box-shadow:0 2px 6px rgba(26,26,24,.08);padding:14px 16px"><i data-lucide="radar" class="w-5 h-5"></i> 更新今日計畫(需要先在掃描頁跑過一次鯨魚雷達)</button><div id="xiaojiu-filter-funnel" class="hidden mb-3 rounded-[14px] p-3 text-[11px] font-bold leading-relaxed" style="background:#F8F6F0;border:1.5px dashed #1A1A1A;color:#5A5753"></div><div id="xiaojiu-today-actions" class="mb-3"></div><div id="xiaojiu-positions-list" class="space-y-2"></div></div><div id="xiaojiu-view-tab-history" class="hidden"><div class="rounded-[16px] p-4 mb-3" style="background:#F8F6F0;border:2px dashed #1A1A1A"><div class="text-[12px] font-black mb-2 flex items-center gap-1.5" style="color:#1A1A1A">🏆 綜合評分排序 <span class="text-[10px] font-bold" style="color:#8A8A8A">(依掃描分數排序，非目前持股)</span></div><div id="xiaojiu-recommend-list" class="text-[11px] font-bold space-y-2" style="color:#5A5753"></div></div><div class="rounded-[14px] px-3 py-2.5 mb-2 flex items-start gap-2" style="background:#FFF8D6;border:1px solid #1A1A1A"><i data-lucide="alarm-clock" class="w-3.5 h-3.5 shrink-0 mt-0.5" style="color:#1A1A1A"></i><p class="text-[11px] leading-relaxed font-bold" style="color:#1A1A1A"><b>記得每個交易日都要按「存今日快照」</b>，選股排序會用到的「動能加速度」是比較今天跟昨天存的分數算出來的，沒存到的那天就會少一筆比較基準。</p></div><div class="grid grid-cols-2 gap-2 mb-2"><button id="xiaojiu-export-snapshot-btn" class="text-[11.5px] font-black transition flex items-center justify-center gap-1.5" style="background:#FFFFFF;border:1.5px solid #1A1A1A;border-radius:999px;color:#1A1A1A;padding:8px 0;box-shadow:0 1px 2px rgba(26,26,24,.08)"><i data-lucide="save" class="w-3.5 h-3.5"></i> 存今日快照</button> <button id="xiaojiu-history-snapshot-btn" class="text-[11.5px] font-black transition flex items-center justify-center gap-1.5" style="background:#FFFFFF;border:1.5px solid #1A1A1A;border-radius:999px;color:#1A1A1A;padding:8px 0;box-shadow:0 1px 2px rgba(26,26,24,.08)"><i data-lucide="history" class="w-3.5 h-3.5"></i> 查看累積紀錄</button></div><button id="xiaojiu-winrate-btn" class="w-full text-[11.5px] font-black transition flex items-center justify-center gap-1.5 mb-3" style="background:#FFFFFF;border:1.5px solid #1A1A1A;border-radius:999px;color:#1A1A1A;padding:8px 0;box-shadow:0 1px 2px rgba(26,26,24,.08)"><i data-lucide="line-chart" class="w-3.5 h-3.5"></i> 選股勝率分析(依累積快照回測)</button><div id="xiaojiu-risk-dashboard" class="mb-3"></div><div class="rounded-[20px] p-4" style="background:#FFFFFF;border:1.5px solid #1A1A1A;box-shadow:0 2px 6px rgba(26,26,24,.08)"><div class="text-[12px] font-black mb-2" style="color:#1A1A1A">📒 已實現損益(交易日誌)</div><div id="xiaojiu-realized-summary"></div><div id="xiaojiu-history-list" class="text-[11px] font-bold space-y-1 max-h-60 overflow-y-auto" style="color:#5A5753"></div></div></div></div></section>><div id="xiaojiu-settings-modal" class="hidden fixed inset-0 z-[95] bg-black/40 backdrop-blur-sm flex items-end sm:items-center justify-center" role="dialog" aria-modal="true"><div class="w-full sm:max-w-sm max-h-[85vh] max-h-[85dvh] flex flex-col overflow-hidden" style="background:#F0F0EC;border:1.5px solid #1A1A1A;border-radius:24px;box-shadow:0 4px 16px rgba(26,26,24,.10)"><div class="flex items-center justify-between px-4 py-3 shrink-0" style="border-bottom:2px solid #1A1A1A"><h3 class="font-black text-[15px] flex items-center gap-2" style="color:#1A1A1A"><i data-lucide="settings-2" class="w-4 h-4"></i> 魚小韭設定</h3><button id="xiaojiu-settings-close-btn" class="px-3 py-2 rounded-full transition shrink-0 flex items-center gap-1 text-[12.5px] font-black" style="background:#FFFFFF;border:1.5px solid #1A1A1A;color:#1A1A1A"><i data-lucide="x" class="w-4 h-4"></i> 返回</button></div><div id="xiaojiu-settings-scroll-body" class="flex-1 min-h-0 overflow-y-auto p-4 space-y-4 text-sm" style="overscroll-behavior:contain;-webkit-overflow-scrolling:touch"><div class="rounded-[14px] px-3 py-2.5" style="background:#F8F6F0;border:1.5px dashed #1A1A1A"><p id="xiaojiu-slot-desc" class="text-[11px] leading-relaxed font-bold" style="color:#1A1A1A">固定檔數(預設長線4＋短線1共5檔)，資金依分數比例分配。檔位滿了不主動換股，等某一檔觸發上下限空出位子，隔天掃描才會補新的進來。純規則計算，不是AI在幫妳決定。</p></div><div><label class="text-[11px] font-black block mb-1" style="color:#1A1A1A">起始本金(元)</label> <input id="xiaojiu-capital-input" type="number" min="1000" step="1000" class="w-full px-3 py-2.5 text-sm font-black outline-none" style="background:#FFFEF5;border:1.5px solid #1A1A1A;border-radius:14px;box-shadow:0 1px 2px rgba(26,26,24,.08);color:#1A1A1A"><p class="text-[10px] font-bold mt-1" style="color:#8A8A8A">只在「重置」後的下一次首次建倉才會套用新的本金，交易進行中改這裡不會動到現有持股。</p></div><div><label class="text-[11px] font-black block mb-1" style="color:#1A1A1A">選股價格上限</label> <select id="xiaojiu-pricecap-select" class="w-full px-3 py-2.5 text-sm font-black outline-none" style="background:#FFFEF5;border:1.5px solid #1A1A1A;border-radius:14px;box-shadow:0 1px 2px rgba(26,26,24,.08);color:#1A1A1A"><option value="100">100元以內</option><option value="200">200元以內</option><option value="500">500元以內</option><option value="1000" selected="selected">1000元以內(排除千金股)</option><option value="none">不限(含千金股)</option></select><p class="text-[10px] font-bold mt-1" style="color:#8A8A8A">「更新今日計畫」補新股票時，只考慮股價在這個上限以內的候選股，資金有限比較好操作。</p></div><div><label class="text-[11px] font-black block mb-1" style="color:#1A1A1A">持股檔數(想擁有幾檔)</label><div class="grid grid-cols-2 gap-3"><div><label class="text-[10px] font-bold block mb-0.5" style="color:#8A8A8A">長線檔數</label> <input id="xiaojiu-long-slots-input" type="number" min="1" max="10" step="1" class="w-full px-3 py-2.5 text-sm text-center font-black outline-none" style="background:#FFFEF5;border:1.5px solid #1A1A1A;border-radius:14px;box-shadow:0 1px 2px rgba(26,26,24,.08);color:#1A1A1A"></div><div><label class="text-[10px] font-bold block mb-0.5" style="color:#8A8A8A">短線檔數</label> <input id="xiaojiu-short-slots-input" type="number" min="1" max="10" step="1" class="w-full px-3 py-2.5 text-sm text-center font-black outline-none" style="background:#FFFEF5;border:1.5px solid #1A1A1A;border-radius:14px;box-shadow:0 1px 2px rgba(26,26,24,.08);color:#1A1A1A"></div></div><p class="text-[10px] font-bold mt-1.5" style="color:#8A8A8A">要縮減檔數時，如果要砍掉的位子還有真正持股，系統會擋下來、跳提醒，要先出清那個部位才能調少；增加檔數隨時可以。</p></div></div><div class="p-4 shrink-0 space-y-2" style="border-top:2px solid #1A1A1A"><button id="xiaojiu-settings-back-bottom-btn" class="w-full py-2 text-[12.5px] font-black flex items-center justify-center gap-1 transition" style="background:#FFFFFF;border:1.5px solid #1A1A1A;border-radius:999px;color:#1A1A1A"><i data-lucide="chevron-left" class="w-4 h-4"></i> 返回</button><div class="flex gap-2"><button id="xiaojiu-slots-reset-btn" class="flex-1 py-2.5 text-[13px] font-black transition flex items-center justify-center gap-1" style="background:#FFFFFF;border:1.5px solid #1A1A1A;border-radius:999px;color:#1A1A1A"><i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>還原預設(4+1)</button> <button id="xiaojiu-slots-apply-btn" class="flex-1 py-2.5 text-[13px] font-black transition" style="background:#1A1A1A;color:#D6FF5C;border:1.5px solid #1A1A1A;border-radius:999px;box-shadow:0 2px 6px rgba(26,26,24,.08)">套用檔數設定</button></div><button id="xiaojiu-reset-btn" class="w-full py-2.5 text-[13px] font-black transition" style="background:#FFD6E0;border:1.5px solid #1A1A1A;border-radius:999px;color:#C8553D">重置 (回到初始本金、清空持股與紀錄)</button></div></div></div></div></div></div><div id="xiaojiu-add-success-modal" class="hidden fixed inset-0 z-[96] bg-black/50 flex items-center justify-center p-6" role="dialog" aria-modal="true"><div class="w-full max-w-xs rounded-[24px] p-5 text-center" style="background:#F0F0EC;border:1.5px solid #1A1A1A;box-shadow:0 4px 16px rgba(26,26,24,.10)"><div class="w-14 h-14 mx-auto rounded-full flex items-center justify-center mb-3" style="background:#D6FFE8;border:1.5px solid #1A1A1A"><i data-lucide="check" class="w-7 h-7" style="color:#1A6B3A"></i></div><p class="font-black text-[15px] mb-2" style="color:#1A1A1A">已加入魚小韭</p><p id="xiaojiu-add-success-detail" class="text-[12.5px] font-bold leading-relaxed mb-4" style="color:#5A5753">--</p><button id="xiaojiu-add-success-close-btn" type="button" class="w-full text-[13px] font-black py-2.5 rounded-full" style="background:#1A1A1A;color:#D6FF5C;border:1.5px solid #1A1A1A">確定</button></div></div><div id="xiaojiu-manual-add-modal" class="hidden fixed inset-0 z-[95] bg-black/40 backdrop-blur-sm flex items-end sm:items-center justify-center" role="dialog" aria-modal="true"><div class="w-full sm:max-w-sm flex flex-col overflow-hidden" style="background:#F0F0EC;border:1.5px solid #1A1A1A;border-radius:24px;box-shadow:0 4px 16px rgba(26,26,24,.10)"><div class="flex items-center justify-between px-4 py-3" style="background:#D6FF5C;border-bottom:2.5px solid #1A1A1A"><span id="xiaojiu-manual-add-title" class="font-black text-[14px]" style="color:#1A1A1A">加入魚小韭</span><button id="xiaojiu-manual-add-close-btn" type="button" class="w-8 h-8 rounded-full bg-white border border-[#E6E8EB] flex items-center justify-center text-black"><i data-lucide="x" class="w-4 h-4"></i></button></div><div class="p-4 space-y-3 text-sm">
+</div></div><div class="flex gap-2 p-1 rounded-full mb-4" style="background:#F8F6F0;border:1.5px solid #1A1A1A"><button id="aqua-watch-mode-daily" class="aqua-watch-mode-btn flex-1 text-xs py-1.5 rounded-full font-black transition-all" data-mode="daily" style="background:#1A1A1A;color:#D6FF5C">短線動能 (日)</button> <button id="aqua-watch-mode-weekly" class="aqua-watch-mode-btn flex-1 text-xs py-1.5 rounded-full font-bold transition-all" data-mode="weekly" style="color:#1A1A1A">長線波段 (週)</button></div><div class="grid grid-cols-[1fr_auto] gap-2 mb-4"><input id="aqua-watch-symbol-input" type="text" placeholder="輸入代號加入觀測" class="w-full text-black px-3 py-2.5 text-[13px] font-black outline-none" style="background:#FFFEF5;border:1.5px solid #1A1A1A;border-radius:14px;box-shadow:0 1px 2px rgba(26,26,24,.08)"> <button id="aqua-watch-add-btn" class="shrink-0 px-4 py-2.5 text-sm font-black transition flex items-center gap-1.5" style="background:#1A1A1A;color:#D6FF5C;border:1.5px solid #1A1A1A;border-radius:14px;box-shadow:0 1px 2px rgba(26,26,24,.08)"><i data-lucide="plus" class="w-4 h-4"></i></button></div><div id="aqua-watch-grid" class="hidden grid grid-cols-4 gap-2 mb-4"></div><div id="aqua-watch-list" class="space-y-3"></div></section><section id="aqua-section-xiaojiu" class="hidden glass-panel p-5"><div class="flex items-center justify-between mb-3"><h3 class="font-black text-[16px] flex items-center gap-2" style="color:#1A1A1A"><span class="w-7 h-7 rounded-full bg-white border-2 flex items-center justify-center" style="border-color:#1A1A1A"><i data-lucide="sprout" class="w-3.5 h-3.5" style="color:#1A1A1A"></i></span> 魚小韭</h3><div class="flex items-center gap-2"><button id="xiaojiu-settings-open-btn" class="w-9 h-9 rounded-full bg-white flex items-center justify-center transition shrink-0" style="border:1.5px solid #1A1A1A" title="魚小韭設定"><i data-lucide="settings-2" class="w-4 h-4" style="color:#1A1A1A"></i></button> <button id="aqua-xiaojiu-refresh-btn" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full transition text-[11.5px] font-black" style="background:#FFE66D;border:1.5px solid #1A1A1A;color:#1A1A1A;box-shadow:0 1px 2px rgba(26,26,24,.08)" title="重新抓取持股現價與防守線"><i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> 資訊重整</button></div></div><div id="xiaojiu-lock-gate" class="text-center py-8"><div class="w-12 h-12 mx-auto rounded-full bg-white border-2 flex items-center justify-center mb-2" style="border-color:#1A1A1A"><i data-lucide="lock" class="w-5 h-5" style="color:#1A1A1A"></i></div><p class="font-black text-sm mb-1" style="color:#1A1A1A">魚小韭已上鎖</p><p class="text-[11px] font-bold mb-4" style="color:#5A5753">輸入密碼才能查看/操作這個頁面</p><form id="xiaojiu-lock-form" class="max-w-[220px] mx-auto space-y-2"><input type="password" id="xiaojiu-lock-input" placeholder="密碼" autocomplete="current-password" class="w-full text-black px-3 py-2.5 text-sm text-center font-black outline-none" style="background:#FFFEF5;border:1.5px solid #1A1A1A;border-radius:14px;box-shadow:0 1px 2px rgba(26,26,24,.08)"> <button type="submit" id="xiaojiu-lock-submit" class="w-full font-black py-2.5 text-sm transition" style="background:#1A1A1A;color:#D6FF5C;border:1.5px solid #1A1A1A;border-radius:999px;box-shadow:0 2px 6px rgba(26,26,24,.08)">解鎖</button><p id="xiaojiu-lock-error" class="hidden text-[11px] font-bold" style="color:#C8553D"></p></form></div><div id="xiaojiu-main-view" class="hidden"><div id="xiaojiu-strategy-window" class="rounded-[20px] p-4 mb-3" style="background:#0F1A2A;border:2px solid #1A1A1A;box-shadow:0 4px 16px rgba(26,26,24,.10)"><div class="flex items-center gap-2 mb-3"><i data-lucide="compass" class="w-4 h-4" style="color:#D6FF5C"></i><span class="font-black text-[14px] text-white">戰略視窗</span></div><div id="xiaojiu-strategy-blind-buy" class="mb-2"></div><div id="xiaojiu-strategy-exit-warnings"></div></div><div id="xiaojiu-settle-banner" class="mb-2 rounded-[14px] px-3 py-2 text-[11px] font-bold leading-relaxed" style="background:#F8F6F0;border:1px solid #1A1A1A;color:#1A1A1A">尚未進行日結</div><div class="rounded-[20px] p-5 mb-3 relative overflow-hidden" style="background:#0F1A2A;border:2px solid #1A1A1A;box-shadow:0 4px 16px rgba(26,26,24,.10)"><div class="absolute left-0 top-0 bottom-0 w-1" style="background:#D6FF5C"></div><div class="flex justify-between items-start mb-5 relative z-10"><div><div class="text-[10px] font-black mb-1 tracking-widest flex items-center gap-1.5" style="color:#9AB0C8"><span class="w-1.5 h-1.5 rounded-full animate-pulse" style="background:#00FF88"></span>總資產 (現金 + 市值)</div><div id="xiaojiu-total-val" class="text-[32px] font-black text-white font-mono tracking-tight inline-block" style="border-bottom:4px solid #D6FF5C">--</div><div id="xiaojiu-principal-line" class="text-[11.5px] font-bold mt-2 font-mono" style="color:#C9D6E3"></div></div><button id="xiaojiu-cash-adjust-open-btn" class="w-9 h-9 rounded-full flex items-center justify-center transition shrink-0" style="background:rgba(255,255,255,.1);border:2px solid rgba(255,255,255,.2)" title="現金增減(存入或提領本金，不綁定特定持股)"><i data-lucide="coins" class="w-4 h-4" style="color:#D6FF5C"></i></button></div><div class="grid grid-cols-3 gap-3 relative z-10 pt-4" style="border-top:1px solid rgba(255,255,255,.1)"><div><div class="text-[10px] font-bold mb-0.5" style="color:#9AB0C8">可用現金</div><div id="xiaojiu-cash-val" class="text-[15px] font-black text-white font-mono">--</div></div><div><div class="text-[10px] font-bold mb-0.5" style="color:#9AB0C8">勝率</div><div id="xiaojiu-winrate-val" class="text-[15px] font-black font-mono" style="color:#FFFFFF">--</div><div id="xiaojiu-winrate-sub" class="text-[9.5px] font-bold mt-0.5" style="color:#9AB0C8"></div></div><div><div class="text-[10px] font-bold mb-0.5" style="color:#9AB0C8">觸發次數</div><div id="xiaojiu-trades-val" class="text-[15px] font-black font-mono" style="color:#D6FF5C">--</div></div></div><div class="grid grid-cols-2 gap-3 relative z-10 pt-3 mt-3" style="border-top:1px solid rgba(255,255,255,.1)"><div><div class="text-[10px] font-bold mb-0.5" style="color:#9AB0C8">已實現損益</div><div id="xiaojiu-realized-val" class="text-[15px] font-black font-mono" style="color:#9AB0C8">--</div></div><div><div class="text-[10px] font-bold mb-0.5" style="color:#9AB0C8">未實現損益</div><div id="xiaojiu-unrealized-val" class="text-[15px] font-black font-mono" style="color:#9AB0C8">--</div></div></div><p id="xiaojiu-recon-note" class="hidden text-[10.5px] font-bold leading-relaxed relative z-10 mt-2.5 rounded-[10px] px-2.5 py-1.5" style="color:#FFE7A3;background:rgba(255,231,163,.08);border:1px solid rgba(255,231,163,.3)"></p><p class="text-[9.5px] font-bold leading-relaxed relative z-10 mt-2.5" style="color:#6B7F94">勝率只算「已出場」的次數，這套策略是嚴設停損、盈虧比取勝，出場大多是停損觸發，勝率天生會偏低——已實現/未實現損益的實際金額跟%數，比單看勝率更能反映真正績效。</p></div><div class="tide-card mb-3" style="background:#FFFFFF;border:1.5px solid #1A1A1A;border-radius:16px;box-shadow:0 1px 2px rgba(26,26,24,.08)"><button class="collapse-toggle w-full flex justify-between items-center p-3.5 text-left" data-target="xiaojiu-rule-info-body"><h3 class="font-black text-[14px] flex items-center gap-2" style="color:#1A1A1A"><i data-lucide="shield-alert" class="w-4 h-4" style="color:#1A1A1A"></i> 運作規則說明</h3><span class="chevron shrink-0 w-7 h-7 rounded-full bg-white border-2 flex items-center justify-center" style="border-color:#1A1A1A;color:#1A1A1A"><i data-lucide="chevron-down" class="chevron-icon w-4 h-4"></i></span></button><div id="xiaojiu-rule-info-body" class="hidden px-3.5 pb-3.5 space-y-2.5"><div class="pl-3" style="border-left:3px solid #9A9A9A"><div class="font-black text-[12.5px] mb-1" style="color:#1A1A1A">🐟 運作原理</div><div class="text-[12px] leading-relaxed font-bold" style="color:#5A5753">魚小韭是純規則的自動模擬驗證工具，依據每日17:30後的鯨魚雷達分數進行部位替換與資金分配，不是AI在幫妳決定。</div></div><div class="pl-3" style="border-left:3px solid #E53935"><div class="font-black text-[12.5px] mb-1" style="color:#1A1A1A">🛡️ 智能防禦機制</div><div class="text-[12px] leading-relaxed font-bold" style="color:#5A5753">當美股風力達6.5級(疾風)以上時，啟動防禦模式：全面暫停「短線動能」建倉；僅特案放行「長線底部起漲 且 外資買超」的防禦型標的，且試單資金強制減半。</div></div></div></div><div class="flex mb-3 p-1 rounded-full" style="background:#F8F6F0;border:1.5px solid #1A1A1A"><button class="xiaojiu-view-tab-btn flex-1 h-9 rounded-full text-[13px] font-black flex items-center justify-center gap-1.5 transition" data-view-tab="live" style="background:#1A1A1A;color:#D6FF5C"><i data-lucide="fish" class="w-3.5 h-3.5"></i> 運作中部位</button> <button class="xiaojiu-view-tab-btn flex-1 h-9 rounded-full text-[13px] font-bold flex items-center justify-center gap-1.5 transition" data-view-tab="history" style="color:#1A1A1A"><i data-lucide="bar-chart-3" class="w-3.5 h-3.5"></i> 歷史與分析</button></div><div id="xiaojiu-view-tab-live"><button id="xiaojiu-refresh-btn" class="w-full text-[14px] font-black transition flex items-center justify-center gap-2 mb-3" style="background:#C8C8C8;color:#1A1A1A;border:1.5px solid #1A1A1A;border-radius:999px;box-shadow:0 2px 6px rgba(26,26,24,.08);padding:14px 16px"><i data-lucide="radar" class="w-5 h-5"></i> 更新今日計畫(需要先在掃描頁跑過一次鯨魚雷達)</button><div id="xiaojiu-filter-funnel" class="hidden mb-3 rounded-[14px] p-3 text-[11px] font-bold leading-relaxed" style="background:#F8F6F0;border:1.5px dashed #1A1A1A;color:#5A5753"></div><div id="xiaojiu-today-actions" class="mb-3"></div><div id="xiaojiu-positions-list" class="space-y-2"></div></div><div id="xiaojiu-view-tab-history" class="hidden"><div class="rounded-[16px] p-4 mb-3" style="background:#F8F6F0;border:2px dashed #1A1A1A"><div class="text-[12px] font-black mb-2 flex items-center gap-1.5" style="color:#1A1A1A">🏆 綜合評分排序 <span class="text-[10px] font-bold" style="color:#8A8A8A">(依掃描分數排序，非目前持股)</span></div><div id="xiaojiu-recommend-list" class="text-[11px] font-bold space-y-2" style="color:#5A5753"></div></div><div class="rounded-[14px] px-3 py-2.5 mb-2 flex items-start gap-2" style="background:#FFF8D6;border:1px solid #1A1A1A"><i data-lucide="alarm-clock" class="w-3.5 h-3.5 shrink-0 mt-0.5" style="color:#1A1A1A"></i><p class="text-[11px] leading-relaxed font-bold" style="color:#1A1A1A"><b>記得每個交易日都要按「存今日快照」</b>，選股排序會用到的「動能加速度」是比較今天跟昨天存的分數算出來的，沒存到的那天就會少一筆比較基準。</p></div><div class="grid grid-cols-2 gap-2 mb-2"><button id="xiaojiu-export-snapshot-btn" class="text-[11.5px] font-black transition flex items-center justify-center gap-1.5" style="background:#FFFFFF;border:1.5px solid #1A1A1A;border-radius:999px;color:#1A1A1A;padding:8px 0;box-shadow:0 1px 2px rgba(26,26,24,.08)"><i data-lucide="save" class="w-3.5 h-3.5"></i> 存今日快照</button> <button id="xiaojiu-history-snapshot-btn" class="text-[11.5px] font-black transition flex items-center justify-center gap-1.5" style="background:#FFFFFF;border:1.5px solid #1A1A1A;border-radius:999px;color:#1A1A1A;padding:8px 0;box-shadow:0 1px 2px rgba(26,26,24,.08)"><i data-lucide="history" class="w-3.5 h-3.5"></i> 查看累積紀錄</button></div><button id="xiaojiu-winrate-btn" class="w-full text-[11.5px] font-black transition flex items-center justify-center gap-1.5 mb-3" style="background:#FFFFFF;border:1.5px solid #1A1A1A;border-radius:999px;color:#1A1A1A;padding:8px 0;box-shadow:0 1px 2px rgba(26,26,24,.08)"><i data-lucide="line-chart" class="w-3.5 h-3.5"></i> 選股勝率分析(依累積快照回測)</button><button id="swing-review-btn" class="w-full text-[11.5px] font-black transition flex items-center justify-center gap-1.5 mb-3" style="background:#FFF8D6;border:1.5px solid #1A1A1A;border-radius:999px;color:#1A1A1A;padding:8px 0;box-shadow:0 1px 2px rgba(26,26,24,.08)"><i data-lucide="mountain" class="w-3.5 h-3.5"></i> 波段飆股回顧(匯出分析資料)</button><div id="xiaojiu-risk-dashboard" class="mb-3"></div><div class="rounded-[20px] p-4" style="background:#FFFFFF;border:1.5px solid #1A1A1A;box-shadow:0 2px 6px rgba(26,26,24,.08)"><div class="text-[12px] font-black mb-2" style="color:#1A1A1A">📒 已實現損益(交易日誌)</div><div id="xiaojiu-realized-summary"></div><div id="xiaojiu-history-list" class="text-[11px] font-bold space-y-1 max-h-60 overflow-y-auto" style="color:#5A5753"></div></div></div></div></section>><div id="xiaojiu-settings-modal" class="hidden fixed inset-0 z-[95] bg-black/40 backdrop-blur-sm flex items-end sm:items-center justify-center" role="dialog" aria-modal="true"><div class="w-full sm:max-w-sm max-h-[85vh] max-h-[85dvh] flex flex-col overflow-hidden" style="background:#F0F0EC;border:1.5px solid #1A1A1A;border-radius:24px;box-shadow:0 4px 16px rgba(26,26,24,.10)"><div class="flex items-center justify-between px-4 py-3 shrink-0" style="border-bottom:2px solid #1A1A1A"><h3 class="font-black text-[15px] flex items-center gap-2" style="color:#1A1A1A"><i data-lucide="settings-2" class="w-4 h-4"></i> 魚小韭設定</h3><button id="xiaojiu-settings-close-btn" class="px-3 py-2 rounded-full transition shrink-0 flex items-center gap-1 text-[12.5px] font-black" style="background:#FFFFFF;border:1.5px solid #1A1A1A;color:#1A1A1A"><i data-lucide="x" class="w-4 h-4"></i> 返回</button></div><div id="xiaojiu-settings-scroll-body" class="flex-1 min-h-0 overflow-y-auto p-4 space-y-4 text-sm" style="overscroll-behavior:contain;-webkit-overflow-scrolling:touch"><div class="rounded-[14px] px-3 py-2.5" style="background:#F8F6F0;border:1.5px dashed #1A1A1A"><p id="xiaojiu-slot-desc" class="text-[11px] leading-relaxed font-bold" style="color:#1A1A1A">固定檔數(預設長線4＋短線1共5檔)，資金依分數比例分配。檔位滿了不主動換股，等某一檔觸發上下限空出位子，隔天掃描才會補新的進來。純規則計算，不是AI在幫妳決定。</p></div><div><label class="text-[11px] font-black block mb-1" style="color:#1A1A1A">起始本金(元)</label> <input id="xiaojiu-capital-input" type="number" min="1000" step="1000" class="w-full px-3 py-2.5 text-sm font-black outline-none" style="background:#FFFEF5;border:1.5px solid #1A1A1A;border-radius:14px;box-shadow:0 1px 2px rgba(26,26,24,.08);color:#1A1A1A"><p class="text-[10px] font-bold mt-1" style="color:#8A8A8A">只在「重置」後的下一次首次建倉才會套用新的本金，交易進行中改這裡不會動到現有持股。</p></div><div><label class="text-[11px] font-black block mb-1" style="color:#1A1A1A">選股價格上限</label> <select id="xiaojiu-pricecap-select" class="w-full px-3 py-2.5 text-sm font-black outline-none" style="background:#FFFEF5;border:1.5px solid #1A1A1A;border-radius:14px;box-shadow:0 1px 2px rgba(26,26,24,.08);color:#1A1A1A"><option value="100">100元以內</option><option value="200">200元以內</option><option value="500">500元以內</option><option value="1000" selected="selected">1000元以內(排除千金股)</option><option value="none">不限(含千金股)</option></select><p class="text-[10px] font-bold mt-1" style="color:#8A8A8A">「更新今日計畫」補新股票時，只考慮股價在這個上限以內的候選股，資金有限比較好操作。</p></div><div><label class="text-[11px] font-black block mb-1" style="color:#1A1A1A">持股檔數(想擁有幾檔)</label><div class="grid grid-cols-2 gap-3"><div><label class="text-[10px] font-bold block mb-0.5" style="color:#8A8A8A">長線檔數</label> <input id="xiaojiu-long-slots-input" type="number" min="1" max="10" step="1" class="w-full px-3 py-2.5 text-sm text-center font-black outline-none" style="background:#FFFEF5;border:1.5px solid #1A1A1A;border-radius:14px;box-shadow:0 1px 2px rgba(26,26,24,.08);color:#1A1A1A"></div><div><label class="text-[10px] font-bold block mb-0.5" style="color:#8A8A8A">短線檔數</label> <input id="xiaojiu-short-slots-input" type="number" min="1" max="10" step="1" class="w-full px-3 py-2.5 text-sm text-center font-black outline-none" style="background:#FFFEF5;border:1.5px solid #1A1A1A;border-radius:14px;box-shadow:0 1px 2px rgba(26,26,24,.08);color:#1A1A1A"></div></div><p class="text-[10px] font-bold mt-1.5" style="color:#8A8A8A">要縮減檔數時，如果要砍掉的位子還有真正持股，系統會擋下來、跳提醒，要先出清那個部位才能調少；增加檔數隨時可以。</p></div></div><div class="p-4 shrink-0 space-y-2" style="border-top:2px solid #1A1A1A"><button id="xiaojiu-settings-back-bottom-btn" class="w-full py-2 text-[12.5px] font-black flex items-center justify-center gap-1 transition" style="background:#FFFFFF;border:1.5px solid #1A1A1A;border-radius:999px;color:#1A1A1A"><i data-lucide="chevron-left" class="w-4 h-4"></i> 返回</button><div class="flex gap-2"><button id="xiaojiu-slots-reset-btn" class="flex-1 py-2.5 text-[13px] font-black transition flex items-center justify-center gap-1" style="background:#FFFFFF;border:1.5px solid #1A1A1A;border-radius:999px;color:#1A1A1A"><i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>還原預設(4+1)</button> <button id="xiaojiu-slots-apply-btn" class="flex-1 py-2.5 text-[13px] font-black transition" style="background:#1A1A1A;color:#D6FF5C;border:1.5px solid #1A1A1A;border-radius:999px;box-shadow:0 2px 6px rgba(26,26,24,.08)">套用檔數設定</button></div><button id="xiaojiu-reset-btn" class="w-full py-2.5 text-[13px] font-black transition" style="background:#FFD6E0;border:1.5px solid #1A1A1A;border-radius:999px;color:#C8553D">重置 (回到初始本金、清空持股與紀錄)</button></div></div></div></div></div></div><div id="xiaojiu-add-success-modal" class="hidden fixed inset-0 z-[96] bg-black/50 flex items-center justify-center p-6" role="dialog" aria-modal="true"><div class="w-full max-w-xs rounded-[24px] p-5 text-center" style="background:#F0F0EC;border:1.5px solid #1A1A1A;box-shadow:0 4px 16px rgba(26,26,24,.10)"><div class="w-14 h-14 mx-auto rounded-full flex items-center justify-center mb-3" style="background:#D6FFE8;border:1.5px solid #1A1A1A"><i data-lucide="check" class="w-7 h-7" style="color:#1A6B3A"></i></div><p class="font-black text-[15px] mb-2" style="color:#1A1A1A">已加入魚小韭</p><p id="xiaojiu-add-success-detail" class="text-[12.5px] font-bold leading-relaxed mb-4" style="color:#5A5753">--</p><button id="xiaojiu-add-success-close-btn" type="button" class="w-full text-[13px] font-black py-2.5 rounded-full" style="background:#1A1A1A;color:#D6FF5C;border:1.5px solid #1A1A1A">確定</button></div></div><div id="xiaojiu-manual-add-modal" class="hidden fixed inset-0 z-[95] bg-black/40 backdrop-blur-sm flex items-end sm:items-center justify-center" role="dialog" aria-modal="true"><div class="w-full sm:max-w-sm flex flex-col overflow-hidden" style="background:#F0F0EC;border:1.5px solid #1A1A1A;border-radius:24px;box-shadow:0 4px 16px rgba(26,26,24,.10)"><div class="flex items-center justify-between px-4 py-3" style="background:#D6FF5C;border-bottom:2.5px solid #1A1A1A"><span id="xiaojiu-manual-add-title" class="font-black text-[14px]" style="color:#1A1A1A">加入魚小韭</span><button id="xiaojiu-manual-add-close-btn" type="button" class="w-8 h-8 rounded-full bg-white border border-[#E6E8EB] flex items-center justify-center text-black"><i data-lucide="x" class="w-4 h-4"></i></button></div><div class="p-4 space-y-3 text-sm">
     <p id="xiaojiu-manual-add-price-line" class="text-[12px] font-bold" style="color:#5A5753">現價：--</p>
     <div>
         <div class="text-[11px] font-bold mb-1.5" style="color:#5A5753">歸類到</div>
@@ -24687,7 +24687,9 @@ function getXiaojiuCapital() {
                 "xiaojiu" === t && renderXiaojiuHoldingsMiniList());
         });
     }));
-const XIAOJIU_LONG_STOP_LOSS_PCT = -8,
+// 【2026-10-10】長線停損從-8%放寬到-15%：長線以週20MA當主要出場線，-8%常在週線還沒破之前就先把波段洗掉，
+// 改成只在虧損很大時才保險出場。
+const XIAOJIU_LONG_STOP_LOSS_PCT = -15,
     XIAOJIU_SHORT_STOP_LOSS_PCT = -7,
     XIAOJIU_SHORT_TAKE_PROFIT_PCT = 15,
     // 【2026-09-23新增：峰值回落停利門檻】她要的是提高賺賠比(不是提高勝率)，原本的「動能衰退」規則
@@ -25339,6 +25341,9 @@ function getXiaojiuCandidatePools(e, t) {
                         ? (1 - last.volume / ind.volMa5[idx]) * 100
                         : null;
                 e.ibs = last.high > last.low ? (last.close - last.low) / (last.high - last.low) : null;
+                // 【2026-10-10新增：相對強度】近60個交易日(約3個月)漲幅，長線排序用。同一天所有候選比較時，
+                // 減掉大盤漲幅不會改變排名，所以直接比個股漲幅。
+                e.ret60 = idx >= 60 && daily[idx - 60].close > 0 ? last.close / daily[idx - 60].close - 1 : null;
                 e.bbWidthPct =
                     null !== ind.bbUpper[idx] && null !== ind.bbLower[idx] && ind.ma20[idx]
                         ? ((ind.bbUpper[idx] - ind.bbLower[idx]) / ind.ma20[idx]) * 100
@@ -25370,13 +25375,16 @@ function getXiaojiuCandidatePools(e, t) {
                     passScore = e.score >= 5,
                     passMoat = null == e.weeklyMoat || e.weeklyMoat.score >= 1, // 【2026-10-03】週趨勢分數：第一輪84檔驗證1~10分之間沒有明顯差距，只有0分(否決)較弱，先只擋否決
                     passAlert = !e.fiveDayAlert || "red" !== e.fiveDayAlert.level,
-                    pass = passBase && passScore && passMoat && passAlert;
+                    // 【2026-10-10新增】離週20MA太遠的不買，等拉回(乖離>15%入選的，10天後平均輸大盤6.8%)
+                    passBias = null == e.diffPct || !isFinite(e.diffPct) || e.diffPct <= 15,
+                    pass = passBase && passScore && passMoat && passAlert && passBias;
                 if (!pass) {
                     const reasons = [];
                     passBase || reasons.push("非週線起漲/趨勢多頭");
                     passScore || reasons.push(`score=${e.score}<5`);
                     passMoat || reasons.push(`週趨勢分數否決：${e.weeklyMoat && e.weeklyMoat.detail ? e.weeklyMoat.detail.vetoReason : ""}`);
                     passAlert || reasons.push("fiveDayAlert=red");
+                    passBias || reasons.push(`離週20MA太遠(${e.diffPct.toFixed(1)}%)，等拉回`);
                     console.log(`[魚小韭長線篩選] ${e.symbol} 被擋: ${reasons.join("、")}`);
                 }
                 return pass;
@@ -25386,6 +25394,8 @@ function getXiaojiuCandidatePools(e, t) {
                     (t.isBbSqueezeBreakout ? 1 : 0) - (e.isBbSqueezeBreakout ? 1 : 0) ||
                     (fiveDayGreen(t) ? 1 : 0) - (fiveDayGreen(e) ? 1 : 0) ||
                     (e.dividendBlackout ? 1 : 0) - (t.dividendBlackout ? 1 : 0) ||
+                    // 【2026-10-10新增】近3個月比較強的排前面(每10%一級，同一級再看下面的週趨勢分數)
+                    (null == t.ret60 ? -99 : Math.floor(10 * t.ret60)) - (null == e.ret60 ? -99 : Math.floor(10 * e.ret60)) ||
                     // 【2026-10-03】週趨勢分數高的排前面(驗證：7分以上之後13週平均贏大盤約4%)
                     ((t.weeklyMoat && t.weeklyMoat.score) || 0) - ((e.weeklyMoat && e.weeklyMoat.score) || 0) ||
                     t.score - e.score ||
@@ -25610,6 +25620,17 @@ async function computeXiaojiuPlan() {
     e.forEach((e) => {
         n[e.symbol] = e;
     });
+    // 【2026-10-10新增：長線沒有合格標的時用0050替補】先備好0050的報價(掃描結果通常不含ETF)，
+    // 讓持有中的0050也能正常判斷出場、顯示現價。
+    const XJ_INDEX = "0050";
+    if (!n[XJ_INDEX])
+        try {
+            const b = await fetchStockForScan(XJ_INDEX);
+            if (b && b.length >= 6) {
+                const cl = b.map((x) => x.close);
+                n[XJ_INDEX] = { symbol: XJ_INDEX, close: cl[cl.length - 1], prevClose: cl[cl.length - 2], dailyMa5: cl.slice(-5).reduce((x, y) => x + y, 0) / 5, score: 0, momentumScore: 0, diffPct: null, todayChgPct: null };
+            }
+        } catch (err) {}
     const a = [];
     try {
         await ensureHedgeDicts();
@@ -25765,7 +25786,8 @@ async function computeXiaojiuPlan() {
     // 第5個參數surge=true：這批是「飆股觀察名單」，名單本身已經照強勢程度排好，下面幾個為了「挑低乖離、
     // 避開當天大漲、大盤過熱一天只買1檔、開盤跳空不追」設計的規則，正好會把飆股全部擋掉，所以這批略過，
     // 只保留同產業分散。
-    async function p(e, n, s, o, surge) {
+    // 第6個參數indexFill=true：長線用0050替補(倉位標記track:"index")
+    async function p(e, n, s, o, surge, indexFill) {
         const l = "long" === e,
             i = t[e].map((e, t) => (null === e ? t : -1)).filter((e) => e >= 0);
         if (0 === i.length) return;
@@ -25876,6 +25898,7 @@ async function computeXiaojiuPlan() {
             const w = surge ? "🚀飆股軌，" : xiaojiuHasGoldenTag(n) ? "🧲拉回/🚩旗型優先標的，" : "";
             let k = `${xiaojiuReasonPhrase(l ? n.score : n.momentumScore || 0, l)}（${m ? "首次建倉" : "補位"}，${l ? "長線強度分數排名，分數" + n.score + "/10" : `${w}${n.isShortTermBuy ? "完整進場訊號✓，" : ""}動能${(n.momentumScore || 0).toFixed(1)}`}）`;
             o && (k = `🛡️ 防禦型特案試單(資金減半)｜${k}`);
+            indexFill && (k = "📦 長線暫時沒有合格標的，先用0050跟上大盤(之後有合格標的會自動換掉)");
             const S = l ? n.score : n.momentumScore || 0,
                 E = u > 0 ? (x / u) * 100 : 0;
             ((t[e][f] = {
@@ -25890,7 +25913,7 @@ async function computeXiaojiuPlan() {
                 weightPct: Math.round(10 * E) / 10,
                 peakClose: h,
                 // 【2026-10-10】飆股軌買進的倉位，出場改用checkXiaojiuSurgeExit
-                ...(surge ? { track: "surge" } : {}),
+                ...(surge ? { track: "surge" } : indexFill ? { track: "index" } : {}),
             }),
                 delete xiaojiuSlotMsg[`${e}-${f}`],
                 xiaojiuLog(t, {
@@ -25941,7 +25964,25 @@ async function computeXiaojiuPlan() {
         const e = r.filter(isXiaojiuDefensiveCandidate);
         await p("long", e, g, !0);
     } else {
+        // 【2026-10-10新增：0050讓位】有還沒持有的合格長線候選、但長線檔位全滿時，先賣掉替補的0050騰出位置
+        {
+            const freshLong = r.filter((c) => !g.has(c.symbol) && !(window.ctAboveWeekly20 && false === window.ctAboveWeekly20(c.symbol))),
+                k = t.long.findIndex((x) => x && "index" === x.track);
+            if (freshLong.length && k >= 0 && !t.long.some((x) => !x)) {
+                const slot = t.long[k],
+                    price = n[slot.symbol] ? n[slot.symbol].close : slot.entryPrice,
+                    pnl = ((price - slot.entryPrice) / slot.entryPrice) * 100;
+                t.cash += slot.shares * price;
+                xiaojiuLog(t, { action: "結束", symbol: slot.symbol, shares: slot.shares, price, reason: "有合格長線標的，0050讓位", pnlPct: pnl, category: "long" });
+                removeSymbolFromXiaojiuGroup(t, slot.symbol);
+                a.push({ type: "sell", symbol: slot.symbol, reason: "有合格長線標的，0050讓位", pnlPct: pnl });
+                t.long[k] = null;
+                g.delete(slot.symbol);
+            }
+        }
         await p("long", r, g);
+        // 長線買完還有空位 → 用0050補一格(0050也要站上週20MA才買)
+        t.long.some((x) => !x) && n[XJ_INDEX] && !g.has(XJ_INDEX) && (await p("long", [n[XJ_INDEX]], g, !1, !1, !0));
         // 【2026-10-10改版：大盤強勢時短線改買飆股名單】回測(7/29~10/8)：大盤分數≥80時，原本的短線候選
         // 加入後平均輸大盤，被擋掉的強勢股反而是飆股來源。她決定直接讓魚小韭下單：分數≥80時短線只從
         // 飆股觀察名單買，名單是空的就不買(留現金，不退回去買弱勢股)；分數<80維持原本的選股方式。
@@ -26172,6 +26213,174 @@ async function fillXiaojiuTrendCharts(state) {
                 (el.innerHTML = html || '<div class="text-[11px] font-bold text-center py-2 rounded-[12px]" style="background:#F8F6F0;color:#8A8A8A">走勢資料暫時抓不到，稍後再按更新</div>');
         }),
     );
+}
+// 【2026-10-10新增：波段飆股回顧】對成交量前500大(跟鯨魚雷達同一份名單)逐檔抓日K，匯出兩份CSV給她上傳分析：
+// ①「飆股名單」：7/1以來從低點到高點漲超過30%的股票，含低點/高點日期與漲幅
+// ②「每日特徵」：每檔股票6/15以後每天的技術特徵(乖離、量能、週20MA距離、相對強度、布林寬度、離高點距離…)，
+//   加上之後5/10/20天的報酬與20天內最大漲幅/跌幅，用來分析「飆股起漲前長什麼樣子、跟沒漲的差在哪」。
+// 全部用日K自己算，不依賴掃描結果；抓不到真實資料(退回模擬資料)的股票直接略過。
+const SWING_REVIEW_FROM = "2026-07-01",
+    SWING_REVIEW_FEATURE_FROM = "2026-06-15";
+function swingReviewFeatures(bars) {
+    const N = bars.length,
+        C = bars.map((b) => b.close),
+        V = bars.map((b) => b.volume || 0),
+        H = bars.map((b) => (null != b.high ? b.high : b.close)),
+        D = bars.map((b) => xiaojiuBarDate(b) || ""),
+        mean = (a, i, n) => {
+            if (i - n + 1 < 0) return null;
+            let s = 0;
+            for (let k = i - n + 1; k <= i; k++) s += a[k];
+            return s / n;
+        },
+        std = (a, i, n, m) => {
+            if (null == m) return null;
+            let s = 0;
+            for (let k = i - n + 1; k <= i; k++) s += (a[k] - m) ** 2;
+            return Math.sqrt(s / n);
+        },
+        // 週K：每週最後一根的收盤，週一當週起點
+        weekKey = (d) => {
+            const t = new Date(d + "T00:00:00Z"),
+                w = (t.getUTCDay() + 6) % 7;
+            return new Date(t.getTime() - 864e5 * w).toISOString().slice(0, 10);
+        },
+        wk = D.map((d) => (d ? weekKey(d) : "")),
+        weekCloseBefore = [];
+    // 每根K棒：它之前「已完成的週」收盤序列長度(用來算週20MA，本週用當天收盤代替)
+    const completed = [];
+    for (let i = 0; i < N; i++) {
+        i > 0 && wk[i] !== wk[i - 1] && completed.push(C[i - 1]);
+        weekCloseBefore.push(completed.length);
+    }
+    const bbw = C.map((_, i) => {
+        const m = mean(C, i, 20);
+        return null == m || !m ? null : ((4 * std(C, i, 20, m)) / m) * 100;
+    });
+    const r2 = (x) => (null == x || !isFinite(x) ? "" : Math.round(100 * x) / 100);
+    const rows = [];
+    for (let i = 0; i < N; i++) {
+        if (!D[i] || D[i] < SWING_REVIEW_FEATURE_FROM) continue;
+        const c = C[i],
+            m5 = mean(C, i, 5),
+            m20 = mean(C, i, 20),
+            m60 = mean(C, i, 60),
+            m20p = i >= 5 ? mean(C, i - 5, 20) : null,
+            nW = weekCloseBefore[i],
+            w20 = nW >= 19 ? (completed.slice(nW - 19, nW).reduce((a, b) => a + b, 0) + c) / 20 : null,
+            vAvg = i >= 20 ? mean(V, i - 1, 20) : null,
+            hi250 = Math.max(...H.slice(Math.max(0, i - 249), i + 1)),
+            hi60 = Math.max(...H.slice(Math.max(0, i - 59), i + 1));
+        let up10 = 0;
+        for (let k = Math.max(1, i - 9); k <= i; k++) C[k] > C[k - 1] && up10++;
+        let bbwPct = null;
+        if (null != bbw[i] && i >= 120) {
+            const win = bbw.slice(i - 119, i + 1).filter((x) => null != x);
+            bbwPct = (win.filter((x) => x <= bbw[i]).length / win.length) * 100;
+        }
+        const fwd = (k) => (i + k < N ? (C[i + k] / c - 1) * 100 : null),
+            seg = C.slice(i + 1, i + 21),
+            full20 = i + 20 < N;
+        rows.push([
+            D[i], c,
+            r2(i > 0 ? (c / C[i - 1] - 1) * 100 : null),
+            Math.round(V[i] / 1e3),
+            r2(vAvg ? V[i] / vAvg : null),
+            r2(m5 ? (c / m5 - 1) * 100 : null),
+            r2(m20 ? (c / m20 - 1) * 100 : null),
+            r2(m60 ? (c / m60 - 1) * 100 : null),
+            r2(m20 && m20p ? (m20 / m20p - 1) * 100 : null),
+            r2(w20 ? (c / w20 - 1) * 100 : null),
+            r2(i >= 20 ? (c / C[i - 20] - 1) * 100 : null),
+            r2(i >= 60 ? (c / C[i - 60] - 1) * 100 : null),
+            r2(bbw[i]),
+            r2(bbwPct),
+            r2((c / hi250 - 1) * 100),
+            r2((c / hi60 - 1) * 100),
+            up10,
+            r2(fwd(5)), r2(fwd(10)), r2(fwd(20)),
+            r2(full20 ? (Math.max(...seg) / c - 1) * 100 : null),
+            r2(full20 ? (Math.min(...seg) / c - 1) * 100 : null),
+        ]);
+    }
+    // 7/1以來最大波段：低點之後的最高收盤 ÷ 該低點
+    let best = null, lowI = -1;
+    for (let i = 0; i < N; i++) {
+        if (!D[i] || D[i] < SWING_REVIEW_FROM) continue;
+        (-1 === lowI || C[i] < C[lowI]) && (lowI = i);
+        const g = C[i] / C[lowI] - 1;
+        (!best || g > best.gain) && (best = { gain: g, lowI, highI: i });
+    }
+    const swing = best
+        ? { lowDate: D[best.lowI], low: C[best.lowI], highDate: D[best.highI], high: C[best.highI], gainPct: r2(100 * best.gain), days: best.highI - best.lowI, lastClose: C[N - 1], fromHighPct: r2((C[N - 1] / C[best.highI] - 1) * 100) }
+        : null;
+    return { rows, swing };
+}
+function swingReviewDownload(filename, text) {
+    try {
+        const blob = new Blob(["﻿" + text], { type: "text/csv;charset=utf-8" }),
+            url = URL.createObjectURL(blob),
+            a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => (URL.revokeObjectURL(url), a.remove()), 4e3);
+        return !0;
+    } catch (e) {
+        return !1;
+    }
+}
+let swingReviewRunning = !1;
+async function runSwingReview(btn) {
+    if (swingReviewRunning) return;
+    swingReviewRunning = !0;
+    const orig = btn ? btn.innerHTML : null,
+        setText = (t) => btn && (btn.innerHTML = `<i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i> ${t}`, safeLucideIcons({ root: btn }));
+    try {
+        setText("準備股票名單...");
+        const list = (await buildDynamicScanList()) || [];
+        if (!list.length) return void showToast("抓不到股票名單，請稍後再試", "error");
+        const featHead = "代號,名稱,日期,收盤,當日漲跌%,成交張數,量能倍數(對20日均量),日5MA乖離%,日20MA乖離%,日60MA乖離%,日20MA五日斜率%,週20MA乖離%,近20日漲幅%,近60日漲幅%,布林寬度%,布林寬度百分位(120日),距250日高點%,距60日高點%,近10日上漲天數,5日後報酬%,10日後報酬%,20日後報酬%,20日內最大漲幅%,20日內最大跌幅%",
+            feat = [featHead],
+            swings = [];
+        let done = 0, skipped = 0;
+        const esc = (x) => String(x ?? "").replace(/,/g, "、");
+        const queue = list.slice();
+        const worker = async () => {
+            for (; queue.length;) {
+                const code = queue.shift();
+                try {
+                    const bars = await fetchStockForScan(code);
+                    if (!bars || bars.length < 150 || "mock" === dataSourceCache[code]) skipped++;
+                    else {
+                        const { rows, swing } = swingReviewFeatures(bars),
+                            name = esc(stockLabel(code).replace(code, "").trim());
+                        rows.forEach((r) => feat.push([code, name, ...r].join(",")));
+                        swing && swings.push({ code, name, ...swing });
+                    }
+                } catch (e) {
+                    skipped++;
+                }
+                done++;
+                0 === done % 5 && setText(`抓日K中 ${done}/${list.length}`);
+            }
+        };
+        await Promise.all(Array.from({ length: 6 }, worker));
+        const big = swings.filter((x) => x.gainPct >= 30).sort((a, b) => b.gainPct - a.gainPct),
+            swingCsv = ["代號,名稱,7/1以來低點日,低點收盤,之後高點日,高點收盤,波段漲幅%,低到高交易日數,最新收盤,距高點%"]
+                .concat(big.map((x) => [x.code, x.name, x.lowDate, x.low, x.highDate, x.high, x.gainPct, x.days, x.lastClose, x.fromHighPct].join(",")))
+                .join("\n"),
+            today = taipeiDateStr(new Date());
+        swingReviewDownload(`swing_list_${today}.csv`, swingCsv);
+        setTimeout(() => swingReviewDownload(`swing_features_${today}.csv`, feat.join("\n")), 1500);
+        showToast(`完成：${list.length - skipped}檔有資料，其中${big.length}檔7/1以來波段漲超過30%。已下載兩個CSV檔(swing_list飆股名單、swing_features每日特徵)，上傳給Claude分析`, "success", !0);
+    } catch (e) {
+        showToast("波段飆股回顧失敗：" + e.message, "error");
+    } finally {
+        swingReviewRunning = !1;
+        btn && ((btn.innerHTML = orig), safeLucideIcons({ root: btn }));
+    }
 }
 function renderXiaojiuView(e, t) {
     const n = loadXiaojiuState(),
@@ -26518,10 +26727,11 @@ function openXiaojiuSwapModal(e, t) {
 // 純粹是為了保留價格軌跡做回測用，不影響候選/被否決的判斷邏輯本身。
 async function fetchRecentCandidateSymbols(lookbackDays) {
     try {
+        // 【2026-10-10】長線候選入選後要追蹤到約20個交易日(30個日曆天)，波段的後續報酬才算得出來；
+        // 短線候選維持原本的天數。後端一次抓30天，前端再依類別分開篩。
         const today = taipeiDateStr(new Date()),
-            fromDate = taipeiDateStr(
-                new Date(Date.now() - (lookbackDays || 5) * 86400000),
-            ),
+            shortFrom = taipeiDateStr(new Date(Date.now() - (lookbackDays || 5) * 86400000)),
+            fromDate = taipeiDateStr(new Date(Date.now() - 30 * 86400000)),
             res = await fetchWithTimeout(
                 `${AUTH_BASE}/api/journal-snapshot?from=${fromDate}&to=${today}&token=${encodeURIComponent(getAuthToken() || "")}`,
                 15e3,
@@ -26530,7 +26740,7 @@ async function fetchRecentCandidateSymbols(lookbackDays) {
         if (!data || !data.ok || !Array.isArray(data.rows)) return new Set();
         return new Set(
             data.rows
-                .filter((r) => "短線候選" === r.category || "長線候選" === r.category)
+                .filter((r) => "長線候選" === r.category || ("短線候選" === r.category && (!r.date || r.date >= shortFrom)))
                 .map((r) => r.stock_id),
         );
     } catch (err) {
@@ -26847,6 +27057,7 @@ async function saveXiaojiuDailySnapshot(btn, silent) {
 (document.getElementById("xiaojiu-refresh-btn")?.addEventListener("click", computeXiaojiuPlan),
     document.getElementById("xiaojiu-swap-close")?.addEventListener("click", closeXiaojiuSwapModal),
     document.getElementById("xiaojiu-export-snapshot-btn")?.addEventListener("click", (e) => saveXiaojiuDailySnapshot(e.currentTarget)),
+    document.getElementById("swing-review-btn")?.addEventListener("click", (e) => runSwingReview(e.currentTarget)),
     document.getElementById("dashboard-snapshot-btn")?.addEventListener("click", (e) => saveXiaojiuDailySnapshot(e.currentTarget)),
     document.getElementById("xiaojiu-history-snapshot-btn")?.addEventListener("click", async () => {
         openXiaojiuExportModal("累積紀錄", "讀取中...", "讀取中...");
