@@ -1086,6 +1086,9 @@ html:not(#_w1):not(#_w2) #whales-content > p.wl-show{display:block!important}
 .wl-btns{display:flex;gap:6px;margin-top:10px}
 .wl-btns button{flex:1;display:flex;align-items:center;justify-content:center;gap:4px;font-size:12px;font-weight:800;padding:7px 4px;border-radius:999px;border:1.5px solid #1A1A1A;background:#FFFFFF;color:#1A1A1A;cursor:pointer;white-space:nowrap}
 .wl-btns button.wl-pri{background:#1A1A1A;color:#FFFFFF}
+.wl-flow-btn{width:100%;display:flex;align-items:center;justify-content:center;gap:6px;margin-top:10px;font-size:12.5px;font-weight:800;padding:8px 4px;border-radius:999px;border:1.5px solid #1A1A1A;background:#FFF8D6;color:#1A1A1A;cursor:pointer}
+.wl-flow-slot:empty{display:none}
+.wl-flow-slot{margin-top:8px}
 #watchlist-targets-meta{font-size:12.5px!important;color:#3D4450!important;line-height:1.5}
 #watchlist-targets-meta b{color:#1A1A1A}
 .wl-qw{display:block;margin-top:3px;font-size:11.5px;color:#8A6D1B}
@@ -17847,6 +17850,8 @@ function buildWatchlistCardHtml(it, opts) {
             ${tagsHtml ? `<div class="wl-tags">${tagsHtml}</div>` : ""}
             ${stops.length ? `<div class="wl-stops"><span>停損參考（依你能承受的風險擇一）</span>${stops.map((x) => `<div>${x}</div>`).join("")}</div>` : ""}
             <div class="flex items-center gap-1.5 flex-wrap asset-value-slot" data-symbol="${esc(it.symbol)}"></div>
+            <button type="button" class="wl-flow-btn" data-symbol="${esc(it.symbol)}">📊 法人進出走勢</button>
+            <div class="wl-flow-slot" data-symbol="${esc(it.symbol)}"></div>
             <div class="wl-btns">
                 <button type="button" class="watchlist-view-chart-btn" data-symbol="${esc(it.symbol)}"><i data-lucide="line-chart" class="w-3.5 h-3.5"></i>圖表</button>
                 <button type="button" class="watchlist-add-to-watch-btn" data-symbol="${esc(it.symbol)}"><i data-lucide="star" class="w-3.5 h-3.5"></i>加入自選股</button>
@@ -17855,6 +17860,193 @@ function buildWatchlistCardHtml(it, opts) {
         </div>
     </div>`;
 }
+// 【2026-10-10新增：跟著大戶卡片「法人進出走勢」】按了才抓資料畫圖：近120天FinMind個股三大法人買賣 + 日K收盤。
+// 分別找出外資、投信「最近一段連續買超」從第一天開始，到之後開始賣(倒貨)的過程：
+// 上半部畫股價並標出「開始買」「開始賣」的日子；下半部是兩者從開始買那天起的累計買超張數(往上是買進累積、
+// 往下回落代表在倒貨)，最下面一句話總結目前狀態(持續買進中／倒貨中倒了幾成／已倒完)。
+let wlFlowCache = {};
+async function fetchInstFlowHistory(symbol) {
+    const today = taipeiDateStr(new Date()),
+        c = wlFlowCache[symbol];
+    if (c && c.date === today) return c.data;
+    const end = new Date(),
+        start = new Date(Date.now() - 120 * 864e5),
+        iso = (d) => d.toISOString().split("T")[0],
+        res = await finmindCorsFetch(`https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockInstitutionalInvestorsBuySell&data_id=${symbol}&start_date=${iso(start)}&end_date=${iso(end)}`),
+        j = await res.json();
+    if (200 !== j.status || !Array.isArray(j.data) || !j.data.length) throw new Error("抓不到法人資料");
+    const by = {};
+    j.data.forEach((r) => {
+        const k = classifyInstName(r.name);
+        if ("foreign" !== k && "trust" !== k) return;
+        (by[r.date] || (by[r.date] = { foreign: 0, trust: 0 }))[k] += ((Number(r.buy) || 0) - (Number(r.sell) || 0)) / 1e3;
+    });
+    const bars = await fetchStockForScan(symbol),
+        closeBy = {};
+    (bars || []).forEach((b) => {
+        const d = xiaojiuBarDate(b);
+        d && (closeBy[d] = b.close);
+    });
+    const days = Object.keys(by)
+        .sort()
+        .filter((d) => null != closeBy[d])
+        .map((d) => ({ date: d, close: closeBy[d], foreign: Math.round(by[d].foreign), trust: Math.round(by[d].trust) }));
+    wlFlowCache[symbol] = { date: today, data: days };
+    return days;
+}
+// 找某一方(外資/投信)最近一段「連續買超」，以及之後的倒貨情形
+function instFlowEpisode(days, key) {
+    const n = days.length;
+    let i = n - 1;
+    for (; i >= 0 && !(days[i][key] > 0); i--);
+    if (i < 0) return null;
+    const endIdx = i;
+    for (; i > 0 && days[i - 1][key] > 0; i--);
+    const startIdx = i;
+    let bought = 0;
+    for (let k = startIdx; k <= endIdx; k++) bought += days[k][key];
+    let after = 0;
+    for (let k = endIdx + 1; k < n; k++) after += days[k][key];
+    const sellStartIdx = endIdx + 1 < n ? endIdx + 1 : null,
+        dumpPct = sellStartIdx !== null && after < 0 && bought > 0 ? Math.min(100, (-after / bought) * 100) : 0;
+    return { key, startIdx, endIdx, sellStartIdx, bought, after, dumpPct, buyDays: endIdx - startIdx + 1 };
+}
+// 【2026-10-10新增：順風車燈號】用常見的「倒貨前兆」推測還能不能跟。這是經驗法則，還沒用資料驗證過：
+// ①最近幾天買超量比前面少一半以上(力道轉弱) ②開始買之後股價已經漲很多(獲利了結壓力) ③連買很久
+// 已經開始賣 → 紅燈；停止買進但還沒明顯賣 → 黃燈；還在買：沒有前兆綠燈、1個黃燈、2個以上橘燈。
+function instFlowSignal(days, ep) {
+    if (!ep) return null;
+    const startPx = days[ep.startIdx].close,
+        lastPx = days[days.length - 1].close,
+        gain = ((lastPx - startPx) / startPx) * 100;
+    if (null !== ep.sellStartIdx)
+        return ep.after < 0
+            ? { level: 3, light: "🔴", text: ep.dumpPct >= 80 ? "已經倒完，別再上車" : "已經在賣，先別上車" }
+            : { level: 1, light: "🟡", text: "停止買進，先觀察" };
+    const warns = [],
+        nets = days.slice(ep.startIdx, ep.endIdx + 1).map((d) => d[ep.key]);
+    if (nets.length >= 5) {
+        const recent = nets.slice(-3),
+            early = nets.slice(0, -3),
+            avg = (a) => a.reduce((x, y) => x + y, 0) / a.length;
+        avg(recent) < 0.5 * avg(early) && warns.push("最近買超力道明顯變小");
+    }
+    gain >= 20 && warns.push(`開始買之後已漲${gain.toFixed(0)}%，獲利了結壓力大`);
+    ep.buyDays >= 10 && warns.push(`已連買${ep.buyDays}天，隨時可能轉賣`);
+    return 0 === warns.length
+        ? { level: 0, light: "🟢", text: "還在買、力道穩定，可以跟(記得設停損)" }
+        : 1 === warns.length
+          ? { level: 1, light: "🟡", text: `可以跟但要小心：${warns[0]}` }
+          : { level: 2, light: "🟠", text: `可能準備倒貨：${warns.join("、")}` };
+}
+function buildInstFlowChartHtml(days) {
+    if (!days || days.length < 3) return '<div class="wl-note">法人資料不足，暫時畫不出來</div>';
+    const F = instFlowEpisode(days, "foreign"),
+        T = instFlowEpisode(days, "trust");
+    if (!F && !T) return '<div class="wl-note">近4個月外資、投信都沒有買超紀錄</div>';
+    const first = Math.min(F ? F.startIdx : 1e9, T ? T.startIdx : 1e9),
+        from = Math.max(0, Math.max(first - 3, days.length - 60)),
+        win = days.slice(from),
+        N = win.length,
+        W = 320, padL = 6, padR = 8,
+        X = (k) => padL + ((W - padL - padR) * k) / Math.max(1, N - 1),
+        f1 = (v) => v.toFixed(1),
+        // 上半部：股價
+        pT = 14, pH = 90,
+        cl = win.map((d) => d.close),
+        pLo = Math.min(...cl), pHi = Math.max(...cl), pPad = (pHi - pLo) * 0.08 || pHi * 0.02,
+        PY = (v) => pT + (pH * (pHi + pPad - v)) / (pHi - pLo + 2 * pPad),
+        pricePts = win.map((d, k) => `${f1(X(k))},${f1(PY(d.close))}`).join(" "),
+        // 下半部：從各自開始買那天起的累計買超張數
+        cum = (ep, key) => {
+            if (!ep) return null;
+            let s = 0;
+            return win.map((d, k) => {
+                const gi = k + from;
+                if (gi < ep.startIdx) return null;
+                s += d[key];
+                return s;
+            });
+        },
+        cF = cum(F, "foreign"),
+        cT = cum(T, "trust"),
+        allC = [...(cF || []), ...(cT || [])].filter((v) => null != v),
+        cLo = Math.min(0, ...allC), cHi = Math.max(0, ...allC),
+        cT0 = pT + pH + 26, cH = 70,
+        CY = (v) => cT0 + (cH * (cHi - v)) / (cHi - cLo || 1),
+        line = (arr, color) => {
+            if (!arr) return "";
+            const pts = arr.map((v, k) => (null == v ? null : `${f1(X(k))},${f1(CY(v))}`)).filter(Boolean).join(" ");
+            return pts ? `<polyline points="${pts}" fill="none" stroke="${color}" stroke-width="2" stroke-linejoin="round"/>` : "";
+        },
+        mark = (ep, color, who) => {
+            if (!ep) return "";
+            let h = "";
+            const sk = ep.startIdx - from;
+            sk >= 0 && sk < N && (h += `<line x1="${f1(X(sk))}" x2="${f1(X(sk))}" y1="${pT}" y2="${cT0 + cH}" stroke="${color}" stroke-width="1" stroke-dasharray="3 3"/><circle cx="${f1(X(sk))}" cy="${f1(PY(win[sk].close))}" r="3.5" fill="${color}"/><text x="${f1(X(sk) + 3)}" y="${pT - 3 + ("trust" === who ? 11 : 0)}" font-size="9" font-weight="700" fill="${color}">${"foreign" === who ? "外資" : "投信"}買</text>`);
+            const ek = null !== ep.sellStartIdx ? ep.sellStartIdx - from : -1;
+            ek >= 0 && ek < N && (h += `<line x1="${f1(X(ek))}" x2="${f1(X(ek))}" y1="${pT}" y2="${cT0 + cH}" stroke="${color}" stroke-width="1"/><text x="${f1(X(ek) + 3)}" y="${pT + pH - 2 - ("trust" === who ? 11 : 0)}" font-size="9" font-weight="700" fill="${color}">${"foreign" === who ? "外資" : "投信"}賣</text>`);
+            return h;
+        },
+        zeroY = CY(0),
+        svg = `<svg viewBox="0 0 ${W} ${cT0 + cH + 16}" width="100%" style="display:block" role="img" aria-label="法人進出與股價走勢">
+            <text x="${padL}" y="9" font-size="9" fill="#8A8A8A">股價</text>
+            <polyline points="${pricePts}" fill="none" stroke="#1A1A1A" stroke-width="1.8" stroke-linejoin="round"/>
+            <text x="${padL}" y="${cT0 - 6}" font-size="9" fill="#8A8A8A">開始買之後累計買超(張)</text>
+            <line x1="${padL}" x2="${W - padR}" y1="${f1(zeroY)}" y2="${f1(zeroY)}" stroke="#D9D6CC" stroke-width="1"/>
+            ${line(cF, "#C8553D")}${line(cT, "#2A78D6")}
+            ${mark(F, "#C8553D", "foreign")}${mark(T, "#2A78D6", "trust")}
+            <text x="${padL}" y="${cT0 + cH + 13}" font-size="9" fill="#8A8A8A">${win[0].date.slice(5)}</text>
+            <text x="${W - padR}" y="${cT0 + cH + 13}" font-size="9" text-anchor="end" fill="#8A8A8A">${win[N - 1].date.slice(5)}</text>
+        </svg>`,
+        fmtLots = (v) => `${v >= 0 ? "+" : ""}${Math.round(v).toLocaleString()}張`,
+        lastClose = days[days.length - 1].close,
+        say = (ep, who, color) => {
+            if (!ep) return `<div><b style="color:${color}">${who}</b>：近4個月沒有買超</div>`;
+            const startPx = days[ep.startIdx].close,
+                chg = ((lastClose - startPx) / startPx) * 100,
+                status =
+                    null === ep.sellStartIdx
+                        ? `<b style="color:#C8553D">持續買進中</b>`
+                        : ep.dumpPct >= 80
+                          ? `<b style="color:#5E7D4A">已經倒完(賣回${ep.dumpPct.toFixed(0)}%)</b>`
+                          : ep.dumpPct > 0
+                            ? `<b style="color:#B5533C">倒貨中，已賣回${ep.dumpPct.toFixed(0)}%</b>`
+                            : `<b style="color:#8A8A8A">停止買進</b>`;
+            const sig = instFlowSignal(days, ep);
+            return `<div><b style="color:${color}">${who}</b>：${sig ? sig.light + " " : ""}${days[ep.startIdx].date.slice(5)}開始買，連買${ep.buyDays}天共${fmtLots(ep.bought)}${null !== ep.sellStartIdx ? `，${days[ep.sellStartIdx].date.slice(5)}開始賣(${fmtLots(ep.after)})` : ""}；${status}・開始買到現在股價${chg >= 0 ? "+" : ""}${chg.toFixed(1)}%</div>`;
+        };
+    return `<div class="rounded-[12px] p-2" style="background:#FFFFFF;border:1px solid #E6E3DA">
+        <div style="display:flex;gap:12px;font-size:10.5px;font-weight:700;color:#5A5753;margin-bottom:2px"><span><i style="display:inline-block;width:10px;height:2px;background:#C8553D;vertical-align:middle"></i> 外資</span><span><i style="display:inline-block;width:10px;height:2px;background:#2A78D6;vertical-align:middle"></i> 投信</span></div>
+        ${svg}
+        ${(() => {
+            const sigs = [instFlowSignal(days, F), instFlowSignal(days, T)].filter(Boolean),
+                worst = sigs.sort((a, b) => b.level - a.level)[0];
+            if (!worst) return "";
+            const bg = ["#E8F5E9", "#FFF8D6", "#FFE9D6", "#FDE8E6"][worst.level];
+            return `<div style="margin-top:6px;padding:7px 10px;border-radius:10px;background:${bg};border:1px solid #1A1A1A;font-size:12px;font-weight:800;color:#1A1A1A">${worst.light} 順風車燈號：${worst.text}</div>`;
+        })()}
+        <div style="font-size:11px;line-height:1.6;color:#1A1A1A;margin-top:4px">${say(F, "外資", "#C8553D")}${say(T, "投信", "#2A78D6")}</div>
+        <div style="font-size:10px;color:#8A8A8A;margin-top:2px">燈號是依常見倒貨前兆推測，不是保證，進場仍要設停損</div>
+    </div>`;
+}
+document.addEventListener("click", async (e) => {
+    const btn = e.target.closest(".wl-flow-btn");
+    if (!btn) return;
+    e.stopPropagation();
+    const card = btn.closest(".wl-card"),
+        slot = card && card.querySelector(".wl-flow-slot");
+    if (!slot) return;
+    if (slot.innerHTML.trim()) return void ((slot.innerHTML = ""), (btn.textContent = "📊 法人進出走勢"));
+    slot.innerHTML = '<div class="wl-note">抓取法人資料中...</div>';
+    btn.textContent = "📊 收起法人進出走勢";
+    try {
+        const days = await fetchInstFlowHistory(btn.dataset.symbol);
+        slot.isConnected && (slot.innerHTML = buildInstFlowChartHtml(days));
+    } catch (err) {
+        slot.isConnected && (slot.innerHTML = `<div class="wl-note">法人資料暫時抓不到(${err.message})，稍後再試</div>`);
+    }
+});
 document.addEventListener("click", (e) => {
     const sum = e.target.closest(".wl-card .wl-sum");
     if (!sum || e.target.closest("button,a,.risk-info-btn,input,select")) return;
