@@ -16424,7 +16424,9 @@ async function computeAquariumDailyEvents() {
                         const ma5Val = t.length >= 5 ? sma(t.map((k) => k.close), 5, t.length - 1) : null,
                             prevCloseVal = t[t.length - 2].close,
                             s =
-                                "surge" === a.track
+                                "bottom" === a.track
+                                    ? checkXiaojiuBottomExit(a, t[t.length - 1].close, xiaojiuHeldTradingDays(t, a.entryDate))
+                                    : "surge" === a.track
                                     ? checkXiaojiuSurgeExit(a, t[t.length - 1].close, (() => { try { const lv = computeXiaojiuDefenseLevels(t); return lv ? lv.d20 : null; } catch (err) { return null; } })(), "日20MA", xiaojiuHeldTradingDays(t, a.entryDate))
                                     : checkXiaojiuExit(a, t[t.length - 1].close, "long" === n, null, null, { ma5: ma5Val, prevClose: prevCloseVal, peakClose: a.peakClose });
                         s &&
@@ -24616,8 +24618,8 @@ async function renderXiaojiuHoldingsMiniList() {
                         ? ""
                         : '<span class="text-[9px] text-amber-600 bg-amber-50 border border-amber-200 rounded px-1 ml-1">價格未更新</span>',
                     r = ((l - e.entryPrice) / e.entryPrice) * 100,
-                    c = s ? XIAOJIU_LONG_STOP_LOSS_PCT : XIAOJIU_SHORT_STOP_LOSS_PCT,
-                    d = s || "surge" === e.track ? null : XIAOJIU_SHORT_TAKE_PROFIT_PCT,
+                    c = xiaojiuTrackRule(e, s).stopPct,
+                    d = s || "surge" === e.track || "bottom" === e.track ? null : XIAOJIU_SHORT_TAKE_PROFIT_PCT,
                     u = e.entryPrice * (1 + c / 100),
                     m = null !== d ? e.entryPrice * (1 + d / 100) : null;
                 let p, g;
@@ -24830,7 +24832,68 @@ function xiaojiuSlotDefenseMode(e, t) {
 // 停利＋漲15%停利」平均+8.1%；改成「持有滿7個交易日、中途跌7%或跌破日20MA才出場」平均約+10%、勝率約71%。
 // 飆股波動大，回落4%、跌破日5MA這類規則很容易在主升段被洗掉，所以飆股軌不套用，只留她自己的短線停損紀律
 // (跌破日20MA或-7%)，再加上時間出場：平均走勢在第7個交易日左右見高，之後開始回吐。
-const XIAOJIU_SURGE_HOLD_DAYS = 7;
+const XIAOJIU_SURGE_HOLD_DAYS = 7,
+    // 【2026-10-10新增：底部起漲軌】370檔日K回測(6/15~9/10)：股價比近60日高點低25%以上、剛站回日20MA(0~5%)、
+    // 量能≥平常1.2倍，三個時期(崩跌前/崩跌反彈/多頭續漲)都贏全體平均，每檔第一次訊號20日後平均贏4.3%、
+    // 6成賺錢。訊號要約20個交易日才發酵(10日只贏0.8%)；用跌破日20MA出場反而較差(剛站上很容易被洗掉)，
+    // 所以出場改成：抱滿20個交易日，或虧損10%停損。74%的訊號出現在週20MA之下而且表現更好，她決定這一軌
+    // 不套用「週20MA之下不做多」。
+    XIAOJIU_BOTTOM_HOLD_DAYS = 20,
+    XIAOJIU_BOTTOM_STOP_PCT = -10;
+function checkXiaojiuBottomExit(e, t, heldDays) {
+    if (!e || null == t) return null;
+    const o = ((t - e.entryPrice) / e.entryPrice) * 100;
+    if (o <= XIAOJIU_BOTTOM_STOP_PCT) return { reason: `底部起漲軌停損(${o.toFixed(1)}%)`, pnlPct: o };
+    if ("number" == typeof heldDays && heldDays >= XIAOJIU_BOTTOM_HOLD_DAYS)
+        return { reason: `底部起漲軌持有滿${XIAOJIU_BOTTOM_HOLD_DAYS}個交易日出場，${o.toFixed(1)}%`, pnlPct: o };
+    return null;
+}
+// 依倉位類型取出場規則(給走勢圖、持股卡片用)
+function xiaojiuTrackRule(slot, isLong) {
+    return slot && "surge" === slot.track
+        ? { holdDays: XIAOJIU_SURGE_HOLD_DAYS, stopPct: XIAOJIU_SHORT_STOP_LOSS_PCT, label: "🚀飆股軌" }
+        : slot && "bottom" === slot.track
+          ? { holdDays: XIAOJIU_BOTTOM_HOLD_DAYS, stopPct: XIAOJIU_BOTTOM_STOP_PCT, label: "🌱底部起漲軌" }
+          : { holdDays: null, stopPct: isLong ? XIAOJIU_LONG_STOP_LOSS_PCT : XIAOJIU_SHORT_STOP_LOSS_PCT, label: "" };
+}
+// 底部起漲候選：先用掃描結果的日20MA乖離粗篩，再逐檔抓日K精算(距60日高點、日20MA乖離、量能倍數)。
+// 不套用空方訊號否決(回測裡漲最多的股票大多被「弱勢續跌」擋掉)，但處置股、ETF、超過價格上限的仍排除。
+let lastBottomRise = { date: null, symbols: new Set() };
+async function findBottomRiseCandidates(rows, heldSet) {
+    const cap = loadJSON("trend_xiaojiu_price_cap", 1e3),
+        pre = (rows || []).filter(
+            (r) =>
+                r && r.symbol && !isEtfCode(r.symbol) && !(heldSet && heldSet.has(r.symbol)) &&
+                !(hedgeDicts && hedgeDicts.disposition && hedgeDicts.disposition.has(r.symbol)) &&
+                !(null !== cap && null != r.close && r.close >= cap) &&
+                "number" == typeof r.dailyBiasPct && isFinite(r.dailyBiasPct) && r.dailyBiasPct >= -0.5 && r.dailyBiasPct <= 5.5,
+        ),
+        out = [],
+        queue = pre.slice(),
+        worker = async () => {
+            for (; queue.length;) {
+                const r = queue.shift();
+                try {
+                    const bars = await fetchStockForScan(r.symbol);
+                    if (!bars || bars.length < 61 || "mock" === dataSourceCache[r.symbol]) continue;
+                    const N = bars.length,
+                        c = bars[N - 1].close,
+                        ma20 = bars.slice(N - 20).reduce((a, b) => a + b.close, 0) / 20,
+                        hi60 = Math.max(...bars.slice(N - 60).map((b) => (null != b.high ? b.high : b.close))),
+                        vAvg = bars.slice(N - 21, N - 1).reduce((a, b) => a + (b.volume || 0), 0) / 20,
+                        b20 = (c / ma20 - 1) * 100,
+                        h60 = (c / hi60 - 1) * 100,
+                        vr = vAvg > 0 ? (bars[N - 1].volume || 0) / vAvg : 0;
+                    b20 >= 0 && b20 <= 5 && h60 <= -25 && vr >= 1.2 && out.push({ ...r, bottomH60: h60, bottomB20: b20, bottomVol: vr });
+                } catch (err) {}
+            }
+        };
+    await Promise.all(Array.from({ length: 6 }, worker));
+    // 跌得越深的排前面(回測裡-30%比-25%略好)
+    out.sort((a, b) => a.bottomH60 - b.bottomH60);
+    lastBottomRise = { date: taipeiDateStr(new Date()), symbols: new Set(out.map((x) => x.symbol)) };
+    return out.slice(0, 8);
+}
 function checkXiaojiuSurgeExit(e, t, a, s, heldDays) {
     if (!e || null == t) return null;
     const o = ((t - e.entryPrice) / e.entryPrice) * 100;
@@ -25608,6 +25671,25 @@ function renderXiaojiuSurgeWatch(anchorEl, list) {
         : '<p class="text-[12px] text-slate-500 py-2">今天沒有符合的股票</p>';
     box.innerHTML = `<div class="flex items-center justify-between mb-1"><span class="text-[13px] font-bold text-slate-800">🚀 飆股觀察名單</span><span class="text-[11px] text-slate-500">${list.length}檔</span></div><p class="text-[11px] text-slate-500 leading-relaxed mb-1">大盤強勢時才出現・魚小韭短線會自動從這份名單買進</p>${rows}`;
 }
+function renderXiaojiuBottomWatch(list) {
+    const anchor = document.getElementById("xiaojiu-surge-watch") || document.getElementById("xiaojiu-filter-funnel");
+    let box = document.getElementById("xiaojiu-bottom-watch");
+    if (!box && anchor) {
+        box = document.createElement("div");
+        box.id = "xiaojiu-bottom-watch";
+        box.className = "mb-3 rounded-[14px] p-3";
+        box.style.cssText = "background:#FFFFFF;border:1.5px solid #1A1A1A";
+        anchor.insertAdjacentElement("afterend", box);
+    }
+    if (!box) return;
+    const escH = (x) => String(x ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+    const rows = list.length
+        ? list
+              .map((x) => `<button type="button" class="daily-report-row w-full flex items-center justify-between gap-2 py-1.5 text-left" style="border-top:1px solid #EFEDE6" data-symbol="${escH(x.symbol)}"><span class="text-[13px] font-bold text-slate-800 truncate">${escH(stockLabel(x.symbol))}</span><span class="font-mono-num text-[12px] text-slate-700 shrink-0">${null != x.close ? fmt(x.close) : "--"}</span></button>`)
+              .join("")
+        : '<p class="text-[12px] text-slate-500 py-2">今天沒有符合的股票</p>';
+    box.innerHTML = `<div class="flex items-center justify-between mb-1"><span class="text-[13px] font-bold text-slate-800">🌱 底部起漲名單</span><span class="text-[11px] text-slate-500">${list.length}檔</span></div><p class="text-[11px] text-slate-500 leading-relaxed mb-1">跌深後帶量重新站回月線・魚小韭長線會優先從這份名單買進</p>${rows}`;
+}
 async function computeXiaojiuPlan() {
     const e = lastScanVisibleRows || [];
     if (0 === e.length)
@@ -25722,7 +25804,10 @@ async function computeXiaojiuPlan() {
             const s = "long" === e;
             t[e] = t[e].map((o) => {
                 if (!o) return null;
-                const l = n[o.symbol],
+                // 【2026-10-10】飆股軌/底部起漲軌/0050如果不在今天的掃描結果裡，改用日K最後一根收盤判斷出場，
+                // 避免「持有滿N天」的倉位因為沒被掃到而一直賣不掉
+                const xb = xjBars[o.symbol],
+                    l = n[o.symbol] || (o.track && xb && xb.length ? { close: xb[xb.length - 1].close } : null),
                     r = l ? l.close : o.entryPrice;
                 // 【2026-09-23新增：追蹤進場後最高收盤價】給checkXiaojiuExit的峰值回落停利規則用，
                 // 用Math.max持續累加，舊倉位沒有這個欄位時用entryPrice當起點，不會因為缺欄位而炸掉。
@@ -25732,7 +25817,9 @@ async function computeXiaojiuPlan() {
                     u = l
                         ? "surge" === o.track
                             ? checkXiaojiuSurgeExit(o, r, d, XIAOJIU_DEFENSE_LABELS[c], xiaojiuHeldTradingDays(xjBars[o.symbol], o.entryDate))
-                            : checkXiaojiuExit(o, r, s, d, XIAOJIU_DEFENSE_LABELS[c], { ma5: l.dailyMa5, prevClose: l.prevClose, peakClose: o.peakClose })
+                            : "bottom" === o.track
+                              ? checkXiaojiuBottomExit(o, r, xiaojiuHeldTradingDays(xjBars[o.symbol], o.entryDate))
+                              : checkXiaojiuExit(o, r, s, d, XIAOJIU_DEFENSE_LABELS[c], { ma5: l.dailyMa5, prevClose: l.prevClose, peakClose: o.peakClose })
                         : null;
                 if (u) {
                     const n = o.shares * r;
@@ -25787,7 +25874,7 @@ async function computeXiaojiuPlan() {
     // 避開當天大漲、大盤過熱一天只買1檔、開盤跳空不追」設計的規則，正好會把飆股全部擋掉，所以這批略過，
     // 只保留同產業分散。
     // 第6個參數indexFill=true：長線用0050替補(倉位標記track:"index")
-    async function p(e, n, s, o, surge, indexFill) {
+    async function p(e, n, s, o, surge, indexFill, bottom) {
         const l = "long" === e,
             i = t[e].map((e, t) => (null === e ? t : -1)).filter((e) => e >= 0);
         if (0 === i.length) return;
@@ -25809,7 +25896,8 @@ async function computeXiaojiuPlan() {
         // 沒有資料判斷時(ctAboveWeekly20回傳null)不擋，維持原本邏輯。
         for (const e of n) {
             if (s.has(e.symbol)) continue;
-            if (window.ctAboveWeekly20 && window.ctAboveWeekly20(e.symbol) === false) continue;
+            // 底部起漲軌不套用週20MA門檻(訊號大多出現在週20MA之下，而且表現更好)
+            if (!bottom && window.ctAboveWeekly20 && window.ctAboveWeekly20(e.symbol) === false) continue;
             pool.push(e);
             if (pool.length >= 3 * need) break;
         }
@@ -25820,7 +25908,7 @@ async function computeXiaojiuPlan() {
             // 所以乖離>6%排在3~6%後面；動能分數<-10(多頭結構裡的拉回)T+1勝率62.8%、3~7日69.8%，
             // 8月/9月兩段分開看都是最好的一組(9月較弱但仍高於平均)，同一段乖離內優先挑這種。都只是排序，不剔除。
             biasTier = (x) => (typeof x.diffPct !== "number" || !isFinite(x.diffPct) ? 1 : x.diffPct <= 3 ? 0 : x.diffPct <= 6 ? 1 : 2),
-            tier = (x) => (surge ? 0 : isExtreme(x) ? 3 : biasTier(x)),
+            tier = (x) => (surge || bottom ? 0 : isExtreme(x) ? 3 : biasTier(x)),
             pullbackRank = (x) => (!surge && !l && typeof x.momentumScore === "number" && x.momentumScore < -10 ? 0 : 1),
             ordered = pool.map((x, k) => ({ x, k })).sort((a, b) => tier(a.x) - tier(b.x) || pullbackRank(a.x) - pullbackRank(b.x) || a.k - b.k).map((o) => o.x),
             preferred = [],
@@ -25832,7 +25920,7 @@ async function computeXiaojiuPlan() {
         }
         // 當天大漲大跌的維持排在最後(就算同產業還沒滿，也排在「同產業已滿」的一般候選後面)
         const r = (
-            surge
+            surge || bottom
                 ? [...preferred, ...deferred]
                 : [
                       ...preferred.filter((x) => !isExtreme(x)),
@@ -25899,6 +25987,7 @@ async function computeXiaojiuPlan() {
             let k = `${xiaojiuReasonPhrase(l ? n.score : n.momentumScore || 0, l)}（${m ? "首次建倉" : "補位"}，${l ? "長線強度分數排名，分數" + n.score + "/10" : `${w}${n.isShortTermBuy ? "完整進場訊號✓，" : ""}動能${(n.momentumScore || 0).toFixed(1)}`}）`;
             o && (k = `🛡️ 防禦型特案試單(資金減半)｜${k}`);
             indexFill && (k = "📦 長線暫時沒有合格標的，先用0050跟上大盤(之後有合格標的會自動換掉)");
+            bottom && (k = "🌱底部起漲軌：跌深後帶量重新站回月線，預計抱約1個月");
             const S = l ? n.score : n.momentumScore || 0,
                 E = u > 0 ? (x / u) * 100 : 0;
             ((t[e][f] = {
@@ -25913,7 +26002,7 @@ async function computeXiaojiuPlan() {
                 weightPct: Math.round(10 * E) / 10,
                 peakClose: h,
                 // 【2026-10-10】飆股軌買進的倉位，出場改用checkXiaojiuSurgeExit
-                ...(surge ? { track: "surge" } : indexFill ? { track: "index" } : {}),
+                ...(surge ? { track: "surge" } : indexFill ? { track: "index" } : bottom ? { track: "bottom" } : {}),
             }),
                 delete xiaojiuSlotMsg[`${e}-${f}`],
                 xiaojiuLog(t, {
@@ -25964,9 +26053,16 @@ async function computeXiaojiuPlan() {
         const e = r.filter(isXiaojiuDefensiveCandidate);
         await p("long", e, g, !0);
     } else {
+        // 【2026-10-10新增：底部起漲軌】大盤確認轉弱(綠燈)時不買
+        let bottomCands = [];
+        if (!(filterFunnel && filterFunnel.marketConfirmedWeak))
+            try {
+                bottomCands = await findBottomRiseCandidates(e, g);
+            } catch (err) {}
+        renderXiaojiuBottomWatch(bottomCands);
         // 【2026-10-10新增：0050讓位】有還沒持有的合格長線候選、但長線檔位全滿時，先賣掉替補的0050騰出位置
         {
-            const freshLong = r.filter((c) => !g.has(c.symbol) && !(window.ctAboveWeekly20 && false === window.ctAboveWeekly20(c.symbol))),
+            const freshLong = [...bottomCands, ...r.filter((c) => !(window.ctAboveWeekly20 && false === window.ctAboveWeekly20(c.symbol)))].filter((c) => !g.has(c.symbol)),
                 k = t.long.findIndex((x) => x && "index" === x.track);
             if (freshLong.length && k >= 0 && !t.long.some((x) => !x)) {
                 const slot = t.long[k],
@@ -25980,6 +26076,7 @@ async function computeXiaojiuPlan() {
                 g.delete(slot.symbol);
             }
         }
+        await p("long", bottomCands, g, !1, !1, !1, !0);
         await p("long", r, g);
         // 長線買完還有空位 → 用0050補一格(0050也要站上週20MA才買)
         t.long.some((x) => !x) && n[XJ_INDEX] && !g.has(XJ_INDEX) && (await p("long", [n[XJ_INDEX]], g, !1, !1, !0));
@@ -26109,6 +26206,8 @@ function buildXiaojiuTrendHtml(slot, bars, isLong) {
     if (!slot || !bars || bars.length < 2 || !(slot.entryPrice > 0)) return null;
     const entry = slot.entryPrice,
         isSurge = "surge" === slot.track,
+        rule = xiaojiuTrackRule(slot, isLong),
+        timed = null != rule.holdDays,
         closes = bars.map((b) => b.close),
         ma20At = (k) => (k >= 19 ? closes.slice(k - 19, k + 1).reduce((a, b) => a + b, 0) / 20 : null),
         firstIdx = bars.findIndex((b) => {
@@ -26126,12 +26225,13 @@ function buildXiaojiuTrendHtml(slot, bars, isLong) {
         pnl = ((last.close - entry) / entry) * 100,
         peak = Math.max(...pts.map((p) => p.close)),
         peakPnl = ((peak - entry) / entry) * 100,
-        stopPct = isLong ? XIAOJIU_LONG_STOP_LOSS_PCT : XIAOJIU_SHORT_STOP_LOSS_PCT,
+        stopPct = rule.stopPct,
         stopPrice = entry * (1 + stopPct / 100);
     // 出場判斷(跟更新今日計畫同一套)
     let exit = null;
     try {
         if (isSurge) exit = checkXiaojiuSurgeExit(slot, last.close, last.ma, "日20MA", held);
+        else if ("bottom" === slot.track) exit = checkXiaojiuBottomExit(slot, last.close, held);
         else {
             const lv = computeXiaojiuDefenseLevels(bars),
                 def = lv ? xiaojiuDefensePrice(lv, xiaojiuSlotDefenseMode(slot, isLong)) : null,
@@ -26141,10 +26241,10 @@ function buildXiaojiuTrendHtml(slot, bars, isLong) {
     } catch (err) {}
     const up = "#C8553D", down = "#5E7D4A", lineColor = last.close >= entry ? up : down;
     if (0 === held)
-        return `<div class="rounded-[12px] px-3 py-2 text-[11px] font-bold" style="background:#F8F6F0;color:#5A5753">📈 今天剛買進，明天收盤後開始畫每日走勢${isSurge ? "・飆股軌最多抱7個交易日" : ""}</div>`;
+        return `<div class="rounded-[12px] px-3 py-2 text-[11px] font-bold" style="background:#F8F6F0;color:#5A5753">📈 今天剛買進，明天收盤後開始畫每日走勢${timed ? `・${rule.label}最多抱${rule.holdDays}個交易日` : ""}</div>`;
     // 座標
     const W = 320, H = 120, padL = 6, padR = 44, padT = 10, padB = 18,
-        maxDay = Math.max(held, isSurge ? XIAOJIU_SURGE_HOLD_DAYS : 4),
+        maxDay = Math.max(held, timed ? rule.holdDays : 4),
         vals = [entry, stopPrice, ...pts.map((p) => p.close), ...pts.map((p) => p.ma).filter((v) => null != v)],
         lo0 = Math.min(...vals), hi0 = Math.max(...vals), padV = (hi0 - lo0) * 0.08 || entry * 0.02,
         lo = lo0 - padV, hi = hi0 + padV,
@@ -26173,8 +26273,8 @@ function buildXiaojiuTrendHtml(slot, bars, isLong) {
         dayTicks = Array.from({ length: maxDay + 1 }, (_, d) => d)
             .filter((d) => maxDay <= 10 || 0 === d % Math.ceil(maxDay / 8) || d === maxDay)
             .map((d) => `<text x="${f1(X(d))}" y="${H - 4}" font-size="9" text-anchor="middle" fill="#8A8A8A">${0 === d ? "買" : d}</text>`).join(""),
-        sellLine = isSurge
-            ? `<line x1="${f1(X(XIAOJIU_SURGE_HOLD_DAYS))}" x2="${f1(X(XIAOJIU_SURGE_HOLD_DAYS))}" y1="${padT}" y2="${H - padB}" stroke="#C8553D" stroke-width="1.2" stroke-dasharray="3 3"/><text x="${f1(X(XIAOJIU_SURGE_HOLD_DAYS) - 3)}" y="${padT + 8}" font-size="9" font-weight="700" text-anchor="end" fill="#C8553D">第${XIAOJIU_SURGE_HOLD_DAYS}天出場</text>`
+        sellLine = timed
+            ? `<line x1="${f1(X(rule.holdDays))}" x2="${f1(X(rule.holdDays))}" y1="${padT}" y2="${H - padB}" stroke="#C8553D" stroke-width="1.2" stroke-dasharray="3 3"/><text x="${f1(X(rule.holdDays) - 3)}" y="${padT + 8}" font-size="9" font-weight="700" text-anchor="end" fill="#C8553D">第${rule.holdDays}天出場</text>`
             : "",
         svg = `<svg viewBox="0 0 ${W} ${H}" width="100%" style="display:block" role="img" aria-label="${stockLabel(slot.symbol)}買進後每日收盤走勢">${hLine(entry, "#8A8A8A")}${hLine(stopPrice, down)}${maPoly ? `<polyline points="${maPoly}" fill="none" stroke="#0891b2" stroke-width="1.2" stroke-linejoin="round"/>` : ""}${sideLabels}${sellLine}<polyline points="${poly}" fill="none" stroke="${lineColor}" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>${dots}${dayTicks}</svg>`,
         chips = pts
@@ -26184,11 +26284,11 @@ function buildXiaojiuTrendHtml(slot, bars, isLong) {
                 return `<span style="flex:0 0 auto;text-align:center;border-radius:8px;padding:2px 6px;background:#F8F6F0;min-width:44px"><span style="display:block;font-size:9px;color:#8A8A8A">第${p.day}天</span><span class="font-mono-num" style="display:block;font-size:10.5px;font-weight:900;color:${c}">${null == p.chg ? "--" : (p.chg > 0 ? "+" : "") + p.chg.toFixed(1) + "%"}</span></span>`;
             })
             .join(""),
-        daysLeft = isSurge ? Math.max(0, XIAOJIU_SURGE_HOLD_DAYS - held) : null,
+        daysLeft = timed ? Math.max(0, rule.holdDays - held) : null,
         head = exit
             ? `<div class="text-[11.5px] font-black mb-1" style="color:#C8553D">⚠️ 該賣了：${exit.reason}</div>`
-            : `<div class="text-[11px] font-bold mb-1" style="color:#5A5753">📈 買進後第${held}天${isSurge ? `・距第${XIAOJIU_SURGE_HOLD_DAYS}天出場還有${daysLeft}天` : ""}</div>`;
-    return `<div class="rounded-[12px] p-2" style="background:#FFFFFF;border:${exit ? "2px solid #C8553D" : "1px solid #E6E3DA"}">${head}<div style="display:flex;align-items:center;gap:12px;font-size:10.5px;font-weight:700;margin-bottom:2px;color:#5A5753"><span>累計 <span style="color:${pnl >= 0 ? up : down}">${pnl >= 0 ? "+" : ""}${pnl.toFixed(1)}%</span></span><span>最高 <span style="color:${peakPnl >= 0 ? up : down}">${peakPnl >= 0 ? "+" : ""}${peakPnl.toFixed(1)}%</span></span>${isSurge ? '<span style="color:#C8553D">🚀飆股軌</span>' : ""}</div>${svg}<div style="display:flex;gap:4px;overflow-x:auto;margin-top:4px;padding-bottom:2px">${chips}</div></div>`;
+            : `<div class="text-[11px] font-bold mb-1" style="color:#5A5753">📈 買進後第${held}天${timed ? `・距第${rule.holdDays}天出場還有${daysLeft}天` : ""}</div>`;
+    return `<div class="rounded-[12px] p-2" style="background:#FFFFFF;border:${exit ? "2px solid #C8553D" : "1px solid #E6E3DA"}">${head}<div style="display:flex;align-items:center;gap:12px;font-size:10.5px;font-weight:700;margin-bottom:2px;color:#5A5753"><span>累計 <span style="color:${pnl >= 0 ? up : down}">${pnl >= 0 ? "+" : ""}${pnl.toFixed(1)}%</span></span><span>最高 <span style="color:${peakPnl >= 0 ? up : down}">${peakPnl >= 0 ? "+" : ""}${peakPnl.toFixed(1)}%</span></span>${rule.label ? `<span style="color:#C8553D">${rule.label}</span>` : ""}</div>${svg}<div style="display:flex;gap:4px;overflow-x:auto;margin-top:4px;padding-bottom:2px">${chips}</div></div>`;
 }
 async function fillXiaojiuTrendCharts(state) {
     const container = document.getElementById("xiaojiu-positions-list");
@@ -26331,6 +26431,27 @@ function swingReviewDownload(filename, text) {
         return !1;
     }
 }
+function renderSwingReviewResult(res) {
+    const btn = document.getElementById("swing-review-btn");
+    if (!btn || !res) return;
+    let box = document.getElementById("swing-review-result");
+    box ||
+        ((box = document.createElement("div")),
+        (box.id = "swing-review-result"),
+        (box.className = "mb-3 rounded-[14px] p-3"),
+        (box.style.cssText = "background:#FFFFFF;border:1.5px solid #1A1A1A"),
+        btn.insertAdjacentElement("afterend", box));
+    const b = (id, label) => `<button type="button" id="${id}" class="text-[11.5px] font-black flex items-center justify-center gap-1" style="background:#FFF8D6;border:1.5px solid #1A1A1A;border-radius:999px;color:#1A1A1A;padding:8px 0">${label}</button>`;
+    box.innerHTML = `<p class="text-[11px] font-bold mb-2" style="color:#5A5753">上次回顧：${res.date}・${res.okCount}檔有資料・${res.bigCount}檔波段漲超過30%</p><div class="grid grid-cols-2 gap-2">${b("swing-dl-list", "⬇️ 飆股名單")}${b("swing-dl-feat", "⬇️ 每日特徵")}</div><p class="text-[10.5px] mt-1.5" style="color:#8A8A8A">兩個檔都下載後上傳給Claude分析</p>`;
+    box.querySelector("#swing-dl-list").onclick = () => swingReviewDownload(`swing_list_${res.date}.csv`, res.listCsv);
+    box.querySelector("#swing-dl-feat").onclick = () => swingReviewDownload(`swing_features_${res.date}.csv`, res.featCsv);
+}
+// 頁面載入時，如果手機裡存著上次的回顧結果，直接顯示下載按鈕
+setTimeout(() => {
+    try {
+        ctIdb.get("swing_review_last").then((r) => r && r.listCsv && renderSwingReviewResult(r)).catch(() => {});
+    } catch (err) {}
+}, 1500);
 let swingReviewRunning = !1;
 async function runSwingReview(btn) {
     if (swingReviewRunning) return;
@@ -26372,9 +26493,12 @@ async function runSwingReview(btn) {
                 .concat(big.map((x) => [x.code, x.name, x.lowDate, x.low, x.highDate, x.high, x.gainPct, x.days, x.lastClose, x.fromHighPct].join(",")))
                 .join("\n"),
             today = taipeiDateStr(new Date());
-        swingReviewDownload(`swing_list_${today}.csv`, swingCsv);
-        setTimeout(() => swingReviewDownload(`swing_features_${today}.csv`, feat.join("\n")), 1500);
-        showToast(`完成：${list.length - skipped}檔有資料，其中${big.length}檔7/1以來波段漲超過30%。已下載兩個CSV檔(swing_list飆股名單、swing_features每日特徵)，上傳給Claude分析`, "success", !0);
+        // 【2026-10-10修正】iPhone一次只允許一個自動下載，第二個檔會被擋掉。改成跑完後顯示兩顆下載按鈕
+        // 讓她自己點(每次點擊都算使用者操作，不會被擋)，結果也存進手機(IndexedDB)，重新整理頁面後還能再下載，不用重跑。
+        const result = { date: today, okCount: list.length - skipped, bigCount: big.length, listCsv: swingCsv, featCsv: feat.join("\n") };
+        try { await ctIdb.set("swing_review_last", result); } catch (err) {}
+        renderSwingReviewResult(result);
+        showToast(`完成：${result.okCount}檔有資料，其中${big.length}檔7/1以來波段漲超過30%。請按下面兩顆按鈕分別下載`, "success", !0);
     } catch (e) {
         showToast("波段飆股回顧失敗：" + e.message, "error");
     } finally {
@@ -26406,7 +26530,7 @@ function renderXiaojiuView(e, t) {
                 a = r && r.defense ? xiaojiuDefensePrice(r.defense, n) : null,
                 s =
                     e.entryPrice *
-                    (1 + (t ? XIAOJIU_LONG_STOP_LOSS_PCT : XIAOJIU_SHORT_STOP_LOSS_PCT) / 100),
+                    (1 + xiaojiuTrackRule(e, t).stopPct / 100),
                 o = null !== a && isFinite(a) ? a : s;
             l += Math.max(0, e.entryPrice - o) * e.shares;
         }
@@ -26416,7 +26540,9 @@ function renderXiaojiuView(e, t) {
             x = xiaojiuSlotDefenseMode(e, t),
             b = r && r.defense ? xiaojiuDefensePrice(r.defense, x) : null,
             f = r
-                ? "surge" === e.track
+                ? "bottom" === e.track
+                    ? checkXiaojiuBottomExit(e, c, null)
+                    : "surge" === e.track
                     ? checkXiaojiuSurgeExit(e, c, b, XIAOJIU_DEFENSE_LABELS[x], null)
                     : checkXiaojiuExit(e, c, t, b, XIAOJIU_DEFENSE_LABELS[x], { ma5: r.dailyMa5, prevClose: r.prevClose, peakClose: e.peakClose })
                 : null,
@@ -26818,7 +26944,11 @@ function buildXiaojiuDailySnapshotCsv(e, t, recentCandidateSymbols) {
                     isFreshForExport ? "是" : "",
                     foreignDaysForExport,
                     trustDaysForExport,
-                    s((o || "") + (surgeSyms.has(e.symbol) ? (o ? "｜" : "") + "飆股軌" : "")),
+                    s(
+                        [o || "", surgeSyms.has(e.symbol) ? "飆股軌" : "", lastBottomRise.date === n && lastBottomRise.symbols.has(e.symbol) ? "底部起漲軌" : ""]
+                            .filter(Boolean)
+                            .join("｜"),
+                    ),
                     // 【2026-09-28新增】開盤價、今日漲跌%放在最後面，不動前面欄位的順序
                     null != e.todayOpen && isFinite(e.todayOpen) ? e.todayOpen : "",
                     null != e.todayChgPct && isFinite(e.todayChgPct) ? e.todayChgPct.toFixed(2) : "",
