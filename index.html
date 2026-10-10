@@ -5363,18 +5363,23 @@ async function loadMarginBalanceTrend() {
     const today = todayLocalDateStr();
     if (marginTrendCache && marginTrendCacheDate === today)
         return void (renderMarginTrendSlot(marginTrendCache), renderMarginStatus());
+    // 【2026-10-10修正：後端漏存某天(例如10/6)時，表格會少一天、「連增幾天」也會算錯】
+    // 後端(D1)的歷史紀錄跟FinMind近10天資料合併：同一天以後端為準，後端沒有的日子用FinMind補上，取最新5天。
+    let hist = [];
     try {
         const res = await fetchWithTimeout(`${AUTH_BASE}/api/margin-balance-history?days=5`, 15e3),
             j = await res.json();
-        j && j.ok && j.hasData && Array.isArray(j.history) && j.history.length >= 2
-            ? ((marginTrendCache = j.history),
-              (marginTrendCacheDate = today),
-              renderMarginTrendSlot(j.history),
-              renderMarginStatus())
-            : (slot.style.display = "none");
-    } catch (e) {
-        slot.style.display = "none";
-    }
+        j && j.ok && j.hasData && Array.isArray(j.history) && (hist = j.history.slice());
+    } catch (e) {}
+    try {
+        const mb = await fetchMarginBalance(),
+            have = new Set(hist.map((h) => h.date));
+        mb && !mb.failed && Array.isArray(mb.recentDays) && mb.recentDays.forEach((d) => have.has(d.date) || hist.push(d));
+    } catch (e) {}
+    hist = hist.sort((a, b) => (a.date < b.date ? 1 : -1)).slice(0, 5);
+    hist.length >= 2
+        ? ((marginTrendCache = hist), (marginTrendCacheDate = today), renderMarginTrendSlot(hist), renderMarginStatus())
+        : (slot.style.display = "none");
 }
 function renderMarginTrendSlot(history) {
     const slot = document.getElementById("margin-balance-trend");
@@ -10582,8 +10587,26 @@ async function fetchMarginBalance() {
                 marginBalanceCache
             );
         }
+        // 【2026-10-10新增】把FinMind回傳的近10天每天都整理出來，給「近5個交易日」表格補後端漏存的日子用
+        const recentDays = [...new Set(r.map((x) => x.date))]
+            .map((dt) => {
+                const rows = r.filter((x) => x.date === dt),
+                    mm = rows.find((x) => "MarginPurchaseMoney" === x.name) || rows.find((x) => /marginpurchasemoney/i.test(x.name || "")),
+                    ss = rows.find((x) => "ShortSale" === x.name) || rows.find((x) => /^shortsale$/i.test(x.name || ""));
+                if (!mm || !isFinite(mm.TodayBalance) || !isFinite(mm.YesBalance) || Math.abs(mm.TodayBalance / 1e8) < 500) return null;
+                return {
+                    date: dt,
+                    marginTodayYi: mm.TodayBalance / 1e8,
+                    marginChangeYi: (mm.TodayBalance - mm.YesBalance) / 1e8,
+                    shortTodayWan: ss && isFinite(ss.TodayBalance) ? ss.TodayBalance / 1e4 : null,
+                    shortChangeWan: ss && isFinite(ss.TodayBalance) && isFinite(ss.YesBalance) ? (ss.TodayBalance - ss.YesBalance) / 1e4 : null,
+                    fromFinmind: !0,
+                };
+            })
+            .filter(Boolean);
         const v = {
             date: c,
+            recentDays,
             marginChange: (p - g) / 1e8,
             marginTodayYi: p / 1e8,
             marginBuyYi: isFinite(h) ? h / 1e8 : null,
@@ -17913,7 +17936,7 @@ function findEmptyXiaojiuSlot(cat) {
 // 【2026-09-12新增：把「執行買進」的核心邏輯抽成共用函式】confirmXiaojiuManualAdd(輸入股數確認)
 // 跟這次新增的oneClickBlindBuy(戰略視窗無腦買進，不用輸入直接執行)共用同一段，避免兩份重複邏輯
 // 之後改一次忘記改另一個。
-function executeXiaojiuBuy(symbol, price, shares, cat, reason) {
+function executeXiaojiuBuy(symbol, price, shares, cat, reason, track) {
     if (typeof price !== "number" || price <= 0) return void showToast("目前沒有這檔的現價資料，無法建檔", "error");
     if (!isFinite(shares) || shares <= 0) return void showToast("請輸入正確的股數", "error");
     const cost = shares * price;
@@ -17930,6 +17953,7 @@ function executeXiaojiuBuy(symbol, price, shares, cat, reason) {
         entryDate: new Date().toISOString().slice(0, 10),
         reason,
         peakClose: price,
+        ...(track ? { track } : {}),
     };
     xiaojiuLog(state, { action: "建檔", symbol, shares, price, reason, category: slot.cat });
     addSymbolToXiaojiuGroup(symbol);
@@ -29768,11 +29792,11 @@ function liteZenRenderCards(rows, budget, highWind) {
         const price = row.close,
             shares = Math.floor(budget / price),
             totalCost = shares * price,
-            stopPrice = Math.round(100 * (0.935 * price)) / 100,
+            stopPrice = Math.round(100 * ((1 + ("number" == typeof row.stopPct ? row.stopPct : -6.5) / 100) * price)) / 100,
             maxLoss = shares * (price - stopPrice),
             sector = lookupSector(row.symbol),
             tag = row.tag || liteZenTacticTagFor(row, highWind);
-        return { symbol: row.symbol, sector, price, shares, totalCost, stopPrice, maxLoss, tag };
+        return { symbol: row.symbol, sector, price, shares, totalCost, stopPrice, maxLoss, tag, cat: row.liteCat || "short", track: row.liteTrack || "" };
     })),
         (wrap.innerHTML = liteZenLastCards
             .map(
@@ -29795,7 +29819,7 @@ function liteZenRenderCards(rows, budget, highWind) {
                     </div>
                 </div>
                 <div class="mt-2.5 text-[11px] font-bold" style="color:#C0392B">預估最大損失 約 ${fmt(c.maxLoss)} 元</div>
-                <button type="button" class="lite-zen-blind-buy-btn mt-3 w-full text-[13px] font-black py-2.5 rounded-full transition" style="background:#0E141A;color:#D6FF5C" data-symbol="${c.symbol}" data-close="${c.price}" data-shares="${c.shares}">無腦買進(直接建檔，不用再確認)</button>
+                <button type="button" class="lite-zen-blind-buy-btn mt-3 w-full text-[13px] font-black py-2.5 rounded-full transition" style="background:#0E141A;color:#D6FF5C" data-symbol="${c.symbol}" data-close="${c.price}" data-shares="${c.shares}" data-cat="${c.cat}" data-track="${c.track}">無腦買進(直接建檔，不用再確認)</button>
             </div>`,
             )
             .join("")),
@@ -29811,7 +29835,8 @@ function liteZenRenderCards(rows, budget, highWind) {
             btn.disabled = true;
             const price = parseFloat(btn.dataset.close),
                 shares = parseInt(btn.dataset.shares, 10);
-            executeXiaojiuBuy(btn.dataset.symbol, price, shares, "short", "秘密愛心便當無腦買進");
+            const track = btn.dataset.track || "";
+            executeXiaojiuBuy(btn.dataset.symbol, price, shares, btn.dataset.cat || "short", `秘密愛心便當無腦買進${"surge" === track ? "(🚀飆股軌)" : "bottom" === track ? "(🌱底部起漲軌)" : ""}`, track || void 0);
         });
     });
     const trackBtn = document.getElementById("lite-zen-track-btn");
@@ -29827,7 +29852,7 @@ function liteZenRenderEmpty() {
     if (!wrap || !result) return;
     ((liteZenLastCards = []),
         (wrap.innerHTML =
-            '<p class="text-[12px] text-center py-4" style="color:#9A9996;">今天沒有「安靜幾天後才第一次點火」的新鮮候選，寧可空手也不追已經噴過的老標的，晚點或明天再試試看。</p>'),
+            '<p class="text-[12px] text-center py-4" style="color:#9A9996;">今天沒有符合預算的飆股或底部起漲股，寧可空手也不硬湊，晚點或明天再試試看。</p>'),
         setup && setup.classList.add("hidden"),
         result.classList.remove("hidden"));
 }
@@ -29839,6 +29864,50 @@ function liteZenRenderBackups(backups) {
         "beforeend",
         `<div class="rounded-[16px] px-3.5 py-3 mb-3" style="background:#F5F5F5;border:1px dashed rgba(0,0,0,0.15)"><div class="text-[11px] font-bold mb-1" style="color:rgba(14,20,26,.55)">備選(今天另外${backups.length}檔也符合條件，不用每檔都買)</div><div class="text-[12px] leading-relaxed" style="color:rgba(14,20,26,.75)">${names}</div><div class="text-[10.5px] mt-1.5" style="color:rgba(14,20,26,.4)">上面2檔是依「位階最安全＋產業不重複」挑出來的主菜；主菜其中一檔開盤跳空太多不想追時，再從備選依序往下看。</div></div>`,
     );
+}
+// 【2026-10-10改版：便當改成「飆股」選股】她說改用外資投信同步買超之後一直虧錢。改成跟魚小韭同一套：
+// 大盤強(分數≥80)且風力不高時，主菜是「🚀飆股名單」；不夠2檔時用「🌱底部起漲名單」補。大盤不夠強或風力高時
+// 只用底部起漲(回測裡三個時期都贏平均；飆股在大跌前會大虧)。主菜維持2檔、產業不重複，其餘列為備選。
+async function liteZenPickSurge(budget, highWind) {
+    const rows = lastScanVisibleRows || [];
+    if (!rows.length) return null;
+    try { await ensureHedgeDicts(); } catch (err) {}
+    let ms = null;
+    try { ms = computeMarketRegime().score; } catch (err) {}
+    const inBudget = (x) => x && "number" == typeof x.close && x.close > 0 && x.close <= budget && !isEtfCode(x.symbol),
+        out = [],
+        seen = new Set();
+    if (!highWind && "number" == typeof ms && ms >= 80) {
+        const pools = getXiaojiuCandidatePools(loadXiaojiuState(), rows);
+        (pools.surgeWatchCandidates || []).filter(inBudget).forEach((x) => {
+            seen.has(x.symbol) || (seen.add(x.symbol), out.push({ ...x, tag: { emoji: "🚀", label: "飆股" }, liteCat: "short", liteTrack: "surge", stopPct: XIAOJIU_SHORT_STOP_LOSS_PCT }));
+        });
+    }
+    if (out.length < 2 || highWind || !("number" == typeof ms && ms >= 80)) {
+        let bottoms = [];
+        try { bottoms = await findBottomRiseCandidates(rows, new Set()); } catch (err) {}
+        bottoms.filter(inBudget).forEach((x) => {
+            seen.has(x.symbol) || (seen.add(x.symbol), out.push({ ...x, tag: { emoji: "🌱", label: "底部起漲" }, liteCat: "long", liteTrack: "bottom", stopPct: XIAOJIU_BOTTOM_STOP_PCT }));
+        });
+    }
+    return out;
+}
+// 照名單原本的順序挑2檔、產業不重複(不再用「乖離越小越前面」重排，那會把飆股全部排到最後)
+function liteZenSelectMainOrdered(picked) {
+    const main = [],
+        used = new Set();
+    for (const it of picked) {
+        const sec = lookupSector(it.symbol);
+        if (used.has(sec)) continue;
+        main.push(it);
+        used.add(sec);
+        if (main.length >= 2) break;
+    }
+    for (const it of picked) {
+        if (main.length >= 2) break;
+        main.includes(it) || main.push(it);
+    }
+    return { main, backups: picked.filter((it) => !main.includes(it)) };
 }
 async function liteZenFetchMeal() {
     const fetchBtn = document.getElementById("lite-zen-fetch-btn"),
@@ -29865,16 +29934,15 @@ async function liteZenFetchMeal() {
         // 位階安穩(站上20MA、正乖離<10%、沒有空方警報)。這份資料來自lastSyncBuyItemsMap，
         // 是「跟著大戶」頁面的法人+投信同步買超清單，只要她開過那一頁，這裡就能直接用，
         // 不用便當自己再重新跑一次全市場掃描。
-        if (0 === lastSyncBuyItemsMap.size) {
+        const picked = await liteZenPickSurge(budget, highWind);
+        if (null === picked) {
             liteZenRenderEmpty();
-            showToast("請先開過「跟著大戶」頁面(法人+投信同步買超載入過)，便當才有資料可以配", "error");
+            showToast("請先到選股頁跑一次「鯨魚雷達」掃描，便當才有資料可以配", "error");
             return;
         }
-        const picked = await liteZenPickFromWhales(budget);
-        highWind && picked.forEach((it) => (it.tag = { emoji: "🛡️", label: "大跌用" }));
-        if (picked.length < 2) liteZenRenderEmpty();
+        if (0 === picked.length) liteZenRenderEmpty();
         else {
-            const { main, backups } = liteZenSelectMain(picked);
+            const { main, backups } = liteZenSelectMainOrdered(picked);
             liteZenRenderCards(main, budget, highWind);
             liteZenRenderBackups(backups);
         }
